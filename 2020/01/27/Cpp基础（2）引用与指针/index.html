@@ -234,7 +234,6 @@
 <p>允许在一条语句中定义多个引用，其中每个引用标识符都必须以符号<code>&amp;</code>开头。</p>
 <p>引用的类型都要和与之绑定的对象严格匹配。引用只能绑定在对象上，而不能与字面值或某个表达式的计算结果绑定在一起。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ival = <span class="number">1024</span>;</span><br><span class="line"><span class="keyword">int</span> &amp;refVal = ival;      <span class="comment">//refVal指向ival</span></span><br><span class="line"><span class="keyword">int</span> &amp;refVal2;            <span class="comment">//错误。引用必须被初始化</span></span><br><span class="line"></span><br><span class="line">refVal = <span class="number">2</span>;              <span class="comment">//把值赋给了ival</span></span><br><span class="line"><span class="keyword">int</span> &amp;refVal3 = refVal;   <span class="comment">//正确：refVal3绑定到了那个与refVal绑定的对象上，即ival</span></span><br><span class="line"><span class="keyword">int</span> i = refVal;          <span class="comment">//相当于i = ival</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> i = <span class="number">1024</span>, i2 = <span class="number">2048</span>;</span><br><span class="line"><span class="keyword">int</span> &amp;r1 = i, &amp;r2 = i2;</span><br></pre></td></tr></table></figure>
-
 <h2 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h2><p>指针（pointer）是“指向”另外一种类型的复合类型。指针也实现了对对象的间接访问，但与引用相比也有不同：</p>
 <p>（1）指针本身就是一个对象，允许对指针赋值和拷贝，在指针的生命周期内它可以先后指向几个不同的对象。</p>
 <p>（2）指针无须再定义时赋初值。如果没有被初始化，将拥有一个不确定的值。</p>
@@ -242,23 +241,17 @@
 <p>指针的类型都要和它所指向的对象严格匹配。因为引用不是对象，没有实际地址，所以不能定义指向引用的指针。</p>
 <p><strong>指针变量</strong>：专门用于存放指针（某个变量的地址）的变量</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> c = <span class="number">76</span>;</span><br><span class="line"><span class="keyword">int</span> *pointer;       <span class="comment">//定义名字为pointer的指针变量</span></span><br><span class="line">pointer = &amp;c;       <span class="comment">//将变量c的地址赋值给指针变量pointer；赋值后称指针变量pointer指向了变量c</span></span><br><span class="line"><span class="comment">//pointer = c;      //错误：因为pointer是存放地址的变量，所以只能存放地址</span></span><br></pre></td></tr></table></figure>
-
 <p>通过指针变量可以访问“它所指向的变量”。指针变量也是变量，是变量就有地址。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> c = <span class="number">76</span>;</span><br><span class="line"><span class="keyword">int</span> *pointer = &amp;c;  <span class="comment">//*pointer为“pointer所指向的存储单元的内容"，即是变量c</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; &amp;c &lt;&lt;<span class="built_in">endl</span>;         <span class="comment">//取变量c的地址</span></span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; &amp;pointer &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">//取指针变量c的地址</span></span><br></pre></td></tr></table></figure>
-
 <p><strong>赋值和指针</strong>：记住赋值永远改变的是等号左侧的对象，就能分清一条赋值语句是改变了指针还是改变了指针所指的对象的值。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">42</span>;</span><br><span class="line"><span class="keyword">int</span> *pi = <span class="number">0</span>;         <span class="comment">//pi被初始化</span></span><br><span class="line">pi = &amp;ival;          <span class="comment">//pi所存的地址改变，指向ival</span></span><br><span class="line">*pi = <span class="number">0</span>;             <span class="comment">//ival的值被改变，指针pi所存的地址没有改变</span></span><br></pre></td></tr></table></figure>
-
 <p><strong>&amp;<code>与</code>*`的运算优先级</strong>：同级</p>
-<img src="/2020/01/27/Cpp%E5%9F%BA%E7%A1%80%EF%BC%882%EF%BC%89%E5%BC%95%E7%94%A8%E4%B8%8E%E6%8C%87%E9%92%88/QQ图片20200125205145.png" alt="QQ图片20200125205145" style="zoom:50%;">
-
+<p><img src="/2020/01/27/Cpp%E5%9F%BA%E7%A1%80%EF%BC%882%EF%BC%89%E5%BC%95%E7%94%A8%E4%B8%8E%E6%8C%87%E9%92%88/QQ图片20200125205145.png" alt="QQ图片20200125205145" style="zoom:50%;"></p>
 <p><strong>空指针</strong>（null pointer）不指向任何对象。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *p1 = <span class="literal">nullptr</span>     <span class="comment">//C++11</span></span><br><span class="line"><span class="keyword">int</span> *p2 = <span class="number">0</span>;          <span class="comment">//直接将p2初始化为字面常量0</span></span><br><span class="line"><span class="keyword">int</span> *p3 = <span class="literal">NULL</span>;       <span class="comment">//需要首先#include&lt;cstdlib&gt;</span></span><br></pre></td></tr></table></figure>
-
 <p>使用未经初始化的指针是引发运行时错误的一大原因。因此建议初始化所有的指针，尽量等定义了对象之后再定义指向它的指针。</p>
 <p><code>void*</code>指针：可用于存放任意对象的地址。利用<code>void*</code>指针可以：拿它和别的指针比较，作为函数的输入或输出，或者赋给另外一个<code>void*</code>指针。不能访问其内存空间中所存的对象。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> obj = <span class="number">3.14</span>, *pd = &amp;obj;</span><br><span class="line"><span class="keyword">void</span> *pv = &amp;obj;</span><br><span class="line">pv = pd;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 
