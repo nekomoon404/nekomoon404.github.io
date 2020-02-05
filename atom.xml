@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://nekomoon404.github.io/"/>
-  <updated>2020-02-04T09:47:51.153Z</updated>
+  <updated>2020-02-05T02:34:01.150Z</updated>
   <id>http://nekomoon404.github.io/</id>
   
   <author>
@@ -15,6 +15,25 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>数据结构与算法（1）</title>
+    <link href="http://nekomoon404.github.io/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/"/>
+    <id>http://nekomoon404.github.io/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/</id>
+    <published>2020-02-05T02:32:06.000Z</published>
+    <updated>2020-02-05T02:34:01.150Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="绪论"><a href="#绪论" class="headerlink" title="绪论"></a>绪论</h1><h2 id="计算"><a href="#计算" class="headerlink" title="计算"></a>计算</h2><p>对象：规律，技巧</p><p>目标：高效，低耗</p><p>Computer science should be called called computing science, for the same reason why surgery is not called knife science.</p><p>-E.Dijkstra</p><ul><li>计算 = 信息处理</li></ul><p>​       借助某种工具，遵照一定规则，以明确而机械的形式进行</p><ul><li>计算模型 = 计算机 = 信息处理工具</li></ul><h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><p>所谓算法，即特定计算模型下，旨在解决特定问题的指令序列</p><p>​        输入：待处理的信息（问题）</p><p>​        输出：待处理的信息（答案）</p><p>​    正确性：的确可以解决指定的问题</p><p>​    确定性：任一算法都可以描述为一个由基本操作组成的序列</p><p>​    可行性：每一基本操作都可以实现，且在常数时间内完成</p><p>​    有穷性：任一算法在执行有限次基本操作之后终止并给出输出</p><ul><li>列子：Hailstone序列</li></ul><script type="math/tex; mode=display">\begin{align*}& 序列Hailstone(n)=\begin{cases}\{1\}     &n\le1\\\{n\}\cup Hailstone(n/2) &n为偶数\\\{n\}\cup Hailstone(3n+1) &n为奇数\end{cases}\\\\&Hailstone(42)=\{ 42,21,64,32,\dots,1\}\end{align*}</script><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">hailstone</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;<span class="comment">//计算序列Hailstone(n)的长度</span></span><br><span class="line">    <span class="keyword">int</span> length = <span class="number">1</span>; <span class="comment">//从1开始递推</span></span><br><span class="line">    <span class="keyword">while</span> (n&lt;<span class="number">1</span>) &#123; (n % <span class="number">2</span>) ? n = <span class="number">3</span> * n + <span class="number">1</span> : n / = <span class="number">2</span>; lenth++; &#125;</span><br><span class="line">    <span class="keyword">return</span> length; <span class="comment">//返回hailstone(n)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>问题：对于任意的n，总有|Hailstone(n)| &lt;  ∞ ？</p><p>目前还不能证明</p><ul><li>程序不一定是算法</li></ul><h3 id="好算法"><a href="#好算法" class="headerlink" title="好算法"></a>好算法</h3><p>正确：符合语法，能够编译，链接</p><p>​           能够正确处理简单的，大规模的，一般性的，退化的，任意合法的输入</p><p>健壮：能辨别不合法的输入并做适当处理，而不致非正常退出</p><p>可读性：结构化  + 准确命名 + 注释 + …</p><p><strong>效率</strong>：<strong>速度尽可能快 ；存储空间尽可能少</strong>   （最重要的）</p><p>​           Algorithms + Data Structures = Programs         -N. Wirth, 1976</p><p>​          (Algorithms + Data Structures) × Efficiency = Computation</p><h2 id="计算模型"><a href="#计算模型" class="headerlink" title="计算模型"></a>计算模型</h2><p>好的数据结构和算法才能有高效的计算，从而有好的应用。         </p><h3 id="算法分析"><a href="#算法分析" class="headerlink" title="算法分析"></a>算法分析</h3><p>两个主要方面：</p><p>​        正确性：算法功能与问题要求一致？</p><p>​                        数学证明？并不简单</p><p>​        <strong>成本</strong>：    <strong>运行时间</strong>+所需存储空间</p><p>​                        如何度量？如何比较？</p><p>考察：$T_A(P)$ = 算法A求解问题实例P的计算成本。</p><p>​           意义不大，因为可能出现的问题实例太多。那么如何归纳概括？</p>]]></content>
+    
+    <summary type="html">
+    
+      开个新坑
+    
+    </summary>
+    
+    
+    
+  </entry>
   
   <entry>
     <title>Cpp基础（7）类和对象</title>
