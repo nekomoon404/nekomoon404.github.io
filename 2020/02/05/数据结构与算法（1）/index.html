@@ -21,7 +21,7 @@
   var CONFIG = {
     hostname: new URL('http://nekomoon404.github.io').hostname,
     root: '/',
-    scheme: 'Mist',
+    scheme: 'Gemini',
     version: '7.7.0',
     exturl: false,
     sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
@@ -88,7 +88,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ%E5%9B%BE%E7%89%8720200206234248.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ%E5%9B%BE%E7%89%8720200206235750.png">
 <meta property="article:published_time" content="2020-02-05T02:32:06.000Z">
-<meta property="article:modified_time" content="2020-02-06T16:01:22.154Z">
+<meta property="article:modified_time" content="2020-02-06T16:31:08.004Z">
 <meta property="article:author" content="nekomoon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ%E5%9B%BE%E7%89%8720200205112701.png">
@@ -250,7 +250,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 00:01:22" itemprop="dateModified" datetime="2020-02-07T00:01:22+08:00">2020-02-07</time>
+                <time title="修改时间：2020-02-07 00:31:08" itemprop="dateModified" datetime="2020-02-07T00:31:08+08:00">2020-02-07</time>
               </span>
 
           
@@ -500,7 +500,7 @@
 <p>算术级数：$O(n^2)$</p>
 <p><img src="/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ图片20200206131342.png" style="zoom:67%;"></p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n; i&lt;&lt;=<span class="number">1</span>)  <span class="comment">// i&lt;&lt;=1 左移一位，相当于乘2</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;i; j++)</span><br></pre></td></tr></table></figure>
-<p>几何级数：$1+2+4+\dots+2^{[log<em>2(n-1)]}=\sum</em>{k=0}^{[log_2(n-1)]}2^k=2^{[log_2(n-1)]}-1=n-1=O(n)$</p>
+<p>几何级数：$1+2+4+\dots+2^{[log<em>2(n-1)]}={\sum}</em>{k=0}^{[log_2(n-1)]}2^k=2^{[log_2(n-1)]}-1=n-1=O(n)$</p>
 <p><img src="/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ图片20200206131345.png" style="zoom:67%;"></p>
 <h2 id="取非极端元素"><a href="#取非极端元素" class="headerlink" title="取非极端元素"></a>取非极端元素</h2><p>问题：给定整数子集S，|S| = n &gt;=3，找出元素$a\in S,a\ne max(S)，且 a\ne min(S)  $</p>
 <p>算法：从S中任取三个元素{x, y, z}  //若S以数组形式给出，不妨取前三个；由于S是集合，这三个元素必互异</p>
@@ -600,7 +600,7 @@
 <p>令：$S(n)=[T(n)+1]/2$</p>
 <p>则：$S(0)=1=fib(1),\,S(1)=1=fib(2)$</p>
 <p>故：$S(n)=S(n-1)+S(n-2)=fib(n+1)$</p>
-<p>​        $T(n)=2<em>S(n)-1=2</em>fib(n+1)-1=O(fib(n+1))=O(\Phi^n)=O(2^n)$  ，</p>
+<p>​        $T(n)=2*S(n)-1=2\times fib(n+1)-1=O(fib(n+1))=O(\Phi^n)=O(2^n)$  ，</p>
 <p>其中：$\Phi=\frac{1+\sqrt{5}}{2}=1.61803…$，即黄金分割数</p>
 <p>可见该算法的时间复杂度和fib数列的n+1项的值是一个量级的。</p>
 <p>接着对这个$O(\Phi^n)$进行较准确的估算，用<strong>封底估算</strong>的方法有：</p>
@@ -812,7 +812,7 @@ n+m\\m
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
   <span class="post-meta-divider">|</span>
-  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.7.0
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
   </div>
 
         
@@ -840,7 +840,7 @@ n+m\\m
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/muse.js"></script>
+<script src="/js/schemes/pisces.js"></script>
 
 
 <script src="/js/next-boot.js"></script>
