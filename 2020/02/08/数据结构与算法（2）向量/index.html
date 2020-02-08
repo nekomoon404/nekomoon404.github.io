@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="向量属于最基本的数据结构，这一章围绕向量讨论两个方面的问题：如何根据统一的接口规范来定制并且实现一个数据结构，如何通过更加有效的算法使得我们对外的接口更加高效率地工作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（2）向量">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="向量属于最基本的数据结构，这一章围绕向量讨论两个方面的问题：如何根据统一的接口规范来定制并且实现一个数据结构，如何通过更加有效的算法使得我们对外的接口更加高效率地工作。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208102916.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208105846.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208110149.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208125724.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208130026.png">
+<meta property="article:published_time" content="2020-02-08T02:04:27.000Z">
+<meta property="article:modified_time" content="2020-02-08T05:06:02.263Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208102916.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（2）向量 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（2）向量
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-08 10:04:27 / 修改时间：13:06:02" itemprop="dateCreated datePublished" datetime="2020-02-08T10:04:27+08:00">2020-02-08</time>
+            </span>
+
+          
+            <div class="post-description">向量属于最基本的数据结构，这一章围绕向量讨论两个方面的问题：如何根据统一的接口规范来定制并且实现一个数据结构，如何通过更加有效的算法使得我们对外的接口更加高效率地工作。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="接口与实现"><a href="#接口与实现" class="headerlink" title="接口与实现"></a>接口与实现</h1><p>我们首先需要辨析一组非常相关但是又非常容易弄混的概念，也就是<strong>抽象数据类型</strong>以及我们这里所说的<strong>数据结构</strong>。那么什么是<strong>Abstract Data Type</strong>呢？以及什么是<strong>Data Structure</strong>呢？可以从字面上给出定义，所谓的抽象数据类型，其实就是在一组数据的模型上定义的一组操作。那么什么叫作数据结构呢？是基于某种特定的语言真正实现的一套完整的算法。</p>
+<p>我们此前比较熟悉的程序语言，先不要考虑什么抽象数据类型，我们先来看看什么叫作Data Type数据类型。比如在高级程序设计语言中<code>int</code>也就是整型，这就是一个数据类型，而<code>floa</code>t也是，还有<code>char</code>，诸如此类地。这种数据类型能够让我们能定义其中的一个成员，比如<code>n</code>是一个整数，从此以后我们就可以使用它了，我们也可以定义<code>x</code>是一个浮点数，<code>c</code>是一个字符。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">float</span> x;</span><br><span class="line"><span class="keyword">char</span> c;</span><br></pre></td></tr></table></figure>
+<p>凡是这样指定了某一个元素是来自于某一个数据类型，或者说属于某一个数据类型，那么它就自然地具有了这种数据类型的特点，包括支持相应地处理方法，比如说运算。那么这里那些操作的运算具体是如何实现的，我们并不知道，我们也并不需要知道，这是最重要的。</p>
+<p>把这样的一个概念抽象出来施加到我们所将要实现的数据结构上，比如这一章要介绍的<code>vector</code>。我们希望在使用的时候能够参照数据类型的这种形式，把它等同地当作是一个数据类型，比如可以用类似的方法来定义一个<code>vector</code>结构，包括下一章将要介绍的<code>List</code>。</p>
+<p>这种使用方法使得我们可以将数据结构与数据类型等同起来，我们只需要知道它所提供的那些操作，比如说向量的查找、排序，而不需要去关心它其中的细节，比如说这些操作是如何实现的。那么从这个意义上讲，它就是一个经过了抽象以后的数据类型，所以称之为<strong>Abstract Data Type</strong>。</p>
+<p>举个例子：我们可以将数据结构比喻成某种产品，比如说汽车，相关的有两类人，首先是用户，我们笼统地称之为应用Application，另一类人是汽车这种产品的设计和制造者，称之为实现Implementation。这两类人所关心的以及他们的职责是不同的，作为用户而言，他只关心这种产品的外在特性，能够提供的功能；而实现者则需要对这些功能以及特性具体如何落实负责。在这二者之间实际上是有某种形式的一个协议，也就是使用说明书，产品手册。而这种手册或者说明在数据结构的使用者与数据结构内部算法的设计者之间，达成了这么样一个协议，两类人可能互不见面，互不相识，但是他们通过这样一个规范，可以很好地彼此沟通，并且有效地合作。</p>
+<p><img src="/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ图片20200208102916.png" style="zoom:67%;"></p>
+<h2 id="向量ADT"><a href="#向量ADT" class="headerlink" title="向量ADT"></a>向量ADT</h2><h3 id="从数组到向量"><a href="#从数组到向量" class="headerlink" title="从数组到向量"></a>从数组到向量</h3><p><strong>向量实际上是C++等高级编程语言中数组这种数据组织形式的一个推广和泛化</strong>。实际上在这些高级程序设计语言中<br>所谓的数组实际上就是一段连续的内存空间，它被均匀地划分为若干个单元，而每一个单元都与0到n之间的某一个整数编号相互彼此对应，我们称之为第0号单元或者元素，或者第1号元素、第2号元素以及到最后的实质第n-1个元素。这里我们也同样延用此前已经约定的习惯，虽然最后这个第n个元素，实际上未必存在，我们还是把它虚拟地放在这儿作为哨兵，以帮助我们对很多问题的思考，并且使得我们很多算法的实现能够得以简化。</p>
+<ul>
+<li>C/C++语言中，<strong>数组A[ ]中的元素与[0,n)内的编号一一对应</strong>。</li>
+</ul>
+<p><img src="/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ图片20200208105846.png" style="zoom:67%;"></p>
+<p>既然每一个这样的元素都与这些编号是一一对应的，所以反过来我们通过合法区间内的编号都可以唯一地来指代并且访问对应的那个元素。一旦知道这个元素的下标<code>i</code>，就可以从<code>A</code>也就是这段存储区域的首地址出发，再向后以s作为间隔去数出<code>i</code>步，就可以得到某一个特定的单元。正因为所有这些元素的物理地址可以按照这样一个线性的方程来确定。所以我们也称之为<strong>线性数组</strong>（linear array）。</p>
+<ul>
+<li><p>反之每个元素均由（非负）编号唯一指代，并可直接访问。<strong>A[i]</strong>的物理地址 = A + i×s，s为单个元素占用的空间量。</p>
+</li>
+<li><p>向量是数组的抽象与泛化，由一组元素按线性次序封装而成：</p>
+<ul>
+<li>各元素与[0, n)内的秩（rank）一一对应</li>
+<li>元素的类型不限于基本类型</li>
+<li>操作、管理维护更加简化、统一于安全</li>
+<li>可更为便捷地参与复杂数据结构的定制与实现</li>
+</ul>
+</li>
+</ul>
+<h3 id="向量ADT接口"><a href="#向量ADT接口" class="headerlink" title="向量ADT接口"></a>向量ADT接口</h3><p>按照抽象数据类型的规范，向量结构必须提供一系列的操作接口，可以通过这些操作接口对向量做各种操作，同时也只能通过这些操作接口对向量进行操作，这里的接口功能非常的丰富。</p>
+<p>比如说 与其它的数据结构一样向量也可以看作是一组元素的集合，所以<code>size( )</code>实际上返回的是其中元素的总数，称之为这个数据结构的规模。也可以从中取特定的元素<code>get(r)</code>，也可以修改其中特定的元素<code>put(r, e)</code>，甚至插入<code>insert(r, e)</code>或者是删除某个元素<code>remove(r)</code>。我们也可以判定一下其中的元素是否已经有序排列<code>disordered( )</code>，如果没有有序排列，可以调用相应的接口使之有序排列<code>sort( )</code>。</p>
+<p>我们也可以在它尚未有序排列的时候，按某种算法找到其中特定的元素<code>find(e)</code>，也可以在已经有序的前提下按照某种方式，来找到其中的元素<code>search(e)</code>。当然为了展示一些算法的实现我们也附加了一些其它的功能，比如说能够在无序和有序的情况下分别剔除这个数据集中的重复元素：<code>deduplicate( )</code>和<code>uniquify( )</code> 。最后也是非常重要的一个接口就是如何对这个数据集中的元素逐一地进行枚举，并且访问一遍<code>traverse( )</code>，称之为遍历。</p>
+<p><img src="/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ图片20200208110149.png" style="zoom:80%;"></p>
+<h3 id="ADT接口操作实例"><a href="#ADT接口操作实例" class="headerlink" title="ADT接口操作实例"></a>ADT接口操作实例</h3><p>下面举例说明ADT接口的实现。</p>
+<p>最开始向量与任何一个数据结构一样，初始化的时候都是不包含任何实质的内容的，我们称它是一个空的向量。接下来调用插入操作<code>insert</code>，它在rank为0的这个位置上插入一个元素9，所以向量的组成将由空变成包含一个元素9。接下来继续调用<code>insert</code>接口，在0号这个位置上rank为0的这个位置上插入一个元素4，原来的元素9将会后移一位。同样地，我们也可以调用插入接口在rank为1的位置上插入5，在这个位置上出现了5，而它的后继统一地向后后移了一位。我们也可以调用<code>put</code>接口，这个接口的意思是修改，它会把当前rank为1的那个位置上的元素数值，由原来的5修改为2。我们也可以通过<code>get</code>这个接口获取秩为某一特定值的元素，比如说秩为2的那个元素，实际上就是2这个位置上的9，因此会返回<code>9</code>。</p>
+<p><code>remove</code>接口的参数是2，这说明它希望在原来这个向量中将rank为2的这个元素，把它剔除掉，剔除之后，会把这个被剔除的元素的值作为输出返回，即返回<code>2</code>，同时它的所有的后继与插入时候的操作的现象相反，会向前平移一个单元。当这个时候我们调用<code>size</code>的时候，因为这里所包含的元素总共是6个，所以它会返回<code>6</code>。</p>
+<p>我们可以看到在整个这个操作的过程中向量都确实具有这么样一个特点，就是它在逻辑上，甚至在物理上必然是彼此紧邻的排列的，所有的元素之间没有任何的缝隙。需要注意的是无论是此前所介绍的这些接口，还是后面所要介绍的接口，就目前而言，我们并不关心它的具体实现方法，我们关心的只是它的操作语义。</p>
+<p><img src="/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ图片20200208125724.png" style="zoom:80%;"></p>
+<p>接下来我们可以通过<code>disordered()</code>这个接口来检测向量的有序性，或者更准确地讲它的<strong>无序性</strong>。在此前介绍bubble sort算法的原理的时候，曾经指出包括向量在内的序列是否有序，当且仅当其中是否存在紧邻的逆序对。那么这里总共有6个元素，共定义了5组紧邻对，其中有3组，也就是4和3、7和4、和9和6是逆序的，<code>disordered</code>会<strong>返回逆序对的个数</strong>，即是<code>3</code>，只要这个数值不是0，就说明它尚未构成有序的序列。</p>
+<p>对于这样的一个<strong>无序向量</strong>我们已经可以通过<code>find</code>接口，来查找其中特定的某个元素，比如说9。可以看到9号元素是位于rank为4的位置，因此find会返回<code>4</code>。同样地，也可以查找比如说5，我们发现5并不存在，这个时候我们统一地约定返回一个数值是<code>-1</code>，这个-1肯定不是一个合法的rank，表示查找失败。接着我们可以通过sort这个接口对整个向量排序，接下来再调用<code>disordered()</code>这个接口，它已经没有任何逆序的紧邻对了，所以返回<code>0</code>。</p>
+<p><img src="/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ图片20200208130026.png" style="zoom:80%;"></p>
+<p>对于<strong>有序向量</strong>，我们可以通过另一套接口，也就是<code>search</code>来进行查找。比如说可以首先通过<code>search</code>，然后引用9来查找数值为9的元素，这个元素的rank为5，因此返回的是<code>5</code>。那么如果查找8会怎么样呢？向量中并没有8，这里我们采用了另一种约定：如果<strong>没有找到</strong>这个元素，我们要找的是<strong>不超过这个元素的最大的那个元素的值</strong>。对这个例子而言不超过8的最大的元素实际上就是7，而7的秩是4，所以<code>search(8)</code>会返回<code>4</code>。同样 我们如果要去查找10的话会返回不超过10的最大的那个元素也就是9的秩5，因此<code>search(10)</code>会返回<code>5</code>。</p>
+<p>另一种特殊情况：查找一个全局都没有而且小于全局的最小的那个元素的数比如说1，我们会假设在-1的rank这个位置上有一个假想的哨兵，它的数值是负无穷，所以<code>search(1)</code>返回的是<code>-1</code>。这样一套约定可以使得我们在语义上更加的明确，使得我们在后续的操作过程中可以便利地来搭建不同的算法。还有一点要注意的是：在有些时候，我们要查找的元素尽管有，但是它却有<strong>多次出现</strong>，比如说这个4 出现了两次，那这个时候会返回什么呢？同样跟这里的语义所定义吻合的是，我们要<strong>返回其中不超过4这个目标元素的最后边那个元素</strong>，所以如果有两个甚至多个4的话，我们会取其中rank最大的那个元素把它的rank返回，对这个例子而言也就是2号元素，因此<code>search(4)</code>会返回<code>2</code>。</p>
+<p>最后，<code>uniquify()</code>对于一个有序的向量把所有的重复的元素，比如说4都剔出掉，只保留一个拷贝。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/" rel="prev" title="数据结构与算法（1）">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（1）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#接口与实现"><span class="nav-number">1.</span> <span class="nav-text">接口与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#向量ADT"><span class="nav-number">1.1.</span> <span class="nav-text">向量ADT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从数组到向量"><span class="nav-number">1.1.1.</span> <span class="nav-text">从数组到向量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#向量ADT接口"><span class="nav-number">1.1.2.</span> <span class="nav-text">向量ADT接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ADT接口操作实例"><span class="nav-number">1.1.3.</span> <span class="nav-text">ADT接口操作实例</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
