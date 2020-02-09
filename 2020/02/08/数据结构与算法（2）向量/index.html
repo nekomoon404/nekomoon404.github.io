@@ -74,7 +74,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200209000113.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200209001549.png">
 <meta property="article:published_time" content="2020-02-08T02:04:27.000Z">
-<meta property="article:modified_time" content="2020-02-08T16:59:39.805Z">
+<meta property="article:modified_time" content="2020-02-08T17:07:27.524Z">
 <meta property="article:author" content="nekomoon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/08/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%882%EF%BC%89%E5%90%91%E9%87%8F/QQ%E5%9B%BE%E7%89%8720200208102916.png">
@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-09 00:59:39" itemprop="dateModified" datetime="2020-02-09T00:59:39+08:00">2020-02-09</time>
+                <time title="修改时间：2020-02-09 01:07:27" itemprop="dateModified" datetime="2020-02-09T01:07:27+08:00">2020-02-09</time>
               </span>
 
           
@@ -368,7 +368,7 @@
 </ul>
 <h1 id="无序向量"><a href="#无序向量" class="headerlink" title="无序向量"></a>无序向量</h1><p>回顾前两节，我们以向量为例给出了数据结构定义的一种通用方法，即模板，大致格式如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; Vector &#123; ...... &#125;;</span><br></pre></td></tr></table></figure>
-<p>这种方法实际上定义了 一系列的<code>Vector</code>，在使用的时候可以灵活指定它的类型。如果尖括号里是<code>int</code>的，那这个<code>Vector</code>实际上是a Vector of integers，即由一系列的整数组成的向量。更重要的是 在以后我们将利用这种方式来构造更为复杂的数据结构，比如可以把某些数据结构作为基本的组成元素来构成向量，举个例子在后面的学习中会定义二叉树Binary Tree这样一种数据结构，如果把<code>BinTree</code>作为基本的元素来构成<code>Vector</code>，那我们就可以构成一个由一系列的二叉树构成的一个线性序列，也就是A Vector of Binary Trees，取个形象的名字的名字可以叫它<code>forest</code> 森林。在后面介绍霍夫曼编码的时候也会用到这种技巧，通过采用统一的模板式的方法，可以使得数据结构的定义非常的规范，而且更重要的是它们可以互相的融合组合，便捷地搭建更为复杂的数据结构。</p>
+<p>这种方法实际上定义了 一系列的<code>Vector</code>，在使用的时候可以灵活指定它的类型。如果尖括号里是<code>int</code>的，那这个<code>Vector</code>实际上是a Vector of integers，即由一系列的整数组成的向量。更重要的是 在以后我们将利用这种方式来构造更为复杂的数据结构，比如可以把某些数据结构作为基本的组成元素来构成向量，举个例子在后面的学习中会定义二叉树Binary Tree这样一种数据结构，如果把<code>BinTree</code>作为基本的元素来构成<code>Vector</code>，那我们就可以构成一个由一系列的二叉树构成的一个线性序列，也就是A Vector of Binary Trees，取个形象的名字可以叫它<code>forest</code> 森林。在后面介绍霍夫曼编码的时候也会用到这种技巧，通过采用统一的模板式的方法，可以使得数据结构的定义非常的规范，而且更重要的是它们可以互相的融合组合，便捷地搭建更为复杂的数据结构。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Vector&lt;<span class="keyword">int</span>&gt; myVector1;</span><br><span class="line">Vector&lt;<span class="keyword">float</span>&gt; myVector2;</span><br><span class="line">Vector&lt;<span class="keyword">char</span>&gt; myVector3;</span><br><span class="line"></span><br><span class="line">Vector&lt;BinTree&gt; forest;</span><br></pre></td></tr></table></figure>
 <p>这一节我们将围绕向量的最基本的形式，即无序向量来展开。无序向量不一定是说其中的元素没有顺序，甚至有时候其中的元素是根本就不可能排成顺序。在这样的一个前提下我们将研究如何来定义并且实现相应的操作接口。</p>
 <h2 id="循秩访问"><a href="#循秩访问" class="headerlink" title="循秩访问"></a>循秩访问</h2><p>通过<code>V.get(r)</code>和<code>V.put(r, e)</code>接口，固然可以读，写向量元素，但便捷性远不如数组元素的下标式访问方式A[r]。通过<strong>重载下标操作符</strong>“ [ ] “，便可沿用数组的下标方式访问向量元素。对于任何一个指定的Rank r，只需在内部数据区中取出对应的第r号元素，此后凡是需要引用向量中的某个特定的比如说Rank为r的这个元素，就可以直接以这样一种类似于数组下标的形式进行引用。</p>
