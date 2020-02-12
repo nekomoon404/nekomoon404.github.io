@@ -67,8 +67,9 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212224639.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212233054.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212234305.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200213000033.png">
 <meta property="article:published_time" content="2020-02-12T12:45:52.000Z">
-<meta property="article:modified_time" content="2020-02-12T15:45:44.051Z">
+<meta property="article:modified_time" content="2020-02-12T16:23:07.497Z">
 <meta property="article:author" content="nekomoon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200206133211.png">
@@ -222,10 +223,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-02-12 20:45:52 / 修改时间：23:45:44" itemprop="dateCreated datePublished" datetime="2020-02-12T20:45:52+08:00">2020-02-12</time>
+              <time title="创建时间：2020-02-12 20:45:52" itemprop="dateCreated datePublished" datetime="2020-02-12T20:45:52+08:00">2020-02-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-13 00:23:07" itemprop="dateModified" datetime="2020-02-13T00:23:07+08:00">2020-02-13</time>
+              </span>
 
           
             <div class="post-description">如何将一个无序的向量转化为有序的向量，这就需要用到排序算法，本文针对向量介绍两种典型的排序算法：起泡算法与归并算法。</div>
@@ -286,20 +293,20 @@
 </li>
 </ul>
 <p>虽然起泡排序可以做大量的改进，但从最坏情况而言它依然是注定也需要$O(n^2)$的时间，所以我们非常希望能够得到一个即便在最坏情况下也能够效率更高的排序算法，这也就是下一节所要介绍的内容。</p>
-<h1 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h1><p>采用包括Bubble sort在内的常规的基于比较式的算法（Comparison Based Algorithm），求解排序问题都存在一个下界$n<em>logn$。那么在$n^2$的上界到$n</em>logn$的下界之间是否存在一些其它的，相对于$n^2$而言更好的算法,甚至于是否有一个算法即使在最坏的情况下也只需要$n*logn$的时间就能完成排序呢？答案就蕴含在这一节的主题里<br>也就是归并排序（Merge Sort）。</p>
+<h1 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h1><p>采用包括Bubble sort在内的常规的基于比较式的算法（Comparison Based Algorithm），求解排序问题都存在一个下界$nlogn$。那么在$n^2$的上界到$nlogn$的下界之间是否存在一些其它的，相对于$n^2$而言更好的算法,甚至于是否有一个算法即使在最坏的情况下也只需要$nlogn$的时间就能完成排序呢？答案就蕴含在这一节的主题里<br>也就是归并排序（Merge Sort）。</p>
 <p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212224219.png" style="zoom: 50%;"></p>
 <p>归并排序算法是<strong>分治策略</strong>在算法设计中应用的又一个典型，这个算法最初是由冯·诺依曼编码实现的，所谓的分治策略在这里就是说将待排序的那个序列（向量或者列表）一分为二，这种分法很快捷只需要$O(1)$的时间，接下来 对于划分出的两个子序列分别去做递归地求解，也就是递归地排序。而当两个子序列已经分别有序之后，我们接下来要解决的一个问题就是将它们合并准确地讲是归并merge，从而构成一个完整的有序序列。</p>
 <p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212225508.png" style="zoom: 80%;"></p>
 <p>对于上面这样一个由8个元素组成的向量，首先是分沿左右划分为左和右两个子序列，这两个子序列递归地求解的过程中依然还是相对比较大，所以它们会继续递归地、各自地进行划分继续分为左左、左右以及右左和右右四个子序列。同样 它们还是不够平凡所以我们最后还要对这四个子序列继续地一分为二，最终八个元素各自成为一个独立的序列，这个时候从递归地角度讲就抵达了递归基，所有这些元素都已经不需要再继续划分下去了，因为它们各自有序了。</p>
 <p>所以如果说前面半层是做无序向量的递归分解，接下来就要通过逐层的合并使之逐渐地变成一个大一点的，更大一点的，直到最后那个有序的序列。我们可以看到每一次都是将两个已经是有序的子序列合并为一个有序的子序列，然后再继续相邻的子序列逐对地合并构成再更大的序列，最后左右这两个各自有序的子序列再逐对地合并最终得到整体的序列。</p>
-<p>那么如果果真能像这里所说的那样，我们就应该能够得到一个总体是$n*logn$的算法，可由下面的递推式证明：</p>
+<p>那么如果果真能像这里所说的那样，我们就应该能够得到一个总体是$nlogn$的算法，可由下面的递推式证明，其中$O(n)$是分与并累计的时间。</p>
 <script type="math/tex; mode=display">
 T(n)=2\cdot T(n/2)+O(n)</script><p>可以得到：$T(n)=O(nlogn)$。</p>
 <p>接下来的技术细节就是如何来兑现这一点呢？可以看到从这里的划分的过程是非常简单，递归也可以交给递归的机制去做，所以这里核心的任务是在怎么进行合并，或者准确地讲是怎么将两个已经有序的序列归并成一个更大的序列，这也是这个算法最关键的细节和技巧。</p>
 <p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212224639.png" style="zoom: 50%;"></p>
 <h2 id="主算法"><a href="#主算法" class="headerlink" title="主算法"></a>主算法</h2><p>把刚才的思路实现为这样一段具体的代码，和所有的递归程序一样首先要处理递归基，接下来开始实质的分也就是除二取到中点，这样的话我们可以将整体的一个序列分成左和右两部分，分别由<code>lo</code>和<code>mi</code>，以及<code>mi</code>和<code>hi</code>来界定。对于这两个序列，分别是递归调用自己，<code>mergeSort</code>前一个序列，<code>mergeSort</code>后一个序列。接下来最重要的实质的工作是在<code>merge</code>，下面不妨来通过一个实例来理解merge算法的原理</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//向量归并排序</span></span><br><span class="line"><span class="keyword">void</span> Vector&lt;T&gt;::mergeSort ( Rank lo, Rank hi ) &#123; <span class="comment">//0 &lt;= lo &lt; hi &lt;= size</span></span><br><span class="line">  <span class="keyword">if</span> ( hi - lo &lt; <span class="number">2</span> ) <span class="keyword">return</span>; <span class="comment">//单元素区间自然有序，否则...</span></span><br><span class="line">  <span class="keyword">int</span> mi = ( lo + hi ) / <span class="number">2</span>; <span class="comment">//以中点为界</span></span><br><span class="line">  mergeSort ( lo, mi ); </span><br><span class="line">  mergeSort ( mi, hi ); <span class="comment">//分别排序</span></span><br><span class="line">  merge ( lo, mi, hi ); <span class="comment">//归并</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="二路归并：原理"><a href="#二路归并：原理" class="headerlink" title="二路归并：原理"></a>二路归并：原理</h2><ul>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><ul>
 <li>2-way merge：将两个有序序列合并为一个有序序列 S[lo, hi) = S[lo, mi) + S[mi, hi)</li>
 </ul>
 <p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212233054.png" style="zoom:80%;"></p>
@@ -307,6 +314,15 @@ T(n)=2\cdot T(n/2)+O(n)</script><p>可以得到：$T(n)=O(nlogn)$。</p>
 <p>就这个例子而言首先取出的是这个2，我们将它择出来，相应地在摘除了首元素以后，后续的元素将逐次递补，也就是关注到新顶替上来的这个首元素上。同样在接下来的一轮比对中，我们考察这两个首元素的大小，并且同样地取出其中的更小的那个，4依然比5小所以4被取出，同样它的后继们会顶替上来对这个例子而言就是10。就这样逐步进行到图（h），直到最终一旦有一个向量已经变成空的，那么另一个向量所剩余的元素无论多少都直接串接在后边（因为剩余那部分必然是有序的）。</p>
 <p>按照这样的原理，我们确实可以得到一个更大的单调序列，这种二路归并的算法实际上是非常通用的一个版本，但在这里针对于归并排序而言的，我们实际上用到的是其中的一种特例，在这个时候参与归并的两个序列实际上是来自于同一个更大的向量，只不过是由其中的三个界桩也就是<code>lo</code>、<code>mi</code>和<code>hi</code>来联合定义的。如果左侧的这个向量称作B，右侧的称作C的话，那么合并起来的整体的这个向量就是A。那下一小节介绍针对这样一种特殊情况，二路归并算法应该如何实现。</p>
 <p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212234305.png" style="zoom:50%;"></p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//有序向量（区间）的归并</span></span><br><span class="line"><span class="keyword">void</span> Vector&lt;T&gt;::merge ( Rank lo, Rank mi, Rank hi )&#123;<span class="comment">//各自有序的子向量[lo, mi)和[mi, hi)</span></span><br><span class="line">  T* A = _elem + lo; <span class="comment">//合并后的向量A[0, hi - lo) = _elem[lo, hi)</span></span><br><span class="line">  <span class="keyword">int</span> lb = mi - lo; T* B = <span class="keyword">new</span> T[lb]; <span class="comment">//前子向量B[0, lb) = _elem[lo, mi)</span></span><br><span class="line">  <span class="keyword">for</span> ( Rank i = <span class="number">0</span>; i &lt; lb; i++ ) B[i] = A[i]; <span class="comment">//复制前子向量</span></span><br><span class="line">  <span class="keyword">int</span> lc = hi - mi; T* C = _elem + mi; <span class="comment">//后子向量C[0, lc) = _elem[mi, hi)</span></span><br><span class="line">  <span class="keyword">for</span> (Rank i = <span class="number">0</span>, j = <span class="number">0</span>, k = <span class="number">0</span>; (j &lt; lb) || (k &lt; lc); ) &#123;</span><br><span class="line">	  <span class="keyword">if</span> ((j &lt; lb) &amp;&amp; (lc &lt;= k || (B[j] &lt;= C[k]))) </span><br><span class="line">          A[i++] = B[j++];                          <span class="comment">//B更小，C[k]已无或不小</span></span><br><span class="line">	  <span class="keyword">if</span> ((k &lt; lc) &amp;&amp; (lb &lt;= j || (C[k] &lt;  B[j]))) </span><br><span class="line">          A[i++] = C[k++];                          <span class="comment">//C更小，或B[j]已无或更大</span></span><br><span class="line">  &#125;  <span class="comment">//该循环实现紧凑；但就效率而言，不如拆分处理</span></span><br><span class="line">  <span class="keyword">delete</span> [] B; <span class="comment">//释放临时空间B</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>解读一下上面的代码：首先需要将定义两个向量的三个界桩也就是<code>lo</code>、<code>mi</code>和<code>hi</code>作为参数传入，接下来要定义清楚ABC三个向量：首先A向量在这里将继续地保存在它输入的位置，准确地讲就是在<code>_elem</code>整个数据区中起自于最左侧的界桩<code>lo</code>的一段区间，可以直接令A指向这个区间的起点。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T* A = _elem + lo; <span class="comment">//合并后的向量A[0, hi - lo) = _elem[lo, hi)</span></span><br></pre></td></tr></table></figure>
+<p>接下来是左侧的子向量B，我们需要为这个子向量申请一段空间，它的宽度应该是<code>mi</code>到<code>lo</code>之间的距离，当然还需要将A中对应的那些元素，也就是左半部分的那些元素，逐一地取出来并且复制到新开辟的这段空间中去，从而完成整体的这个子向量B的一个缓冲。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> lb = mi - lo; T* B = <span class="keyword">new</span> T[lb]; <span class="comment">//前子向量B[0, lb) = _elem[lo, mi)</span></span><br><span class="line"><span class="keyword">for</span> ( Rank i = <span class="number">0</span>; i &lt; lb; i++ ) B[i] = A[i]; <span class="comment">//复制前子向量</span></span><br></pre></td></tr></table></figure>
+<p>最后是C，C非常的简单，实际上定义的就是在<code>_elem</code>数据区中，起始于<code>mi</code>的这段数据，那么不同的在于右侧的子向量C并不需要另辟空间进行缓存，尽管在这里为了说明的方便，还是将它画在了上边作为一个单独的子向量。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> lc = hi - mi; T* C = _elem + mi; <span class="comment">//后子向量C[0, lc) = _elem[mi, hi)</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200213000033.png" style="zoom:80%;"></p>
+<p>接下来就是最主要的这个循环，这也就是上节实例子所给的过程，具体来讲就是每一次我们都比较两个子向量当前的首元素取出其中更小的那个，比如说在for循环体中上面一句的情况下B更小，而在下面一句的情况下C更小，无论谁更小都把它转入到A中去。B和C首元素是由j和k这两个秩来标定的，在最初始的情况下它们都是0，分别指向B和C的第一个元素，在随后 每当有一个元素转移到A中，它们各自都会自加，从而指向下一个替补的新的首元素。</p>
 
     </div>
 
@@ -385,7 +401,7 @@ T(n)=2\cdot T(n/2)+O(n)</script><p>可以得到：$T(n)=O(nlogn)$。</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#排序器：统一接口"><span class="nav-number">1.</span> <span class="nav-text">排序器：统一接口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#起泡排序"><span class="nav-number">2.</span> <span class="nav-text">起泡排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#改进"><span class="nav-number">2.1.</span> <span class="nav-text">改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#再改进"><span class="nav-number">2.2.</span> <span class="nav-text">再改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#综合评价"><span class="nav-number">2.3.</span> <span class="nav-text">综合评价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#归并排序"><span class="nav-number">3.</span> <span class="nav-text">归并排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主算法"><span class="nav-number">3.1.</span> <span class="nav-text">主算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二路归并：原理"><span class="nav-number">3.2.</span> <span class="nav-text">二路归并：原理</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#排序器：统一接口"><span class="nav-number">1.</span> <span class="nav-text">排序器：统一接口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#起泡排序"><span class="nav-number">2.</span> <span class="nav-text">起泡排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#改进"><span class="nav-number">2.1.</span> <span class="nav-text">改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#再改进"><span class="nav-number">2.2.</span> <span class="nav-text">再改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#综合评价"><span class="nav-number">2.3.</span> <span class="nav-text">综合评价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#归并排序"><span class="nav-number">3.</span> <span class="nav-text">归并排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主算法"><span class="nav-number">3.1.</span> <span class="nav-text">主算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原理"><span class="nav-number">3.2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">3.3.</span> <span class="nav-text">实现</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
