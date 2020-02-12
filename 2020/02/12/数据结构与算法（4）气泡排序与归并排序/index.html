@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="如何将一个无序的向量转化为有序的向量，这就需要用到排序算法，本文针对向量介绍两种典型的排序算法：起泡算法与归并算法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（4）气泡排序与归并排序">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="如何将一个无序的向量转化为有序的向量，这就需要用到排序算法，本文针对向量介绍两种典型的排序算法：起泡算法与归并算法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200206133211.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212210120.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212211729.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212212729.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212214445.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212215502.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212215732.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212222027.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212220355.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212224219.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212225508.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212224639.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212233054.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200212234305.png">
+<meta property="article:published_time" content="2020-02-12T12:45:52.000Z">
+<meta property="article:modified_time" content="2020-02-12T15:45:44.051Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200206133211.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（4）气泡排序与归并排序 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（4）气泡排序与归并排序
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-12 20:45:52 / 修改时间：23:45:44" itemprop="dateCreated datePublished" datetime="2020-02-12T20:45:52+08:00">2020-02-12</time>
+            </span>
+
+          
+            <div class="post-description">如何将一个无序的向量转化为有序的向量，这就需要用到排序算法，本文针对向量介绍两种典型的排序算法：起泡算法与归并算法。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>通过之前的两篇文章我们可以知道有序向量相对于无序向量有着更多的优势，比如它的去重操作以及查找操作都可以更快速地完成，然而我们遗留下一个问题，就是如何将一个无序的向量转化为有序的向量，这就需要用到排序算法，本文针对向量介绍两种典型的排序算法，即起泡算法与归并算法。</p>
+<h1 id="排序器：统一接口"><a href="#排序器：统一接口" class="headerlink" title="排序器：统一接口"></a>排序器：统一接口</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">void</span> Vector&lt;T&gt;::sort ( Rank lo, Rank hi ) &#123; <span class="comment">//向量区间[lo, hi)排序</span></span><br><span class="line">  <span class="keyword">switch</span> ( rand() % <span class="number">6</span> ) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>:  bubbleSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//起泡排序</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">2</span>:  selectionSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//选择排序（习题）</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">3</span>:  mergeSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//归并排序</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">4</span>:  heapSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//堆排序（第12章）</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">5</span>:  quickSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//快速排序（第14章）</span></span><br><span class="line">    <span class="keyword">default</span>: shellSort ( lo, hi ); <span class="keyword">break</span>; <span class="comment">//希尔排序（第14章）</span></span><br><span class="line">  &#125; <span class="comment">//随机选择算法以充分测试。实用时可视具体问题的特点灵活确定或扩充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="起泡排序"><a href="#起泡排序" class="headerlink" title="起泡排序"></a>起泡排序</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//向量的起泡排序（基本版）</span></span><br><span class="line"><span class="keyword">void</span> Vector&lt;T&gt;::bubbleSort( Rank lo, Rank hi ) &#123; <span class="comment">//assert: 0 &lt;= lo &lt; hi &lt;= size</span></span><br><span class="line">  <span class="keyword">while</span>( lo &lt; --hi ) <span class="comment">//反复起泡扫描</span></span><br><span class="line">    <span class="keyword">for</span>( Rank i = lo; i &lt; hi; i++ ) <span class="comment">//逐个检查相邻元素</span></span><br><span class="line">      <span class="keyword">if</span>( _elem[i] &gt; _elem[i + <span class="number">1</span>] ) <span class="comment">//若逆序，则</span></span><br><span class="line">        swap( _elem[i], _elem[i + <span class="number">1</span>] ); <span class="comment">//经交换使局部有序</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在第一章曾以这个算法为例介绍过如何证明算法的正确性，这里按照刚才统一定义的形式将它整理为一个名为<code>bubbleSort</code>的算法接口。这个算法实际上可以认为是通过调用一个名为bubble的过程迭代地来进行，在每一迭代过程中都会考察当前介于<code>lo</code>和<code>hi</code>之间的所有相邻元素，只要有一对相邻元素是逆序的，就将它们交换，所以整个这样的一个过程也称作<strong>扫描交换</strong>。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200206133211.png" style="zoom: 50%;"></p>
+<p>这个算法的不变法具体来说，如果最初的这个向量是一个无序向量的话，那么每经过这样一趟对bubble的调用都会有一个新的元素就位，比如对于第一次而言就是全局最大的那个元素，这里用红色来表示就位的元素，那么当然互补地其它的部分也就是接下来要考察的问题的范围，就会相应地缩小一个单元，这也是减而治之。再接下来有序的部分会继续地拓展，而无序的部分会继续地缩减，整个呈现为一个不断此消绿色的这部分，和彼涨红色的这部分<br>这样一个过程，直到无序的部分只剩下一个元素。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212210120.png" style="zoom:80%;"></p>
+<p>不难看出每一趟对bubble的调用所需要的时间都线性正比于绿色无序部分的宽度，整体地呈现为一个算术级数的形式，所以它的总体量与它的末项成平方关系，即$O(n^2)$。然而我们并不满足于这样的结果，至少在很多情况下都是有可能改进的。</p>
+<h2 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h2><p>可以看到这里的红色部分确实必然是有序的，但是绿色的部分未必都是无序的，事实上比如这个时候有可能其中会有一部分元素，甚至所有的元素都是有序的。那么如何尽早地判定出这种情况，从而提前结束这个算法呢？这里依赖的准则与算法最初的判定准则是一样的，也就是一个向量包括一个区间如果是完全有序的，当且仅当其中任何一对相邻的元素都是彼此顺序的，而实际上在刚刚进行完的前一次迭代中我们在某种意义上已经做过这种类似的检查了。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212211729.png" style="zoom: 67%;"></p>
+<p>由此可以得出一个改进的策略：在每一次扫描交换的过程中不妨记录一下是否曾经真的存在逆序元素，如果存在的话它的充要条件是在此前做过一次交换，所以我们只要来记录一下在当下这趟扫描交换过程中是否曾经做过至少一次扫描交换，如果没有做过那么后续的各趟其实都可以省略掉，从而在实际的运行时间上有可能会有所减少，甚至大大减少。这是一个很好的策略，我们不妨把这个策略整理为下面的一段代码。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> Vector&lt;T&gt;::bubbleSort(Rank lo,Rank hi)&#123;</span><br><span class="line">	<span class="keyword">while</span> (!bubble(lo, hi--));</span><br><span class="line">&#125;  <span class="comment">//逐趟做扫描交换，直至全序</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> Vector&lt;T&gt;::bubble(Rank lo, Rank hi) &#123;</span><br><span class="line">	<span class="keyword">bool</span> sorted = ture;  <span class="comment">//整体有序标志</span></span><br><span class="line">	<span class="keyword">while</span>(++lo &lt; hi)&#123;    <span class="comment">//自左向右，逐一检查各相邻元素</span></span><br><span class="line">		<span class="keyword">if</span> (_elem[lo - <span class="number">1</span>] &gt; _elem[lo]) &#123;    <span class="comment">//若逆序，则</span></span><br><span class="line">			sorted = <span class="literal">false</span>;                 <span class="comment">//意味着尚未整体有序，并需要</span></span><br><span class="line">			swap(_elem[lo - <span class="number">1</span>], _elem[lo]); <span class="comment">//交换</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> sorted;  <span class="comment">//返回有序标志</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>原算法整体运行时间确实可以度量为一个三角形的面积，那么对于新的改进的这个算法，它固然要做第一趟扫描交换也许还需进行若干次扫描交换，但是在某些情况下它有可能会发现不光此后的部分已经有序了，而且这个前缀也已经完全有序了，所以这时它就会及时地跳转到最后，聪明地绕过这些完全可以绕过的计算量。因此与刚才那样对比新的这个算法所执行的计算量可以度量为这样一个梯形，而不是原来的三角形，也就是说很多情况下都可以节省一定的甚至是相当多的时间。不过我们对这个算法的改进并不满足于此因为我们发现在一些其它或者说在更多的情况下，这个算法依然存在继续改进的空间。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212212729.png" style="zoom:50%;"></p>
+<h2 id="再改进"><a href="#再改进" class="headerlink" title="再改进"></a>再改进</h2><p>考察这样一个向量，假设它可以分为长度相差悬殊的一个前缀以及后缀，而且后缀中的元素都已按顺序排列并严格地就位，当然相应地所有的乱序元素都集中分布于这样一个相对更短的前缀中。对于这样的一个实例，上节中已经做过优化的起泡排序算法会如何表现呢？</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212214445.png" style="zoom: 67%;"></p>
+<p>首先它需要做第一趟完整地扫描交换，并且确认在最后这个位置有一个元素就位，虽然它原本就是就位的。请注意虽然这个时候在这个后缀中，存在着大量的就位元素，但因为在前缀中刚才存在交换，<code>bubble</code>算法会返回false，那么算法接下来还会继续下去。尽管能够判定的就位元素数目会继续增加，但是与刚才同理，我们依然不能确认可以提前退出，接下来还需要进行若干次的扫描交换。那么对于这样的一个例子，总体而言需要的扫描交换的趟数不会超过这个前缀的长度<code>r</code>。</p>
+<p>因为此前所做的各趟扫描交换，与其说是在对绿色的范围做处理，不如说实际影响的是这个前缀中的倒数第一个<br>倒数第二个 以及倒数第三个，即是在这个前缀中后面的那些元素。每一趟扫描交换所起的实质作用无非是在这样一个前缀中，令其中的一个一个的后缀元素依次就位，直到整个这个前缀中的元素完全就位。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212215502.png" style="zoom:67%;"></p>
+<p>因此这个算法总体消耗的时间应该是n乘以r，如果r取作根号n，相应地也就是n的1.5次方，即$O(n^{1.5})$。但如果能及时地检测出这样一种情况，也就是实质需要排序的元素集中在一个宽度仅为$\sqrt{n}$的区间中，而不是整个向量。那么即使套用最原始的起泡排序算法，所需要的时间也无非是$O((\sqrt{n})^2)=O(n)$。问题是如何才能够完成从1.5次方到一次方的优化转换呢？</p>
+<p>重新审视上面的例子，所多余出来的时间消耗无非是在后缀中，对这些已就位元素的反复扫描交换，不难理解这些元素都是不必扫描交换的，可惜此前的算法版本未能及时地将它们分解出来，但它们实际上是可以分解出来的。</p>
+<p>比如说如果我们通过某一种方法记录在上一趟扫描交换过程中所进行的最后一次交换，就很容易确定在上一趟扫描的区间中有一个多长的后缀实际上没有做过任何交换，也就是说它们中的元素都是已经就位了的。如果能这样只需要将原先的右侧标志<code>hi</code>直接地指向这个新的位置，而不是像刚才那样亦步亦趋地、逐个地收缩。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212215732.png" style="zoom:50%;"></p>
+<p>基于以上的分析不难得到下面的新的改进的方法，从结构上看跟刚才大体类似，依然是逐个地检查所有的相邻对，如果是逆序的就做交换，不同之处在于这里我们所记录的不再只是一个逻辑性变量，而是一个名为<code>last</code>的整型或者说是秩，它的初值是取作lo，而每当需要交换就将这个<code>last</code>更新为新的位置。在整个算法的过程中<code>lo</code>这个变量是持续递增的，所以当它在返回的时候，<code>last</code>确实名副其实地记录了最右侧也就是最后一对逆序对的位置。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> Vector&lt;T&gt;::bubbleSort(Rank lo,Rank hi)&#123;</span><br><span class="line">	<span class="keyword">while</span> (!bubble(lo, hi--));</span><br><span class="line">&#125;  <span class="comment">//逐趟做扫描交换，直至全序</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> Vector&lt;T&gt;::bubble(Rank lo, Rank hi) &#123;</span><br><span class="line">	Rank last = lo;  <span class="comment">//最右侧的逆序对初始化为[lo-1, lo]</span></span><br><span class="line">	<span class="keyword">while</span>(++lo &lt; hi)&#123;    <span class="comment">//自左向右，逐一检查各相邻元素</span></span><br><span class="line">		<span class="keyword">if</span> (_elem[lo - <span class="number">1</span>] &gt; _elem[lo]) &#123;    <span class="comment">//若逆序，则</span></span><br><span class="line">			last = lo;                 <span class="comment">//更新最右侧逆序对位置记录，并</span></span><br><span class="line">			swap(_elem[lo - <span class="number">1</span>], _elem[lo]); <span class="comment">//交换</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> last;  <span class="comment">//返回有序标志</span></span><br><span class="line">&#125;  <span class="comment">//前一版本中的逻辑型标志sorted，改为秩last</span></span><br></pre></td></tr></table></figure>
+<p>这样我们就可以有效地来处理刚才那种情况，回到刚才那个实例，我们构造了一个足够短的乱序前缀再加一个非常长但是已经就绪了的后缀。新的算法首先也会做一趟扫描交换，当然为此花费的时间是$O(n)$。但是与刚才那个版本的不同，在这个时候它会检测出发生的最后一次扫描交换绝对不会超过绿色末尾的位置，将扫描交换的右侧界桩<code>hi</code>一次性地挪到那里，这等效于判断出了此后的这些元素包括最后那个元素都是已经就位的。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212222027.png" style="zoom: 50%;"></p>
+<p>从算法的流程来说我们的下一趟扫描交换的区间，就不再是原先整个那个绿色的区间，而是相对要短很多的一个区间。接下来等效于只是对这样一段区间做扫描交换，因此需要花费的时间除了刚才的$O(n)$以外，主要是对应于这样的一个更小的三角形，如果边长是$\sqrt{n}$，累计也不过是再加上一个$O(n)$，与刚才的$O(n)$合并，总体不过是$O(n)$，更有意思的是这种情况在整个排序过程中有可能会多次出现。</p>
+<p>我们也可以通过图形的方式，形象地将新的这个算法版本与之前的原始版本在时间效率上做一个对比。这个三角形 代表的是原始的起泡排序算法所需要的时间。新版本的算法所需要执行的扫描交换将会呈现为连续的一段。然后再间或地跳跃到下面一段以及再间或地有可能会跳跃到下面一段（深色部分）。换而言之这个算法的时间成本将取决于这样一个一个若干个梯形的面积总和，相对于此前那个梯形来说这种梯形的划分更加的精细，所以它节省下来的时间也会在通常的情况下相对更多。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212220355.png" style="zoom:50%;"></p>
+<p>当然在最坏的情况下这个算法依然是于事无补的，起泡排序依然注定需要$O(n^2)$的时间。</p>
+<h2 id="综合评价"><a href="#综合评价" class="headerlink" title="综合评价"></a>综合评价</h2><ul>
+<li><p>三种起泡排序在最好和最坏情况下的效率相同：最好$O(n)$，最坏$O(n^2)$</p>
+</li>
+<li><p>输入含重复元素时，算法的稳定性（stability）是更为细致的要求</p>
+<p>重复元素在输入，输出序列中的相对次序，是否保持不变？（在某些问题中很敏感）</p>
+<p>​        输入：$6,7_a,3,2,7_b,1,5,8,7_c,4$</p>
+<p>​        输出：$1,2,3,4,5,6,7_a,7_b,7_c,8$      //stable</p>
+<p>​                    $1,2,3,4,5,6,7_a,7_c,7_b,8$     //unstable</p>
+</li>
+<li><p>三种起<strong>泡排序算法都是稳定</strong>的，因为在起泡排序中，元素$7_a$和$7_b$的相对位置发生变化，只有一种可能：</p>
+<p>​        经分别与其他元素的交换，二者相互接近直至相邻</p>
+<p>​        在接下来一轮扫描交换中，二者因逆序而交换位置</p>
+<p>而起泡排序中交换，即if的判断条件是<code>_elem[lo - 1] &gt; _elem[lo])</code>，严格大于，因此不会出现上面的情况</p>
+</li>
+</ul>
+<p>虽然起泡排序可以做大量的改进，但从最坏情况而言它依然是注定也需要$O(n^2)$的时间，所以我们非常希望能够得到一个即便在最坏情况下也能够效率更高的排序算法，这也就是下一节所要介绍的内容。</p>
+<h1 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h1><p>采用包括Bubble sort在内的常规的基于比较式的算法（Comparison Based Algorithm），求解排序问题都存在一个下界$n<em>logn$。那么在$n^2$的上界到$n</em>logn$的下界之间是否存在一些其它的，相对于$n^2$而言更好的算法,甚至于是否有一个算法即使在最坏的情况下也只需要$n*logn$的时间就能完成排序呢？答案就蕴含在这一节的主题里<br>也就是归并排序（Merge Sort）。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212224219.png" style="zoom: 50%;"></p>
+<p>归并排序算法是<strong>分治策略</strong>在算法设计中应用的又一个典型，这个算法最初是由冯·诺依曼编码实现的，所谓的分治策略在这里就是说将待排序的那个序列（向量或者列表）一分为二，这种分法很快捷只需要$O(1)$的时间，接下来 对于划分出的两个子序列分别去做递归地求解，也就是递归地排序。而当两个子序列已经分别有序之后，我们接下来要解决的一个问题就是将它们合并准确地讲是归并merge，从而构成一个完整的有序序列。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212225508.png" style="zoom: 80%;"></p>
+<p>对于上面这样一个由8个元素组成的向量，首先是分沿左右划分为左和右两个子序列，这两个子序列递归地求解的过程中依然还是相对比较大，所以它们会继续递归地、各自地进行划分继续分为左左、左右以及右左和右右四个子序列。同样 它们还是不够平凡所以我们最后还要对这四个子序列继续地一分为二，最终八个元素各自成为一个独立的序列，这个时候从递归地角度讲就抵达了递归基，所有这些元素都已经不需要再继续划分下去了，因为它们各自有序了。</p>
+<p>所以如果说前面半层是做无序向量的递归分解，接下来就要通过逐层的合并使之逐渐地变成一个大一点的，更大一点的，直到最后那个有序的序列。我们可以看到每一次都是将两个已经是有序的子序列合并为一个有序的子序列，然后再继续相邻的子序列逐对地合并构成再更大的序列，最后左右这两个各自有序的子序列再逐对地合并最终得到整体的序列。</p>
+<p>那么如果果真能像这里所说的那样，我们就应该能够得到一个总体是$n*logn$的算法，可由下面的递推式证明：</p>
+<script type="math/tex; mode=display">
+T(n)=2\cdot T(n/2)+O(n)</script><p>可以得到：$T(n)=O(nlogn)$。</p>
+<p>接下来的技术细节就是如何来兑现这一点呢？可以看到从这里的划分的过程是非常简单，递归也可以交给递归的机制去做，所以这里核心的任务是在怎么进行合并，或者准确地讲是怎么将两个已经有序的序列归并成一个更大的序列，这也是这个算法最关键的细节和技巧。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212224639.png" style="zoom: 50%;"></p>
+<h2 id="主算法"><a href="#主算法" class="headerlink" title="主算法"></a>主算法</h2><p>把刚才的思路实现为这样一段具体的代码，和所有的递归程序一样首先要处理递归基，接下来开始实质的分也就是除二取到中点，这样的话我们可以将整体的一个序列分成左和右两部分，分别由<code>lo</code>和<code>mi</code>，以及<code>mi</code>和<code>hi</code>来界定。对于这两个序列，分别是递归调用自己，<code>mergeSort</code>前一个序列，<code>mergeSort</code>后一个序列。接下来最重要的实质的工作是在<code>merge</code>，下面不妨来通过一个实例来理解merge算法的原理</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//向量归并排序</span></span><br><span class="line"><span class="keyword">void</span> Vector&lt;T&gt;::mergeSort ( Rank lo, Rank hi ) &#123; <span class="comment">//0 &lt;= lo &lt; hi &lt;= size</span></span><br><span class="line">  <span class="keyword">if</span> ( hi - lo &lt; <span class="number">2</span> ) <span class="keyword">return</span>; <span class="comment">//单元素区间自然有序，否则...</span></span><br><span class="line">  <span class="keyword">int</span> mi = ( lo + hi ) / <span class="number">2</span>; <span class="comment">//以中点为界</span></span><br><span class="line">  mergeSort ( lo, mi ); </span><br><span class="line">  mergeSort ( mi, hi ); <span class="comment">//分别排序</span></span><br><span class="line">  merge ( lo, mi, hi ); <span class="comment">//归并</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="二路归并：原理"><a href="#二路归并：原理" class="headerlink" title="二路归并：原理"></a>二路归并：原理</h2><ul>
+<li>2-way merge：将两个有序序列合并为一个有序序列 S[lo, hi) = S[lo, mi) + S[mi, hi)</li>
+</ul>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212233054.png" style="zoom:80%;"></p>
+<p>首先（a）图给出了两个各自有序的子序列，二路归并算法的要诀就是我们只需要把注意力关注在这两个序列的首元素上，这样一个虚线的方框是我们的关注焦点，其余的元素可以暂时不用顾及。那么我们取出这两个序列各自的首元素的时候，都要从中挑选出更小的那个元素，如果是两者相等的话，可以任意取一个。<br>比如 就这个例子而言</p>
+<p>就这个例子而言首先取出的是这个2，我们将它择出来，相应地在摘除了首元素以后，后续的元素将逐次递补，也就是关注到新顶替上来的这个首元素上。同样在接下来的一轮比对中，我们考察这两个首元素的大小，并且同样地取出其中的更小的那个，4依然比5小所以4被取出，同样它的后继们会顶替上来对这个例子而言就是10。就这样逐步进行到图（h），直到最终一旦有一个向量已经变成空的，那么另一个向量所剩余的元素无论多少都直接串接在后边（因为剩余那部分必然是有序的）。</p>
+<p>按照这样的原理，我们确实可以得到一个更大的单调序列，这种二路归并的算法实际上是非常通用的一个版本，但在这里针对于归并排序而言的，我们实际上用到的是其中的一种特例，在这个时候参与归并的两个序列实际上是来自于同一个更大的向量，只不过是由其中的三个界桩也就是<code>lo</code>、<code>mi</code>和<code>hi</code>来联合定义的。如果左侧的这个向量称作B，右侧的称作C的话，那么合并起来的整体的这个向量就是A。那下一小节介绍针对这样一种特殊情况，二路归并算法应该如何实现。</p>
+<p><img src="/2020/02/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%884%EF%BC%89%E6%B0%94%E6%B3%A1%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/QQ图片20200212234305.png" style="zoom:50%;"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/11/ML-Week1/" rel="prev" title="ML:Week1">
+      <i class="fa fa-chevron-left"></i> ML:Week1
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#排序器：统一接口"><span class="nav-number">1.</span> <span class="nav-text">排序器：统一接口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#起泡排序"><span class="nav-number">2.</span> <span class="nav-text">起泡排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#改进"><span class="nav-number">2.1.</span> <span class="nav-text">改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#再改进"><span class="nav-number">2.2.</span> <span class="nav-text">再改进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#综合评价"><span class="nav-number">2.3.</span> <span class="nav-text">综合评价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#归并排序"><span class="nav-number">3.</span> <span class="nav-text">归并排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主算法"><span class="nav-number">3.1.</span> <span class="nav-text">主算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二路归并：原理"><span class="nav-number">3.2.</span> <span class="nav-text">二路归并：原理</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
