@@ -58,7 +58,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/04/Cpp%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1/QQ%E5%9B%BE%E7%89%8720200209205450.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/04/Cpp%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1/QQ%E5%9B%BE%E7%89%8720200209232217.png">
 <meta property="article:published_time" content="2020-02-04T08:09:38.000Z">
-<meta property="article:modified_time" content="2020-02-09T15:25:01.930Z">
+<meta property="article:modified_time" content="2020-02-14T11:35:17.150Z">
 <meta property="article:author" content="nekomoon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/04/Cpp%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1/QQ%E5%9B%BE%E7%89%8720200204174646.png">
@@ -220,7 +220,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-09 23:25:01" itemprop="dateModified" datetime="2020-02-09T23:25:01+08:00">2020-02-09</time>
+                <time title="修改时间：2020-02-14 19:35:17" itemprop="dateModified" datetime="2020-02-14T19:35:17+08:00">2020-02-14</time>
               </span>
 
           
@@ -367,10 +367,12 @@
 <li>类中的成员是另外其他类的对象；</li>
 <li>可以在已有抽象的基础上实现更复杂的抽象。</li>
 </ul>
+<p><strong>成员对象</strong>：一个类的成员变量是另一个类的对象</p>
+<p>包含成员对象的类叫<strong>封闭类</strong>（Enclosing）</p>
 <h2 id="类组合的构造函数设计"><a href="#类组合的构造函数设计" class="headerlink" title="类组合的构造函数设计"></a>类组合的构造函数设计</h2><p>那么组合类的构造函数如何设计呢？每个类的构造函数都是负责自己本类成员初始化的，如果用另外类的对象作为新定义类的成员，那么这个组合类是没有权利去访问部件对象内部的私有成员。因为一个类的私有成员只有这个类内部的函数可以访问，类外任何地方是不可以访问的，而且部件类的设计者、开发者，跟组合类的设计者  开发者可能不是一个人，甚至不是一个团队。因此在写组合类的构造函数时要考虑，由组合类的构造函数负责将部件对象初始化所需要的初始化参数传递给它，然后编译器会自动去调用部件类的构造函数，来初始化这些部件对象。其语法形式如下：</p>
 <ul>
 <li>原则：不仅要负责对本类中的基本类型成员数据初始化，也要对对象成员初始化。</li>
-<li>声明形式：</li>
+<li>声明形式：<strong>初始化列表</strong></li>
 </ul>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">类名::类名(对象成员所需的形参，本类成员形参):</span><br><span class="line">    对象<span class="number">1</span>(参数), 对象<span class="number">2</span>(参数),......</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//函数体其他语句</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <h3 id="构造组合类对象时的初始化次序"><a href="#构造组合类对象时的初始化次序" class="headerlink" title="构造组合类对象时的初始化次序"></a>构造组合类对象时的初始化次序</h3><ul>
@@ -380,6 +382,25 @@
 </ul>
 </li>
 <li>处理完初始化化列表之后，再执行构造函数的函数体</li>
+</ul>
+<p>也可以这样理解，<strong>构造函数和析构函数的调用顺序</strong>：</p>
+<ul>
+<li>当封闭类对象生成时：<ul>
+<li>S1：执行所有成员对象的构造函数</li>
+<li>S2：执行封闭类的构造函数</li>
+</ul>
+</li>
+<li>成员对象的构造函数调用顺序<ul>
+<li>和成员对象在类中的说明顺序一致</li>
+<li>与在成员初始化列表中出现的顺序无关</li>
+</ul>
+</li>
+<li>当封闭类的对象消亡时<ul>
+<li>S1：先执行封闭类的析构函数</li>
+<li>S2：再执行成员对象的析构函数</li>
+</ul>
+</li>
+<li>析构函数顺序和构造函数的调用顺序相反（先构造的后析构，后构造的先析构）</li>
 </ul>
 <p>需要注意的是，我们在写类的构造函数时，<strong>最好再写一个无参数的默认构造函数</strong>。当这个类的对象被用作其他类的部件成员时，可能组合类中没有写构造函数只使用默认构造函数，这个时候我们上面的操作就显得很必要了。</p>
 <p><strong>例子</strong>：构造一个<code>Point</code>类，再用<code>Point</code>类构造组合类<code>Line</code>类，通过构造函数和复制构造函数中的“调试信息”（<code>cout&lt;&lt;</code>……）可以更好地理解构造函数和复制构造函数的调用过程。</p>
