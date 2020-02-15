@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文针对列表这种结构的特点，介绍两种典型的排序算法：选择排序与插入排序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（6）选择排序与插入排序">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文针对列表这种结构的特点，介绍两种典型的排序算法：选择排序与插入排序。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215194320.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215194329.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215194333.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215194341.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215203558.png">
+<meta property="article:published_time" content="2020-02-15T11:22:47.000Z">
+<meta property="article:modified_time" content="2020-02-15T12:47:02.711Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ%E5%9B%BE%E7%89%8720200215194320.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（6）选择排序与插入排序 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（6）选择排序与插入排序
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-15 19:22:47 / 修改时间：20:47:02" itemprop="dateCreated datePublished" datetime="2020-02-15T19:22:47+08:00">2020-02-15</time>
+            </span>
+
+          
+            <div class="post-description">本文针对列表这种结构的特点，介绍两种典型的排序算法：选择排序与插入排序。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h1><p>与向量那一章的做法一样列表这一章的接下来几节，也将针对列表这种结构的特点介绍几种典型的排序算法，这一节要介绍的是选择排序。</p>
+<h2 id="构思"><a href="#构思" class="headerlink" title="构思"></a>构思</h2><p>选择排序在生活中其实很常见，举个例子，假设有一篮子苹果或大或小，如果你需要从小到大把它们排成一个序列，那你会怎么做呢？常用的一种方法应该是这样的：首先在其中挑选出最大的，接下来在剩下的中挑选出最大的，即整体中次大的，如此反复，直到篮子中只剩下最后那只苹果。</p>
+<p>可以看出在这个过程中我们所采用的策略，原则非常的简单，就是每一次只需在篮子中找出当前最大的那只苹果，并且随即将它转移到桌子上。这里每一步所做的实质的关键动作就是所谓的选择select，而基于这样一种选择过程和策略的排序算法就叫作<strong>选择排序</strong>（selection sort）。</p>
+<p><img src="/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ图片20200215194320.png" style="zoom:50%;"></p>
+<p>回顾一下此前所介绍过的起泡排序bubble sort，其实它也是selection sort。在起泡算法的过程中它的不变性可以表述为整个序列总是可以分成前后两个部分，其中后面的一个部分是由一系列已经就位的元素组成的，它们构成了一个有序的sorted的部分；而前半部分的元素数值的分布是随机的或大或小，但是就数值而言它们都绝对不会超过图中的黄线。这个算法是由一趟又一趟的扫描交换构成的，在接下来的一趟扫描交换中最实质的操作实际上是当前最大的那个元素和其后的元素不断地交换，直到它最终被移送到黄色区域的末尾。于是这个有序的S部分就可以向左侧拓展，这也就是起泡排序算法的单调性。</p>
+<p><img src="/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ图片20200215194329.png" style="zoom:50%;"></p>
+<p>纵观这个过程并且与上面的选择排序做一对比，我们会发现二者之间的<strong>相似之处</strong>：也就是每一次扫描交换的作用其实实质上都等价于找到这个最大节点，并且随即将它转移至有序和无序子序列的分界点。从这个角度来看<br>起泡排序确实就是一个不折不扣的选择排序。</p>
+<p>那反过来既然如此还有什么必要去专门讨论选择排序呢？原因在于起泡排序的效率太低，在最坏情况下它需要$O(n^2)$的时间，而借助列表结构这个效率是完全可以改进的。在起泡排序的过程中所执行的计算无非两类，一类就是相邻元素的比较，另一类才是元素位置的交换。然而很遗憾在这里将最大元素转移至合适的位置这样一个任务，是由一系列的短距离实际上是相邻元素之间的移动构成的，这种“小步慢跑式”的移动正是低效率的来源。</p>
+<p><img src="/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ图片20200215194333.png" style="zoom: 45%;"></p>
+<p>所以既然我们最终无非就是要将这个最大的元素挪到最终的位置，为何不直接一次性地来完成这项工作呢？这正是我们改进的思路。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>选择排序selection sort可以实现为下面一段代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//列表的选择排序算法：对起始于位置p的n个元素排序，valid(p) &amp;&amp; rank(p) + n &lt;= size</span></span><br><span class="line"><span class="keyword">template</span> &lt; <span class="keyword">typename</span> T&gt; <span class="keyword">void</span> List&lt;T&gt;::selectionSort(Posi(T) p, <span class="keyword">int</span> n) &#123; </span><br><span class="line">	 Posi(T) head = p-&gt;pred; ePosi(T) tail = p;  <span class="comment">//待排序区间为(head, tail)</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) tail = tail-&gt;succ;  <span class="comment">//head/tail可能是头/尾哨兵</span></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span> &lt; n) &#123; <span class="comment">//反复从（非平凡的）待排序区间内找出最大者，并将其移至无序区间末尾</span></span><br><span class="line">       insertBefore(tail, <span class="built_in">remove</span>(selectMax(head-&gt;succ, n))); </span><br><span class="line">       tail = tail-&gt;pred; n--;   <span class="comment">//待排序区间、有序区间的范围、均同步更新</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意一下这个接口的语义，待排序的元素实际上是在列表中起始于位置<code>p</code>的连续<code>n</code>个元素，在下面的图示中，如果<code>L</code>是整个的列表那么待排序的区间，从节点p开始第n个节点是用虚线表示的，言下之意这里依然采用了此前<strong>左闭右开的区间定义习惯</strong>。相应地 这里引入了两个界桩<code>head</code>和<code>tail</code>。</p>
+<p><img src="/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ图片20200215194341.png" style="zoom: 50%;"></p>
+<p>经过入口处预处理的两步，<code>head</code>和<code>tail</code>分别对应的位置就是在这个图中的<code>h</code>以及<code>p+n</code>，在接下来的循环中 <code>head</code>始终不变，而<code>tail</code>会每次向前移动一个节点。而从tail开始到最初的界桩之间的范围正是已经排序的区间，而尚未排序的的前缀U是从<code>p</code>一直到<code>T</code>左闭右开的区间，这也是这个算法的不变性。</p>
+<p>从算法可以看出每次我们都调用<code>selectMax</code>的接口，从前缀U这个区间中找到当前的最大者，n会随着迭代地进行相应地下降，从记录前缀U的宽度。在这个图中被选取出来的最大节点以M来表示，我们将M节点摘出来<br>插入至S区间的首节点，<code>tail</code>的前端，相当于将M移动到此前的<code>T</code>的紧邻左侧，并且随即将<code>T</code>移动到新的这个节点处（M处），从而使有序的部分向左拓展一个单元。这个算法将持续地迭代下去，直到n最终缩减到平凡的情况，从而完成整个指定区域的排序。</p>
+<h2 id="推敲"><a href="#推敲" class="headerlink" title="推敲"></a>推敲</h2><p>现在来重新审视一下这个算法并且对其中的几个细节来做一推敲，第一个问题是算法中套用了此前所实现的<code>remove</code>和<code>insert</code>这两个标准的操作接口，使整个代码实现更加简洁，但从效率而言还是值得推敲的。这其中的原因在于，这两个操作都要使用到动态空间分配，也就是<code>insert</code>的时候必须要用<code>new</code>，<code>remove</code>的时候需要<code>delete</code>。</p>
+<p>虽然这两个操作都可以大致认为依然是常数的时间复杂度，但是从实际的时间消耗而言它大致是通常的基本操作的一百倍，也就是说要高出两个数量级，因此在实际中这一对操作应该尽可能少的使用。就这个意义而言，或许应该改用另外一种实现方式，比如可以只通过对M处和T处局部引用的修改，来实现同样的功能；另外一种可行的方式就是只需将M与T当前的前驱直接交换它们的数据域即可。</p>
+<p><img src="/2020/02/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%886%EF%BC%89%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/QQ图片20200215203558.png" style="zoom:67%;"></p>
+<p>另一问题是有些情况下，对M的搬动操作其实是不必进行的，如果这个最大节点M恰好正是<code>tail</code>的直接前驱<br>那么它自然已经就位，当然也就无需搬动了。基于这个观察，或许你会倾向于去做这样一种优化：在搬运M前加一条if语句。这样一种改进的方式本身的确是可行的，但是我们并不认为这是一个优化，其中的原因在于，在通常的随机分布下这种情况出现的概率极低（$\ln n/n \to 0$），以致于我们这里所做的这种所谓的优化会得不偿失。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/14/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%885%EF%BC%89%E5%88%97%E8%A1%A8/" rel="prev" title="数据结构与算法（5）列表">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（5）列表
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#选择排序"><span class="nav-number">1.</span> <span class="nav-text">选择排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#构思"><span class="nav-number">1.1.</span> <span class="nav-text">构思</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">1.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推敲"><span class="nav-number">1.3.</span> <span class="nav-text">推敲</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
