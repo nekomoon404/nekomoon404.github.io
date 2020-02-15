@@ -62,7 +62,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/13/ML-Week2/QQ%E5%9B%BE%E7%89%8720200215105140.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/02/13/ML-Week2/QQ%E5%9B%BE%E7%89%8720200215105310.png">
 <meta property="article:published_time" content="2020-02-13T09:43:58.000Z">
-<meta property="article:modified_time" content="2020-02-15T04:02:23.828Z">
+<meta property="article:modified_time" content="2020-02-15T04:37:08.047Z">
 <meta property="article:author" content="nekomoon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/13/ML-Week2/QQ%E5%9B%BE%E7%89%8720200213200014.png">
@@ -224,7 +224,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-15 12:02:23" itemprop="dateModified" datetime="2020-02-15T12:02:23+08:00">2020-02-15</time>
+                <time title="修改时间：2020-02-15 12:37:08" itemprop="dateModified" datetime="2020-02-15T12:37:08+08:00">2020-02-15</time>
               </span>
 
           
@@ -255,12 +255,12 @@ h_θ(x)=θ_0+θ_1x_1+θ_2x_2+θ_3x_3+⋯+θ_nx_n</script><p>In order to develop 
 \begin{align*}& \text{repeat until convergence:} \; \lbrace \newline \; & \theta_j := \theta_j - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)} \; & \text{for j := 0...n}\newline \rbrace\end{align*}</script><p>The following image compares gradient descent with one variable to gradient descent with multiple variables:</p>
 <p><img src="/2020/02/13/ML-Week2/QQ图片20200213200014.png" style="zoom: 50%;"></p>
 <p><strong>Python</strong>代码示例：</p>
-<p>计算代价函数：$J\left( \theta  \right)=\frac{1}{2m}\sum\limits<em>{i=1}^{m}{\left( h</em>{\theta}\left( x^{(i)} \right)-y^{(i)} \right)}^2$<br>其中：$h<em>{\theta}\left( x \right)=\theta^{T}X=\theta</em>{0}x<em>{0}+\theta</em>{1}x<em>{1}+\theta</em>{2}x<em>{2}+…+\theta</em>{n}x_{n}$</p>
+<p>计算代价函数：$J\left( \theta  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{\left( h_{\theta}\left( x^{(i)} \right)-y^{(i)} \right)}^2$<br>其中：$h_{\theta}\left( x \right)=\theta^{T}X=\theta_{0}x_{0}+\theta_{1}x_{1}+\theta_{2}x_{2}+…+\theta_{n}x_{n}$</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">computeCost</span><span class="params">(X, y, theta)</span>:</span></span><br><span class="line">    inner = np.power(((X * theta.T) - y), <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> np.sum(inner) / (<span class="number">2</span> * len(X))</span><br></pre></td></tr></table></figure>
 <h2 id="Gradient-Descent-in-Practice-I-Feature-Scaling"><a href="#Gradient-Descent-in-Practice-I-Feature-Scaling" class="headerlink" title="Gradient Descent in Practice I -Feature Scaling"></a>Gradient Descent in Practice I -Feature Scaling</h2><p>We can <strong>speed up gradient descent</strong> by having each of our input values in roughly the same range. This is because <strong>θ will descend quickly on small ranges</strong> and slowly on large ranges, and so will oscillate inefficiently down to the optimum when the variables are very uneven.</p>
 <p><img src="/2020/02/13/ML-Week2/QQ图片20200213201445.png" style="zoom: 50%;"></p>
 <p>The way to prevent this is to modify the ranges of our input variables so that they are all roughly the same. Ideally:</p>
-<p>−1 ≤ $x<em>{(i)}$≤ 1     or      −0.5 ≤ $x</em>{(i)}$ ≤ 0.5</p>
+<p>−1 ≤ $x_{(i)}$≤ 1     or      −0.5 ≤ $x_{(i)}$ ≤ 0.5</p>
 <p>Two techniques to help with this are <strong>feature scaling</strong>(特征缩放) and <strong>mean normalization</strong>(均值归一化). </p>
 <p>Feature scaling involves dividing the input values by the range (maximum value  - minimum value) of the input variable, resulting in a new range of just 1. </p>
 <p>Mean normalization involves subtracting the average value for an input variable from the values for that input variable resulting in a new average value for the input variable of just zero. To implement both of these techniques, adjust your input values as shown in this formula:</p>
@@ -282,7 +282,7 @@ x_i:=\frac{x_i-\mu_i}{s_i}</script><p>Where $\mu_i$ is the <strong>average</stro
 <p>We can <strong>combine</strong> multiple features into one. For example, we can combine $x_1$ and $x_2$ into a new feature $x_3$ by taking $x_1⋅x_2$.</p>
 <p>Our hypothesis function need not be linear (a straight line) if that does not fit the data well.</p>
 <p>We can <strong>change the behavior or curve</strong> of our hypothesis function by making it a quadratic, cubic or square root function (or any other form).</p>
-<p>For example, if our hypothesis function is $h<em>\theta (x) = \theta_0 + \theta_1 x_1$ then we can create additional features based on $x_1$, to get the quadratic function $h</em>\theta(x) = \theta<em>0 + \theta_1 x_1 + \theta_2 x_1^2$ or the cubic function $h</em>\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_1^2 + \theta_3 x_1^3$</p>
+<p>For example, if our hypothesis function is $h_\theta (x) = \theta_0 + \theta_1 x_1$ then we can create additional features based on $x_1$, to get the quadratic function $h_\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_1^2$ or the cubic function $h_\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_1^2 + \theta_3 x_1^3$</p>
 <p>In the cubic version, we have created new features $x_2$ and $x_3$ where $x_2 = x_1^2$ and $x_3 = x_1^3$.</p>
 <p><img src="/2020/02/13/ML-Week2/QQ图片20200213204000.png" style="zoom:50%;"></p>
 <p>To make it a square root function, we could do: $h_\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 \sqrt{x_1}$.</p>
@@ -310,7 +310,7 @@ x_i:=\frac{x_i-\mu_i}{s_i}</script><p>Where $\mu_i$ is the <strong>average</stro
 <p><strong>补充</strong>：$\theta = (X^T X)^{-1}X^T y$的 证明：</p>
 <p>代价函数：</p>
 <script type="math/tex; mode=display">
-J\left( \theta  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{\left( h_{\theta}\left( x^{(i)} \right)-y^{(i)} \right)}^2</script><p>其中：$h<em>{\theta}\left( x \right)=\theta^{T}X=\theta</em>{0}x<em>{0}+\theta</em>{1}x<em>{1}+\theta</em>{2}x<em>{2}+…+\theta</em>{n}x_{n}$</p>
+J\left( \theta  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{\left( h_{\theta}\left( x^{(i)} \right)-y^{(i)} \right)}^2</script><p>其中：$h_{\theta}\left( x \right)=\theta^{T}X=\theta_{0}x_{0}+\theta_{1}x_{1}+\theta_{2}x_{2}+…+\theta_{n}x_{n}$</p>
 <p>将向量表达形式转为矩阵表达形式，则有$J(\theta )=\frac{1}{2}{\left( X\theta -y\right)}^2$ ，其中$X$为$m$行$n$列的矩阵（$m$为样本个数，$n$为特征个数），$\theta$为$n$行1列的矩阵，$y$为$m$行1列的矩阵，对$J(\theta )$进行如下变换</p>
 <script type="math/tex; mode=display">
 \begin{align}J(\theta )&=\frac{1}{2}{\left( X\theta -y\right)}^{T}\left( X\theta -y \right) \\ &=\frac{1}{2}\left( {\theta }^{T}{X^T}-{y}^{T} \right)\left(X\theta -y \right)\\&=\frac{1}{2}\left( {\theta }^T{X}^{T}X\theta -{\theta}^{T}{X}^{T}y-{y}^{T}X\theta -{y}^{T}y \right)
@@ -525,6 +525,54 @@ J\left( \theta  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{\left( h_{\theta}\left
   
 
   
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
 
   
 

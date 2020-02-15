@@ -317,7 +317,7 @@
 <ul>
 <li><p>然而这一定义仍有问题，同一问题等规模的不同实例，计算成本不尽相同，甚至有实质差别。</p>
 </li>
-<li><p>稳妥起见，取$T(n) = max{ T(P)| |P| = n }$，亦即，在规模同为n 的所有实例中，只关注最坏（成本最高）的实例。</p>
+<li><p>稳妥起见，取$T(n) = max\{ T(P)| |P| = n \}$，亦即，在规模同为n 的所有实例中，只关注最坏（成本最高）的实例。</p>
 </li>
 </ul>
 <p><strong>特定问题 + 不同算法</strong></p>
@@ -421,7 +421,7 @@
 <ul>
 <li><p>多项式（polynomial function）</p>
 <p>$(100n-500)(20n^2-300n+2013)=O(n\times n^2)=O(n^3)$</p>
-<p>一般地，$a<em>kh^k+a</em>{k-1}n^{k-1}+\dots+a_1n+a_0=O(n^k),\,a_k&gt;0$</p>
+<p>一般地，$a_kh^k+a_{k-1}n^{k-1}+\dots+a_1n+a_0=O(n^k),\,a_k&gt;0$</p>
 </li>
 <li><p>线性（linear function）：所有$O(n)$函数</p>
 </li>
@@ -500,7 +500,7 @@
 <p>算术级数：$O(n^2)$</p>
 <p><img src="/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ图片20200206131342.png" style="zoom:67%;"></p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n; i&lt;&lt;=<span class="number">1</span>)  <span class="comment">// i&lt;&lt;=1 左移一位，相当于乘2</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;i; j++)</span><br></pre></td></tr></table></figure>
-<p>几何级数：$1+2+4+\dots+2^{[log<em>2(n-1)]}={\sum}</em>{k=0}^{[log_2(n-1)]}2^k=2^{[log_2(n-1)]}-1=n-1=O(n)$</p>
+<p>几何级数：$1+2+4+\dots+2^{[log_2(n-1)]}={\sum}_{k=0}^{[log_2(n-1)]}2^k=2^{[log_2(n-1)]}-1=n-1=O(n)$</p>
 <p><img src="/2020/02/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%881%EF%BC%89/QQ图片20200206131345.png" style="zoom:67%;"></p>
 <h2 id="取非极端元素"><a href="#取非极端元素" class="headerlink" title="取非极端元素"></a>取非极端元素</h2><p>问题：给定整数子集S，|S| = n &gt;=3，找出元素$a\in S,a\ne max(S)，且 a\ne min(S)  $</p>
 <p>算法：从S中任取三个元素{x, y, z}  //若S以数组形式给出，不妨取前三个；由于S是集合，这三个元素必互异</p>
@@ -593,7 +593,7 @@
 <p>该算法的时间复杂度：$T(n)=2*T(n/2)+2\le5n/3-2$</p>
 <h1 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h1><p>Make it work, make it right, make it fast.</p>
 <p>前两步work和right可以通过递归解决，而最后一步fast可以通过迭代解决。</p>
-<h2 id="斐波那契数列fib"><a href="#斐波那契数列fib" class="headerlink" title="斐波那契数列fib( )"></a>斐波那契数列fib( )</h2><p>$fib(n)  = fib(n-1) + fib(n-2) : {0, 1, 1, 2, 3, 5, 8, ……}$</p>
+<h2 id="斐波那契数列fib"><a href="#斐波那契数列fib" class="headerlink" title="斐波那契数列fib( )"></a>斐波那契数列fib( )</h2><p>$fib(n)  = fib(n-1) + fib(n-2) : \{0, 1, 1, 2, 3, 5, 8, ……\}$</p>
 <h3 id="fib-：递归"><a href="#fib-：递归" class="headerlink" title="fib( )：递归"></a>fib( )：递归</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fib</span><span class="params">(n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="number">2</span>&gt;n) ? n : fib(n<span class="number">-1</span>) + fib(n<span class="number">-2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>实际上当n较大时，这个递归算法的计算是很慢的，其<strong>时间复杂度</strong>为：</p>
 <p>$T(0)=T(1)=1;\,T(n)=T(n-1)+T(n-2)+1,\,n&gt;1$</p>
