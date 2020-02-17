@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文结合几个具体的实际问题来介绍栈的实际应用，栈结构的经典应用场合大致可以分为：逆序输出，递归嵌套，延迟缓冲，栈式计算。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（8）栈应用">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文结合几个具体的实际问题来介绍栈的实际应用，栈结构的经典应用场合大致可以分为：逆序输出，递归嵌套，延迟缓冲，栈式计算。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217203706.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217213522.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217214959.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217215624.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217220153.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217220736.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217222655.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217224705.png">
+<meta property="article:published_time" content="2020-02-17T11:52:34.000Z">
+<meta property="article:modified_time" content="2020-02-17T14:54:44.237Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ%E5%9B%BE%E7%89%8720200217203706.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（8）栈应用 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（8）栈应用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-17 19:52:34 / 修改时间：22:54:44" itemprop="dateCreated datePublished" datetime="2020-02-17T19:52:34+08:00">2020-02-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.8k</span>
+            </span>
+            <div class="post-description">本文结合几个具体的实际问题来介绍栈的实际应用，栈结构的经典应用场合大致可以分为：逆序输出，递归嵌套，延迟缓冲，栈式计算。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>栈结构的经典应用场合大致可以分为以下四类：</p>
+<ul>
+<li><p><strong>逆序输出</strong> </p>
+<ul>
+<li><p>conversion：</p>
+</li>
+<li><p>输出次序与处理过程颠倒；递归深度和输出长度不易预知</p>
+</li>
+</ul>
+</li>
+<li><p><strong>递归嵌套</strong> </p>
+<ul>
+<li><p>stack permutation + parenthesis</p>
+</li>
+<li><p>具有自相似的问题可递归描述，但分支位置和嵌套深度不固定</p>
+</li>
+</ul>
+</li>
+<li><p><strong>延迟缓冲</strong> </p>
+<ul>
+<li><p>evaluation</p>
+</li>
+<li><p>线性扫描算法模式中，在欲读足够长之后，方能确定可处理的前缀</p>
+</li>
+</ul>
+</li>
+<li><p><strong>栈式计算</strong> </p>
+<ul>
+<li><p>RPN</p>
+</li>
+<li><p>基于栈结构的特定计算模式</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="1-进制转换"><a href="#1-进制转换" class="headerlink" title="1.进制转换"></a>1.进制转换</h1><p>问题描述：给定任一10进制非负整数，将其转换为$\lambda$进制表示形式。</p>
+<p>解法我们都很熟悉，即<strong>短除法</strong>：对数做除法，留商取余，所得的余数再逆序输出。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217203706.png" style="zoom:50%;"></p>
+<p>这样一个过程在用代码实现时一个问题需要考虑：计算的过程是由上而下的，而输出的过程是由下而上的，如果不借助对数我们很难预测最终会有多少个数位，也就是整个计算的深度到底有多少，那这个问题该如何解决呢？</p>
+<p>回顾上篇文章中介绍的栈结构，我们只需引入一个栈，在计算的过程中，我们每得到一个数位（余数），就通过<code>push()</code>使它入栈，那么这些数位入栈的次序恰好就是它们被计算出来的次序（在图中是自上而下）。而<strong>栈的特性是后进先出</strong>（LIFO），一旦计算终止，我们就可以通过一系列<code>pop()</code>操作将这些数位按刚才的数位的逆序（在图中是自下而上）输出出来，从而得到所需要的结果。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">convert</span><span class="params">(Stack&lt;<span class="keyword">char</span>&gt; &amp; S, _int64 n, <span class="keyword">int</span> base)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//薪进制下的数位符号，可视bae取值范围适当扩充</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">char</span> digit[] = </span><br><span class="line">	&#123; <span class="string">'0'</span>,<span class="string">'1'</span>,<span class="string">'2'</span>,<span class="string">'3'</span>,<span class="string">'4'</span>,<span class="string">'5'</span>,<span class="string">'6'</span>,<span class="string">'7'</span>,<span class="string">'8'</span>,<span class="string">'9'</span>,<span class="string">'A'</span>,<span class="string">'B'</span>,<span class="string">'C'</span>,<span class="string">'D'</span>,<span class="string">'E'</span>,<span class="string">'F'</span> &#125;;</span><br><span class="line">	<span class="keyword">while</span> (n &gt; <span class="number">0</span>) &#123;   <span class="comment">//由低到高，逐一计算出薪进制下的各数位</span></span><br><span class="line">		S.push( digit[ n % base ] );  <span class="comment">//余数（对应的数位）入栈</span></span><br><span class="line">		n /= base;   <span class="comment">//n更新为其对base的除商</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="2-括号匹配"><a href="#2-括号匹配" class="headerlink" title="2.括号匹配"></a>2.括号匹配</h1><p><strong>括号匹配</strong>这个问题可以归为<strong>递归嵌套</strong>式问题，以括号匹配为代表的这类问题它们的共同特点是，具有某种意义上的自相似性，即它们的某一个局部往往和整体具有某种共性，同时这种局部作为分支它的位置以及嵌套的深度却难以在事先固定或者确定。</p>
+<p>括号匹配是合法表达式的必要条件之一，下面是一个实例：</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217213522.png" style="zoom: 33%;"></p>
+<p>我们的任务是给定任意一个含有括号的表达式如何来判定它是否是匹配的，为了简化问题不妨将括号之外的其余符号都暂时地忽略掉，只需要做一次线性扫描的预处理即可，这样就可以集中注意处理括号匹配的情况。</p>
+<h2 id="2-1-构思"><a href="#2-1-构思" class="headerlink" title="2.1.构思"></a>2.1.构思</h2><p>为了得到这个问题的有效解法，我们或许应该继续沿用不断将问题简化的总体策略。为此需要首先来考察最基本的平凡情况：如果一个表达式不含任何的括号，从而实质上等价于一个空串，那么它自然是匹配的。</p>
+<p>接下来我们注意到这样一个事实：如果某一个表达式E已经是括号匹配的，那么在它的左侧和右侧添加一对匹配的括号，整体依然将是匹配的；如果两个表达式E和F已经是各自匹配的，那么只要将它们串接起来就可以得到一个更大的匹配表达式。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217214959.png" style="zoom: 55%;"></p>
+<p>然而很遗憾这两个性质都不能使得我们很好地运用此前所学的减而治之或者分而治之的策略。因此这两条性质只能作为括号匹配判断的必要条件而非充要条件，从逻辑推理的方向来看它是由左侧的前命题推向右侧的后命题，与简化问题的方向背道而驰。</p>
+<p>而且它们也存在<strong>反例</strong>，这就让减而治之和分而治之都是行不通的。综因此为了真正使这个问题能够得到有效的简化，必须发现并且借助这个问题所蕴含的某种<strong>充分性</strong>。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217215624.png" style="zoom: 55%;"></p>
+<p>一种可行的方法是将以上的减而治之的策略颠倒过来，不是去试图减除一个表达式最外围的一对括号，而是<strong>试图去减除其中相互紧邻的一对左右括号</strong>。如果在一个表达式中能够发现一对彼此紧邻的左右括号，那么在将这对括号减除之后，剩余的部分是否匹配与此前的表达式是否匹配必然是互为充要条件的。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217220153.png" style="zoom:60%;"></p>
+<p>那么如何找到这样一对括号呢？另外，更重要的是如何使得这种简化能够<strong>持续</strong>地进行下去呢？</p>
+<p>实际上面对这样一种情况，正是<strong>栈</strong>可以大显身手的时候，借助栈结构的算法过程原理可以表示为下面的图。如果这是我们所使用的栈，那么其中所包含的就是我们已经扫描过但是仍待处理的部分，其中只需保存左括号。在接下来的扫描中一<strong>遇到左括号就令它入栈</strong>；而一旦<strong>遇到右括号</strong>不仅不需要令它入栈，反而应该<strong>令栈顶的那个左括号出栈</strong>。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217220736.png" style="zoom:60%;"></p>
+<p>这样就刚好实现上述的可行方法，算法的确可以持续地如此往复进行下去。如果最后一个括号被处理之后，整个栈恰好变空，那么就意味着原来的表达式是匹配的；反之，无论到最后栈非空或者在中途某个阶段提前变空，我们都可以判定原来的表达式是不匹配的。</p>
+<h2 id="2-2-实现"><a href="#2-2-实现" class="headerlink" title="2.2.实现"></a>2.2.实现</h2><p>上节的构思可以具体兑现为这样一段代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">paren</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> <span class="built_in">exp</span>[], <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;  <span class="comment">//exp[lo, hi)</span></span><br><span class="line">	Stack&lt;<span class="keyword">char</span>&gt; S;   <span class="comment">//使用栈记录已发现但尚未匹配的左括号</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = lo; i &lt; hi; i++)   <span class="comment">//逐一检查当前符号</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="string">'('</span> == <span class="built_in">exp</span>[i]) S.push(<span class="built_in">exp</span>[i]);   <span class="comment">//若遇左括号，则进栈</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!S.empty()) S.pop();    <span class="comment">//否则如果遇右括号，且栈非空，则令栈顶的左括号出栈</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">return</span> <span class="literal">false</span>;   <span class="comment">//否则（遇右括号是栈已空），必不匹配</span></span><br><span class="line">	<span class="keyword">return</span> S.empty();   <span class="comment">//最终，栈空当且仅当匹配</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为了判别low与high之间的这样一段表达式是否括号匹配，需要引入一个名为S的栈。以下的这个循环逐一地检查每一个字符，如果是左括号就令它入栈，否则就试图弹出栈顶，如果它的确存在的话应该就是与当前这个右括号匹配的那个左括号，而如果此时栈已经提前变空那么就意味着整个表达式失配，可以断定此时的失配是由于某一个右括号缺少与之匹配的左括号。</p>
+<p>当处理完所有的字符并退出循环的时候，需要检查栈在当前是否是空的，只有当栈恰好为空时才说明表达式是匹配的，否则可以断定原来那个表达式是不匹配的，且是属于某一左括号缺失与之配对的右括号的情况。</p>
+<h2 id="2-3-反思与拓展"><a href="#2-3-反思与拓展" class="headerlink" title="2.3.反思与拓展"></a>2.3.反思与拓展</h2><p>为更好地理解这个算法，我们不妨来看一个具体的实例：</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217222655.png" style="zoom: 60%;"></p>
+<p>在理清这个实例的执行过程后，你可能会质疑我们为什么要使用栈呢[・_・?]。就这样一个特定的问题而言，只需借助一个简明的整数计数器就足以完成刚才的算法任务。如果令计算器初始为0，将算法的过程对应过来，若遇左括号计数器就加1；若遇右括号计算器就减1。最终如果计数器为0，则表达式匹配；如果计数器不为0，或在中途出现负数，则表达式不匹配。</p>
+<p>实际上这个计数器所反映的就是刚才我们所使用的那个栈在任何时刻的规模，这样就不难理解其中的必然性了。那么既然如此我们为什么不使用更加简明的计数器，而要使用更为复杂的栈结构呢[・_・?]</p>
+<p>这背后的原因在于<strong>采用栈结构可以便捷地推广至多种括号并存的情况</strong>，这时如果想要使用多个计数器也是行不通的，比如一个简单的反例<code>[  (  ]  )</code>，因为如果孤立地通过计数器来考察方括号或者是圆括号，两个计数器都是可以正常工作并且在最终复位为0的，而这个表达式显然是不匹配的。</p>
+<p>通过下面这个实例来解释这个算法如何扩展到多个括号并存的情况。当遇到一个左括号，无论是什么形式都放入栈中；遇到一个右括号，则<strong>判断此时栈顶的左括号是否与它匹配</strong>，若匹配则令栈顶的左括号出栈。</p>
+<p><img src="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/QQ图片20200217224705.png" style="zoom:65%;"></p>
+<p>同样地在经过了这样一趟线性的扫描之后，只有当栈最终为空，我们才可以断定原来这个包含多种括号的表达式是匹配的。反过来这时括号不匹配的情况相对于此前单括号的情景要多出一种，即当遇到右括号时，发现此时栈顶的左括号与之不匹配，如刚才举的反例<code>[  (  ]  )</code>，则表达式必是不匹配的，因为实际上这样每次“消去”的一对括号必是紧邻的一对括号。</p>
+<p>扩展后括号匹配算法可以实现为下面一段代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">paren</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> <span class="built_in">exp</span>[], <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123; <span class="comment">//表达式括号匹配检查，可兼顾三种括号</span></span><br><span class="line">	Stack&lt;<span class="keyword">char</span>&gt; S; <span class="comment">//使用栈记录已发现但尚未匹配的左括号</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = lo; i &lt;= hi; i++) <span class="comment">/* 逐一检查当前字符 */</span></span><br><span class="line">	    <span class="keyword">switch</span> (<span class="built_in">exp</span>[i]) &#123; <span class="comment">//左括号直接进栈；右括号若与栈顶失配，则表达式必不匹配</span></span><br><span class="line">	        <span class="keyword">case</span> <span class="string">'('</span>: <span class="keyword">case</span> <span class="string">'['</span>: <span class="keyword">case</span> <span class="string">'&#123;'</span>: S.push(<span class="built_in">exp</span>[i]); <span class="keyword">break</span>;</span><br><span class="line">		    <span class="keyword">case</span> <span class="string">')'</span>: <span class="keyword">if</span> ((S.empty()) || (<span class="string">'('</span> != S.pop())) <span class="keyword">return</span> <span class="literal">false</span>; <span class="keyword">break</span>;</span><br><span class="line">		    <span class="keyword">case</span> <span class="string">']'</span>: <span class="keyword">if</span> ((S.empty()) || (<span class="string">'['</span> != S.pop())) <span class="keyword">return</span> <span class="literal">false</span>; <span class="keyword">break</span>;</span><br><span class="line">		    <span class="keyword">case</span> <span class="string">'&#125;'</span>: <span class="keyword">if</span> ((S.empty()) || (<span class="string">'&#123;'</span> != S.pop())) <span class="keyword">return</span> <span class="literal">false</span>; <span class="keyword">break</span>;</span><br><span class="line">		    <span class="keyword">default</span>: <span class="keyword">break</span>; <span class="comment">//非括号字符一律忽略</span></span><br><span class="line">	    &#125;</span><br><span class="line">	<span class="keyword">return</span> S.empty(); <span class="comment">//整个表达式扫描过后，栈中若仍残留（左）括号，则不匹配；否则（栈空）匹配</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后需要指出的是，实际上这样一种拓展还可以进一步地进行，也就是并不限于某几种特定的括号，甚至不需要对这些括号到底有多少种做出限定，就像在HTML语言中那样只要表达式中能够按照合理的语法，就能够定义任何一种匹配标志，我们都可以来进行这种意义上的匹配检查。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%887%EF%BC%89%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/" rel="prev" title="数据结构与算法（7）栈与队列">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（7）栈与队列
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-进制转换"><span class="nav-text">1.进制转换</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-括号匹配"><span class="nav-text">2.括号匹配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-构思"><span class="nav-text">2.1.构思</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-实现"><span class="nav-text">2.2.实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-反思与拓展"><span class="nav-text">2.3.反思与拓展</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">164k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
