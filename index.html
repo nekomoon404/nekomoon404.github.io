@@ -181,6 +181,220 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/" class="post-title-link" itemprop="url">数据结构与算法（9）二叉树</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-20 09:11:42 / 修改时间：12:32:01" itemprop="dateCreated datePublished" datetime="2020-02-20T09:11:42+08:00">2020-02-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.4k</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-树"><a href="#1-树" class="headerlink" title="1.树"></a>1.树</h1><p>回顾之前所学的向量结构（Vector）和列表结构（List），对于以查找为代表的静态操作和以插入为代表的动态操作，两者都无法兼顾静态和动态的高效性。而本章要介绍的树结构恰好能将二者的优势结合起来，即可快速查找，又可以快速插入和删除。树可以理解为列表的列表，或二维的列表。树并不是严格意义上的线性结构，但又带有一定的线性特征，因此树可以被称为半线性结构。</p>
+<p>树是用来按照<strong>层次关系</strong>组织一系列数据项的一种方式，如：表达式、文件系统、函数调用和递归过程、Internet URL等等。</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220093704.png" style="zoom:50%;"></p>
+<h2 id="1-1-有根树"><a href="#1-1-有根树" class="headerlink" title="1.1.有根树"></a>1.1.有根树</h2><ul>
+<li><p>树是特殊的图<strong>T = ( V, E)</strong>，可以认为树是定义在一组元素之间的二元关系，节点（<strong>Vertex</strong>）数 <strong>|V| = n</strong>，边（<strong>edge</strong>）数 <strong>|E| = e</strong>。</p>
+</li>
+<li><p>为树指定任一节点 r $\in$ V作为根后，树T 即称作<strong>有根树（rooted tree）</strong>。</p>
+</li>
+</ul>
+<p>对于任何一组有根树都可以通过引入一个新的顶点，并且在新的这个顶点与此前各棵有根树的树根之间引入对应的一条连边，从而构成一棵规模更大的有根树，这棵新的有根树的树根就是所引入的这个新的节点，通常记作r，暗示着它就是root树根。而对于这棵更大的树，参与组成它的每一棵有根树都相对地称作是它的<strong>子树subtree</strong>。</p>
+<ul>
+<li>若：$T_1,T_2,\dots ,T_d$是有根树，则：$T=\left( (\cup V_i)\cup\{r\},\,(\cup E_i)\cup\{<r,r_i>|1\le i\le d\}  \right)$也是有根树。</r,r_i></li>
+<li>相对于$T$，$T_i$称作以$r_i$为根的子树（subtree rooted at $r_i$），记作$T_i$ = subtree( $r_i$ )。</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220095521.png" style="zoom: 40%;"></p>
+<h2 id="1-2-有序树"><a href="#1-2-有序树" class="headerlink" title="1.2.有序树"></a>1.2.有序树</h2><ul>
+<li><p>$r_i$称作$r$的<strong>孩子（child）</strong>，$r_i$之间互称<strong>兄弟（sibling）</strong>；</p>
+<p>$r$为其<strong>父亲（parent）</strong>，d = degree( r )为$r$的（出）<strong>度</strong>（degree）。</p>
+</li>
+<li><p>可归纳证明： e（节点数总和）= $\sum_{r\in V}degree(r)$ = n - 1 = $\Theta(n)$，即任何<strong>一棵树中的边数与其中顶点的数目是同阶的</strong>，一棵树的总体规模也可度量为( n + e )，故在衡量相关复杂度时，可以n作为参照。</p>
+</li>
+<li>若指定$T_i$为$T$的第$i$棵子树，$r_i$作为$r$的第$i$个孩子（即在兄弟间定义了次序），则$T$称作<strong>有序树（ordered tree）</strong>。</li>
+</ul>
+<h2 id="1-3-连通与无环"><a href="#1-3-连通与无环" class="headerlink" title="1.3.连通与无环"></a>1.3.连通与无环</h2><p>上面从递归嵌套的角度定义了树，但我们并没有看到树结构相对于一般的图结构而言在拓扑上到底有什么不同。那么接下来将从<strong>连通性</strong>和<strong>无环性</strong>两个角度来揭示树结构的特性。</p>
+<ul>
+<li><p>V中的k+1个节点，通过E中的k条边依次相连，构成一条<strong>路径（path）</strong>：</p>
+<p>$\pi=\{ \, (V_0,V_1),\, (V_1,V_2),\,\dots,\,(V_{k-1},V_k)\,    \}$</p>
+</li>
+<li><p><strong>路径长度</strong>：$|\pi|=$边数$=k$</p>
+</li>
+<li><p>任意节点之间均有路径的图，称作<strong>连通图（connected graph）</strong></p>
+<p>若$V_k=V_0$，则该路径是<strong>环路（cycle/loop）</strong>，不含环路的图，称作<strong>无环图（acyclic graph）</strong>。</p>
+</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220101809.png" style="zoom:40%;"></p>
+<ul>
+<li>树结构是<strong>无环连通图</strong>，即是极小连通图，也是极大无环图。</li>
+<li>故在树中，<strong>任一节点V与根之间存在唯一路径</strong>，故可记 path(v, r) = path(v)</li>
+<li>因此可以|path(v)|为指标，对所有节点做等价类划分。</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220102245.png" style="zoom:50%;"></p>
+<h2 id="1-4-深度与层次"><a href="#1-4-深度与层次" class="headerlink" title="1.4.深度与层次"></a>1.4.深度与层次</h2><ul>
+<li>在不致歧义的情况下，路径、节点和子树可相互指代： path(v) ~ v ~ subtree(v)</li>
+<li>v的<strong>深度</strong>：depth(v) = |path(v)|</li>
+<li>path(v)上的节点均为v的<strong>祖先（ancestor）</strong>，v是它们的<strong>后代（descendent）</strong>；除v自身以外的祖先，是<strong>真</strong>（proper）祖先。</li>
+<li><strong>在任一深度：v的祖先若存在则必然唯一；v的后代未必唯一</strong>。从这个意义上讲也应该将数称为半线性结构。</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220103816.png" style="zoom:40%;"></p>
+<ul>
+<li>根节点是所有节点的（公共）祖先，深度为0；没有后代的节点称作叶子（leaf）。</li>
+<li>所有叶子深度中的最大者称为子树的高度：height(v) = height( subtree( v ) )；注意与树根的高度（height(T))区分开。</li>
+<li>特别低，只有一个节点的树的高度为1，空树的高度为-1。</li>
+<li>depth( v )  +  height( v )  $\le$  height( T )</li>
+</ul>
+<h1 id="2-树的表示"><a href="#2-树的表示" class="headerlink" title="2.树的表示"></a>2.树的表示</h1><p>上一节介绍了树的基本概念，这一节将来讨论在计算机中如何从逻辑上来表示一棵树，从抽象数据类型的角度来看树结构应该提供大致如下这些接口：</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220105128.png" style="zoom:40%;"></p>
+<h2 id="2-1-父节点"><a href="#2-1-父节点" class="headerlink" title="2.1.父节点"></a>2.1.父节点</h2><ul>
+<li>除根外，任一节点有且仅有一个父节点。</li>
+</ul>
+<p>不妨将所有的节点组织为一个序列：其中的每一个元素都分别包括三项，data是节点本身的信息，rank或者position指明的是这个节点的记录在这个序列中所对应的秩或者是位置，而parent恰好就是节点唯一的父节点所对应的秩或者是位置。树根也有一个“虚构的”父节点-1或NULL。</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220110308.png" style="zoom:40%;"></p>
+<ul>
+<li>空间性能：$O(n)$</li>
+<li>时间性能：<ul>
+<li>​          <code>parent()</code>：$O(1)$</li>
+<li>​              <code>root()</code>：$O(n)$或$O(1)$</li>
+<li><code>firstChild()</code>：$O(n)$</li>
+<li><code>nextSibling()</code>：$O(n)$</li>
+</ul>
+</li>
+</ul>
+<p>这样做有一定的好处，不幸的是如果要向下索取某个节点的后代比如长子，依然需要去遍历所有的元素并且逐一地确认它的父节点是否就是当前查询的元素，这个基本操作在最坏情况下需要线性时间$O(n)$；而查找兄弟节点也是类似的在最坏情况下需要遍历整棵树。因此我们下一步改进自然就集中在这两种向下方向的查询上。</p>
+<h2 id="2-2-孩子节点"><a href="#2-2-孩子节点" class="headerlink" title="2.2.孩子节点"></a>2.2.孩子节点</h2><p>不妨对于任何一个节点都将它的孩子汇聚起来构成一个更小的数据集，为<strong>每一个节点准备一个名为children的引用，所指向的是由它的所有的孩子构成的一个序列</strong>，如使用<strong>列表</strong>来实现这个序列，列表的长度分别等于对应节点当前的度数。</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220111335.png" style="zoom: 50%;"></p>
+<p>这个方法解决了向下的查找问题，而向上的查找优势却丧失殆尽，不难发现为了查找某一个节点的父亲不得不去遍历整个线性序列，并且逐一地翻看它所对应的孩子记录，在最坏的情况下仍需要线性时间$O(n)$。</p>
+<h2 id="2-3-父节点-孩子节点"><a href="#2-3-父节点-孩子节点" class="headerlink" title="2.3.父节点+孩子节点"></a>2.3.父节点+孩子节点</h2><p>如果将刚才的两个线性的序列组合起来，即对于同一个节点不仅保留它的parent域，同时还要保留它的children这样的一个引用，那么刚才两个方向的优势是可以兼而有之的。如果要去查找父亲就在parent这一列中进行查找，需要$O(1)$的时间；如果要是去查找孩子，就在children所指向的序列中再去查找，若是长子就可在$O(1)$的时间内直接返回，若是其它的孩子最多是去遍历序列。</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220112749.png" style="zoom:50%;"></p>
+<p>但这种方法仍有一些不足：每一个节点的children引用所指向的序列在规模上有可能相差极其悬殊，每一个序列的长度恰好是节点对应的出度，而出度的总和为$\sum_{r\in V}degree(r)$ = n - 1 = $\Theta(n)$，与n同阶。而这种组织方式有时需要长达$O(n)$的一个数据集，为此需要找到一些新的办法，更加规范并相应也更简洁和高效。</p>
+<h2 id="2-4-长子-兄弟"><a href="#2-4-长子-兄弟" class="headerlink" title="2.4.长子+兄弟"></a>2.4.长子+兄弟</h2><p>反观上小节方法存在根源在于每一个节点的出度是不尽相同的，为进行改进我们必须发现每个节点所具有的某种不变性。就向下的引用而言每一个节点只需记两个信息就够了，第一个就是它的长子，第二个是每一个节点的下一个兄弟。</p>
+<ul>
+<li>每个节点均设两个引用：<ul>
+<li>纵向：<code>firstChild()</code></li>
+<li>横向：<code>nextSibling()</code></li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220113446.png" style="zoom:50%;"></p>
+<ul>
+<li>如此，对于度数为d的节点，可在$O(n+1)$时间内遍历其所有孩子</li>
+<li>若再设置parent引用，则<code>parent()</code>接口也仅需$O(1)$时间</li>
+</ul>
+<p>相对于此前的表示方法，这种表示方法的规整性非常的突出，由于每个节点只需记录两个引用，因此其点所需要占用的空间依然是常数，，而且都彼此接近，这是此前的常规方法所无法比拟的。</p>
+<p>这种长子兄弟法不仅是树的一种很好的表示方法，而且也是对树的本质的一种更深刻的理解，在此后介绍二叉树<br>并且用二叉树来代表所有的树的时候，我们将再次用到这样一种表示方法。对于树这样的一个全集来说尽管二叉树只是它的一个特殊的子集，但是很有趣的是在施加了某些条件之后，二叉树却足以来表示和实现所有的树，而这样一种方法背后的原理在很大程度上就是基于长子兄弟法。</p>
+<h1 id="3-二叉树"><a href="#3-二叉树" class="headerlink" title="3.二叉树"></a>3.二叉树</h1><p>这一节介绍树的一种特殊但又不失代表性的特例：二叉树（binary tree）</p>
+<ul>
+<li><p><strong>节点数不超过2</strong>的树，称作二叉树</p>
+</li>
+<li><p>同一节点的孩子和子树，均以左、右区分（隐含着有序性）</p>
+<ul>
+<li><code>lChild()</code>  ~  <code>lSubtree()</code></li>
+<li><code>rChild()</code>  ~  <code>rSubtree()</code></li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220115144.png" style="zoom:40%;"></p>
+<h2 id="3-1-基数"><a href="#3-1-基数" class="headerlink" title="3.1.基数"></a>3.1.基数</h2><ul>
+<li>二叉树中深度为k的节点至多$2^k$个</li>
+<li>含n个节点、高度为h的二叉树中有：$h&lt;n&lt;2^{h+1}$<ul>
+<li>当 $n=h+1$时，退化为一条单链</li>
+<li>当$n=2^{h+1}-1$时，称作满二叉树（full binary tree）</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220115551.png" style="zoom:40%;"></p>
+<p>由此也可见一棵二叉树在横向上的宽度与它在纵向上的高度是呈一个指数的关系的，宽度是高度的指数，而指数意味着爆炸（剧烈的增长），所以如果节点的总数固定，宽度大致与它相当，但是高度却会增长的非常的缓慢呈一个对数的形式。也就是说对于一棵二叉树而言，它非常倾向于“涨宽”，它“涨宽”的速度更快，而它的高度呢如果控制得当的话会增长的异常的缓慢，这个特点也是之后介绍的二叉搜索树的重要理论基础。</p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220115646.png" style="zoom:40%;"></p>
+<h2 id="3-2-真二叉树"><a href="#3-2-真二叉树" class="headerlink" title="3.2.真二叉树"></a>3.2.真二叉树</h2><p>上面介绍的二叉树只对每个节点的出度做了个上限的约定，即不得超过2。这样一般性的一棵二叉树在很多操作，包括算法的实现以及对算法的理解上都会引来一些不必要的麻烦。而反过来一个比较有效的改进方法就是将任何的这样一棵一般性的二叉树转化为一棵<strong>真二叉树（proper binary tree）</strong>。</p>
+<ul>
+<li>通过引入$n_0+n_2$个外部节点，可是原有节点度数同一为2，如此即可将任一二叉树转化为真二叉树。</li>
+<li>经过转换之后，从渐进意义上，全树自身的<strong>复杂度并未实质增加</strong>。</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220120456.png" style="zoom:40%;"></p>
+<p>在之后实现相应的算法的时候就会看到这种添加实际上完全是假想的，即并不需要真正去引入节点，只需要假想着它们存在，你的算法就可以更加简洁的实现而且更加简洁的被理解。</p>
+<h2 id="3-3-描述多叉树"><a href="#3-3-描述多叉树" class="headerlink" title="3.3.描述多叉树"></a>3.3.描述多叉树</h2><p>接下来来介绍这一节最重要的一点：<strong>如何通过二叉树来描述多叉树</strong>。其实上需要的条件只有两条：<strong>有根</strong>和<strong>有序</strong>。</p>
+<ul>
+<li>二叉树是多叉树的特例，但在<strong>有根</strong>且<strong>有序</strong>时其描述能力却足以覆盖后者；</li>
+<li>即任意有根有序的多叉树均可转换为二叉树——回顾“长子-兄弟”表示法；</li>
+<li>为此只需将节点处旋转45度，将长子，兄弟与左、右孩子等效地相互对应：<ul>
+<li><code>firstChild()</code>       ~    <code>lChild()</code></li>
+<li><code>nextSibling()</code>    ~   <code>rChild()</code></li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220121855.png" style="zoom: 80%;"></p>
+<p><img src="/2020/02/20/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%889%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91/QQ图片20200220121900.png" style="zoom:67%;"></p>
+<p>如果说这一章的任务是描述并且实现以及利用树结构的话，不如说我们只需研究并且实现二叉树。接下来几节将介绍二叉树结构的实现和相关的算法。</p>
+<h1 id="4-二叉树实现"><a href="#4-二叉树实现" class="headerlink" title="4.二叉树实现"></a>4.二叉树实现</h1><p>在此前的几节先后介绍了树的概念，了解了树的特点，并且懂得了如何来表示一棵树。最重要的方法就是借助二叉树来表示任何一棵有根有序树，所以接着就来介绍如何在C++语言中实现一棵二叉树。</p>
+<h2 id="4-1-BinNode模板类"><a href="#4-1-BinNode模板类" class="headerlink" title="4.1.BinNode模板类"></a>4.1.BinNode模板类</h2><p>二叉树的基本组成单位是<strong>二叉树节点（Binary Node， 或简称BinNode）</strong>，每一个BinNode的逻辑组成可以用下图来表示</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%888%EF%BC%89%E6%A0%88%E5%BA%94%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -975,96 +1189,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/11/ML-Week1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="nekomoon">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="nekomoon的个人小站">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/02/11/ML-Week1/" class="post-title-link" itemprop="url">ML:Week1</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-02-11 10:15:57" itemprop="dateCreated datePublished" datetime="2020-02-11T10:15:57+08:00">2020-02-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-13 10:15:57" itemprop="dateModified" datetime="2020-02-13T10:15:57+08:00">2020-02-13</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
-                    <span itemprop="name">Machine Learning</span>
-                  </a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          这几天开始看coursera网站上Andrew Ng教授的Machine Learning课程，看评论说这门课讲的比较浅显，适合入门学习，课程是按周排的，那我也按周记录下学习的内容_φ_(．．)。
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/02/11/ML-Week1/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1137,7 +1261,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1190,7 +1314,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">176k</span>
+    <span title="站点总字数">180k</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
