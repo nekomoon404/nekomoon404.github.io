@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="二叉树的相关算法也往往需要对其中的元素按照某种次序来逐一访问，本文要介绍的遍历就是按照某种原则在二叉树的所有节点之间定义某种明确的线性次序，从而将半线性结构转换为我们已熟悉的线性结构的问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（10）二叉树的遍历">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="二叉树的相关算法也往往需要对其中的元素按照某种次序来逐一访问，本文要介绍的遍历就是按照某种原则在二叉树的所有节点之间定义某种明确的线性次序，从而将半线性结构转换为我们已熟悉的线性结构的问题。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221115804.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221164625.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221165937.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221170918.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221172902.png">
+<meta property="article:published_time" content="2020-02-21T03:42:13.000Z">
+<meta property="article:modified_time" content="2020-02-21T09:29:30.818Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ%E5%9B%BE%E7%89%8720200221115804.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（10）二叉树的遍历 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（10）二叉树的遍历
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-21 11:42:13 / 修改时间：17:29:30" itemprop="dateCreated datePublished" datetime="2020-02-21T11:42:13+08:00">2020-02-21</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <div class="post-description">二叉树的相关算法也往往需要对其中的元素按照某种次序来逐一访问，本文要介绍的遍历就是按照某种原则在二叉树的所有节点之间定义某种明确的线性次序，从而将半线性结构转换为我们已熟悉的线性结构的问题。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li><p>遍历：按照某种次序访问树中各节点，每个节点被访问恰好一次。</p>
+<p>$T=V\cup L \cup R=\{root\} \cup L_ subtree(T) \cup R _ subtree(T)$</p>
+</li>
+<li><p>遍历结果  ~  遍历过程  ~  遍历次序  ~ 遍历策略</p>
+<ul>
+<li>先序遍历：<strong>V</strong>  |  L  |  R</li>
+<li>中序遍历：L  |  <strong>V</strong>  |  R</li>
+<li>后序遍历：L  |  R  |  <strong>V</strong></li>
+<li>层次遍历：自上为下，先左后右</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ图片20200221115804.png" style="zoom: 80%;"></p>
+<h1 id="1-先序遍历"><a href="#1-先序遍历" class="headerlink" title="1.先序遍历"></a>1.先序遍历</h1><h2 id="1-1递归"><a href="#1-1递归" class="headerlink" title="1.1递归"></a>1.1递归</h2><p>以上三种典型的遍历策略都不难实现，因为它们的定义本身就是<strong>递归式的</strong>，以先序遍历为例，只需四句就可以实现。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> VST&gt; <span class="comment">//元素类型、操作器</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">travPre_R</span><span class="params">(BinNodePosi(T) x, VST&amp; visit)</span> </span>&#123; <span class="comment">//二叉树先序遍历算法（递归版）</span></span><br><span class="line">	<span class="keyword">if</span> (!x) <span class="keyword">return</span>;</span><br><span class="line">	visit(x-&gt;data);</span><br><span class="line">	travPre_R(x-&gt;lc, visit);</span><br><span class="line">	travPre_R(x-&gt;rc, visit);</span><br><span class="line">&#125;  <span class="comment">//T(n) = O(1) + T(a) + T(n-a-1) = O(n)</span></span><br></pre></td></tr></table></figure>
+<p>这个算法的时间复杂度是线性的，即$O(n)$，然而这只具有渐近的意义。在实际的运行过程中，因为递归程序的实现机制，并不可能做到针对具体的问题来量体裁衣，而只能采用通用的方法。在运行栈中尽管每一个递归实例都的确只对应于一帧，但是因为它们必须具有通用格式，所以并不能做到足够的小。而针对于具体的问题，只要我们能够进行精巧的设计，完全是可以使得每一帧做到足够小的，尽管从big O的意义上讲，这两种策略所对应的每一帧都可以认为是常数，但是这种常数的差异实际上是非常巨大的。</p>
+<p>因此作为树算法的一个重要基石，遍历算法非常有必要<strong>从递归形式改写为迭代形式</strong>，同时经过这样的改写之后，我们也可以对整个遍历算法的过程以及原理获得更加深刻的认识。稍加观察不难发现此处的两句递归调用都非常类似于<strong>尾递归</strong>，其特征是递归调用出现在整个递归实例体的尾部，这种递归是非常容易化解为迭代形式的，为此我们只需<strong>引入一个栈</strong>。</p>
+<h2 id="1-2-迭代（版本1）"><a href="#1-2-迭代（版本1）" class="headerlink" title="1.2.迭代（版本1）"></a>1.2.迭代（版本1）</h2><p>改写之后的第一个跌打版本，如这段代码所示，作为初始化取一个栈s用以存放树节点的位置，即它们的引用。首先将当前的树根<code>x</code>推入栈中，以下进入一个主体的循环，每一次弹出当前的节点并且随即对它进行访问，此后如果当前这个节点拥有右孩子就将右孩子推入栈中，如果有左孩子 那么左孩子也会随后入栈，此后整个循环又进入下一步迭代直到整个栈变空。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> VST&gt; <span class="comment">//元素类型、操作器</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">travPre_I1</span><span class="params">(BinNodePosi(T) x, VST&amp; visit)</span> </span>&#123; <span class="comment">//二叉树先序遍历算法（迭代版#1）</span></span><br><span class="line">	Stack&lt;BinNodePosi(T)&gt; S; <span class="comment">//辅助栈</span></span><br><span class="line">	<span class="keyword">if</span> (x) S.push(x); <span class="comment">//根节点入栈</span></span><br><span class="line">	<span class="keyword">while</span> (!S.empty()) &#123; <span class="comment">//在栈变空之前反复循环</span></span><br><span class="line">		x = S.pop(); visit(x-&gt;data); <span class="comment">//弹出并访问当前节点，其非空孩子的入栈次序为先右后左</span></span><br><span class="line">		<span class="keyword">if</span> (HasRChild(*x)) S.push(x-&gt;rc); <span class="keyword">if</span> (HasLChild(*x)) S.push(x-&gt;lc);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是：<strong>左右孩子的入栈次序是先右后左</strong>，这是因为包括先序遍历在内的所有遍历，都先遍历左子树再去遍历右子树，在这个算法模式中既然<strong>每个节点都是在被弹出栈的时刻才接受访问</strong>，所以根据<strong>栈后进先出</strong>的特性，自然应该将希望后出栈的右子树先入栈了。</p>
+<p>下面是一个实例：</p>
+<p><img src="/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ图片20200221164625.png" style="zoom: 50%;"></p>
+<ul>
+<li><p>正确性：</p>
+<ul>
+<li><p>无遗落：每个节点都会被访问到</p>
+<p>归纳假设：若深度为d的节点都能被正确访问到，则深度为d+1的也是</p>
+</li>
+<li><p>根先：对于任一子树，根被访问后才会访问其他节点</p>
+<p>只需注意到：若u是v的真祖先，则u必先于v被访问到</p>
+</li>
+<li><p>左先右后：同一节点的左子树，限于右子树被访问</p>
+</li>
+</ul>
+</li>
+<li><p>效率：$O(n)$</p>
+<ul>
+<li>每步迭代，都有一个节点出栈并被访问；</li>
+<li>每个节点入/出栈一次仅且一次；</li>
+<li>每步迭代只需$O(1)$时间。</li>
+</ul>
+</li>
+</ul>
+<p>可以看到算法所输出的节点序列恰好就是我们所希望得到的先序遍历序列，第一个迭代版算法非常简明，然而遗憾的是这种算法策略并不容易直接推广到此后要研究的中序遍历和后序遍历算法，因此我们或许应该另辟蹊径寻找其它等效的策略。</p>
+<h2 id="1-3-迭代（版本2）"><a href="#1-3-迭代（版本2）" class="headerlink" title="1.3.迭代（版本2）"></a>1.3.迭代（版本2）</h2><p>不妨从一个规模略大同时更具一般性的例子入手：</p>
+<p><img src="/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ图片20200221165937.png" style="zoom:50%;"></p>
+<p>可以发现这样一个规律：一旦树根节点接过控制权并接受访问，接下来被访问的就是它的左孩子以及左孩子的左孩子，以及同样地，当不能下去的时候才会进行一次新的转移，而每转移到一个具体的局部，做的事情都是尝试着沿着这样的一个左孩子的分支不断地下行。</p>
+<p>对于任何一棵子树，都将起始于树根的接下来总是沿着左侧孩子分支不断下行的这样一条链称作是当前这棵子树的<strong>左侧链</strong>，而这个算法就是沿着这个左侧链逐渐展开。</p>
+<p><img src="/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ图片20200221170918.png" style="zoom:50%;"></p>
+<ul>
+<li>沿着左侧分支：各节点与其右孩子（可能为空）一一对应；</li>
+<li>从宏观上，整个遍历过程可划分为：<strong>自上而下对左侧分支的访问</strong>，及随后<strong>自下而上对一系列右子树的遍历</strong>；</li>
+<li>不同右子树的遍历相互独立，自成一个子任务。</li>
+</ul>
+<p>新版本的迭代算符首先需要实现一个标准的例程<code>visitAlongLeftBranch</code>，它的任务就是来实现从根节点开始沿着left branch 不断下行，依次访问沿途所有节点的这样一个过程。</p>
+<p>这个主算法则是反复地在每一个局部调用<code>visitAlongLeftBranch</code>这个例程来实现。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//从当前节点出发，沿左分支不断深入，直至没有左分支的节点；沿途节点遇到后立即访问</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> VST&gt; <span class="comment">//元素类型、操作器</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">visitAlongVine</span><span class="params">(BinNodePosi(T) x, VST&amp; visit, Stack&lt;BinNodePosi(T)&gt;&amp; S)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">while</span> (x) &#123;</span><br><span class="line">		visit(x-&gt;data); <span class="comment">//访问当前节点</span></span><br><span class="line">		S.push(x-&gt;rc); <span class="comment">//右孩子入栈暂存（可优化：通过判断，避免空的右孩子入栈）</span></span><br><span class="line">		x = x-&gt;lc;  <span class="comment">//沿左分支深入一层</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> VST&gt; <span class="comment">//元素类型、操作器</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">travPre_I2</span><span class="params">(BinNodePosi(T) x, VST&amp; visit)</span> </span>&#123; <span class="comment">//二叉树先序遍历算法（迭代版#2）</span></span><br><span class="line">	Stack&lt;BinNodePosi(T)&gt; S; <span class="comment">//辅助栈</span></span><br><span class="line">	<span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">		visitAlongVine(x, visit, S); <span class="comment">//从当前节点出发，逐批访问</span></span><br><span class="line">		<span class="keyword">if</span> (S.empty()) <span class="keyword">break</span>; <span class="comment">//直到栈空</span></span><br><span class="line">		x = S.pop(); <span class="comment">//弹出下一子树的树根</span></span><br><span class="line">	&#125;  <span class="meta">#pop = #push = #visit = O(n) = 分摊O(1)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里之所以使用一个栈而不是队列的用意，依然是因为栈的后进先出的特性，对于左侧链的访问的是自上而下的，存入栈中的右子树也就是自上而下的，而接着对右子树的遍历是自下而上的，对栈来说就是自顶向底的，对栈的一系列依次的<code>pop</code>操作则恰好可以实现栈中右子树的自顶向底的访问。</p>
+<p>下面看一个实例：</p>
+<p><img src="/2020/02/21/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8810%EF%BC%89%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E9%81%8D%E5%8E%86/QQ图片20200221172902.png" style="zoom:50%;"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/20/Cpp%E5%9F%BA%E7%A1%80%EF%BC%8811%EF%BC%89%E8%99%9A%E5%87%BD%E6%95%B0%E5%92%8C%E5%A4%9A%E6%80%81/" rel="prev" title="Cpp基础（11）虚函数和多态">
+      <i class="fa fa-chevron-left"></i> Cpp基础（11）虚函数和多态
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-先序遍历"><span class="nav-text">1.先序遍历</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1递归"><span class="nav-text">1.1递归</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-迭代（版本1）"><span class="nav-text">1.2.迭代（版本1）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-迭代（版本2）"><span class="nav-text">1.3.迭代（版本2）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">189k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
