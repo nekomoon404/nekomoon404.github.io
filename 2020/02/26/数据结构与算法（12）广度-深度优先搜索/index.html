@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文针对图结构介绍其广度优先搜索与深度优先搜索算法，总体策略都是将图这种非线性结构转化为半线性结构，进而转化为线性结构进行研究 。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（12）广度&#x2F;深度优先搜索">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文针对图结构介绍其广度优先搜索与深度优先搜索算法，总体策略都是将图这种非线性结构转化为半线性结构，进而转化为线性结构进行研究 。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226100517.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226105520.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226105542.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226111027.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226112909.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226115437.png">
+<meta property="article:published_time" content="2020-02-26T01:31:21.000Z">
+<meta property="article:modified_time" content="2020-02-26T04:09:48.254Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ%E5%9B%BE%E7%89%8720200226100517.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（12）广度/深度优先搜索 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（12）广度/深度优先搜索
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-26 09:31:21 / 修改时间：12:09:48" itemprop="dateCreated datePublished" datetime="2020-02-26T09:31:21+08:00">2020-02-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <div class="post-description">本文针对图结构介绍其广度优先搜索与深度优先搜索算法，总体策略都是将图这种非线性结构转化为半线性结构，进而转化为线性结构进行研究 。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-广度优先搜索"><a href="#1-广度优先搜索" class="headerlink" title="1.广度优先搜索"></a>1.广度优先搜索</h1><h2 id="1-1-算法"><a href="#1-1-算法" class="headerlink" title="1.1.算法"></a>1.1.算法</h2><ul>
+<li>始自顶点s的<strong>广度优先搜索</strong>（Breadth-First-Search）<ul>
+<li>访问顶点s</li>
+<li>依次访问s所有尚未访问的邻接顶点</li>
+<li>依次访问它们尚未访问的邻接顶点</li>
+<li>…….如此反复，直至没有尚未访问的邻接顶点</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226100517.png" style="zoom:80%;"></p>
+<p>这种搜索将首先访问s，在这个图中通过将s染黑表示它已经接受了访问。接下来需要访问S所有尚未访问的邻接顶点，由s通往它的那些刚被访问的邻居的边都被加粗，这暗示着这些边都已经被算法所采纳和保留，这些边都是非常重要的，它们携带了整个遍历过程中所发现的一些信息。反过来在原图中还会有一些边并不采纳（浅色线部分）在经过广度优先遍历之后，它们将不再保留而是被舍弃掉。</p>
+<p>这个算法将不断地如此迭代反复，直到所有的顶点都接受了访问。所谓广度优先搜索的确是一种遍历，它会按照刚才所介绍的策略确定不同顶点接受访问的次序，并且按照这种次序对各顶点逐个地访问，而整个搜索过程的最终产物或成果不过是选自原图的一系列的加粗的边。</p>
+<p>这里按照与起点s的距离将所有的顶点划分为若干个等价类，在同一等价类内部各顶点的边都不会被采纳，而只有连接于相邻等价类之间的某些边才会被采纳。所有被保留下来并且采纳的这些边将足以把所有的顶点连接起来构成一个连通图，且它是一个<strong>极大无环图</strong>。这就相当于一棵树，这棵树中涵盖了原图的所有的顶点，所以称之为<strong>支撑树</strong>（Spanning Tree）。对于树而言，以上策略及过程完全等同于<strong>层次遍历</strong>。</p>
+<h2 id="1-2-实现"><a href="#1-2-实现" class="headerlink" title="1.2.实现"></a>1.2.实现</h2><p>上述的策略可以实现而这样一段代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tv, <span class="keyword">typename</span> Te&gt; <span class="comment">//广度优先搜索BFS算法（单个连通域）</span></span><br><span class="line"><span class="keyword">void</span> Graph&lt;Tv, Te&gt;::BFS ( <span class="keyword">int</span> v, <span class="keyword">int</span>&amp; clock ) &#123; <span class="comment">//assert: 0 &lt;= v &lt; n</span></span><br><span class="line">   Queue&lt;<span class="keyword">int</span>&gt; Q; <span class="comment">//引入辅助队列</span></span><br><span class="line">   status ( v ) = DISCOVERED; Q.enqueue ( v ); <span class="comment">//初始化起点</span></span><br><span class="line">   <span class="keyword">while</span> ( !Q.empty() ) &#123; <span class="comment">//在Q变空之前，不断</span></span><br><span class="line">      <span class="keyword">int</span> v = Q.dequeue(); </span><br><span class="line">	  dTime ( v ) = ++clock; <span class="comment">//取出队首顶点v</span></span><br><span class="line">      <span class="keyword">for</span> ( <span class="keyword">int</span> u = firstNbr ( v ); <span class="number">-1</span> &lt; u; u = nextNbr ( v, u ) ) <span class="comment">//枚举v的所有邻居u</span></span><br><span class="line">         <span class="keyword">if</span> ( UNDISCOVERED == status ( u ) ) &#123; <span class="comment">//若u尚未被发现，则</span></span><br><span class="line">            status ( u ) = DISCOVERED; Q.enqueue ( u ); <span class="comment">//发现该顶点</span></span><br><span class="line">            status ( v, u ) = TREE; parent ( u ) = v; <span class="comment">//引入树边拓展支撑树</span></span><br><span class="line">         &#125; </span><br><span class="line">         <span class="keyword">else</span> &#123; <span class="comment">//若u已被发现，或者甚至已访问完毕，则</span></span><br><span class="line">            status ( v, u ) = CROSS; <span class="comment">//将(v, u)归类于跨边</span></span><br><span class="line">         &#125;</span><br><span class="line">      status ( v ) = VISITED; <span class="comment">//至此，当前顶点访问完毕</span></span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到遍历的起点总是某个预先指定的顶点v，既然图的广度优先遍历可以视作为树的层次遍历的一种推广，所以与后者相仿这里依然借助一个队列结构来实现。在v入队之前将它的状态由最初的undiscovered转化为discovered，接下来的<code>while</code>循环每次都通过<code>dequeue()</code>取出队首的顶点并且重新命名为<code>v</code>。</p>
+<p>请注意 在每一个顶点刚刚出队并随即接受访问的同时，我们还需要给它打上一个时间标签<code>dTime</code>，在算法的入口处还有一个名为<code>clock</code>的引用型参数，它就像是一块钟表在整个算法的运行过程中都会给出时间的进度，任何时候如果你希望加注当前的时间标签，只需要将这块表取出来并读取上面的时刻。</p>
+<p>按照算法的策略我们需要枚举出当前节点<code>v</code>的所有邻居，通过<code>for</code>循环语句来实现，<code>firstNbr</code>以及<code>nextNbr</code>接口在上文有介绍过。</p>
+<p>经过整个的遍历搜索过程，每一个顶点的状态都会由最初的undiscovered转化为discovered，并最终转化为visited，这样的三个状态也就构成了每一个顶点在它的生命期内的三部曲。</p>
+<p>下面以一个无向图为例来理解算法的过程：</p>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226105520.png" style="zoom: 75%;"></p>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226105542.png" style="zoom:75%;"></p>
+<h2 id="1-3-全图BFS"><a href="#1-3-全图BFS" class="headerlink" title="1.3.全图BFS"></a>1.3.全图BFS</h2><p>与起始顶点s相连通的每一个顶点都会被bfs搜索、发现并访问，即s顶点所属的那个连通域确实可以被悉数的遍历。然而问题是并非每幅图都只包含一个连通域，那么在含有多个连通域的时候从任何一个起点s出发未必能够抵达其它的连通域。那么这种情况如何处理，如何使得bfs搜索足以覆盖整幅图呢，可以采用下面的方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tv, <span class="keyword">typename</span> Te&gt; <span class="comment">//广度优先搜索BFS算法（全图）</span></span><br><span class="line"><span class="keyword">void</span> Graph&lt;Tv, Te&gt;::bfs ( <span class="keyword">int</span> s ) &#123; <span class="comment">//assert: 0 &lt;= s &lt; n</span></span><br><span class="line">   reset(); <span class="keyword">int</span> clock = <span class="number">0</span>; <span class="keyword">int</span> v = s; <span class="comment">//初始化</span></span><br><span class="line">   <span class="keyword">do</span> <span class="comment">//逐一检查所有顶点</span></span><br><span class="line">      <span class="keyword">if</span> ( UNDISCOVERED == status ( v ) ) <span class="comment">//一旦遇到尚未发现的顶点</span></span><br><span class="line">         BFS ( v, clock ); <span class="comment">//即从该顶点出发启动一次BFS</span></span><br><span class="line">   <span class="keyword">while</span> ( s != ( v = ( ++v % n ) ) ); <span class="comment">//按序号检查，故不漏不重</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226111027.png" style="zoom:80%;"></p>
+<p>这里毕竟引入了一层新的循环而且至少从表面看来，这个循环的迭代次数将多达线性次。但这里并非对每一个顶点都启动一轮bfs搜索，而是只有在当前的顶点能够经过这个<code>if</code>判断（顶点尚未被发现）之后才启动这样一次搜索。这种处理方式可以保证对于每一个连通域只有一个顶点可能作为起点引起它所属的那个连通域被完全的遍历掉，每一个连通域启动而且只启动一次广度优先搜索，因此所有花费在搜索上的时间累计也不过是对全图的一次遍历，而不是多次。</p>
+<h2 id="1-4-复杂度"><a href="#1-4-复杂度" class="headerlink" title="1.4.复杂度"></a>1.4.复杂度</h2><p>广度优先搜索算法的复杂度取决于不同实现方法，尤其是图结构自身的实现算法，这里不妨就以我们的实现版本为例，算法主体的复杂度部分是由while以及for所构成的两重循环。</p>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226112909.png" style="zoom: 80%;"></p>
+<h2 id="1-5-最短路径"><a href="#1-5-最短路径" class="headerlink" title="1.5.最短路径"></a>1.5.最短路径</h2><p>最好来讨论BFS算法的一个特性：最短距离性。</p>
+<p>回顾此前所介绍的树结构，相对于树根节点任何一个节点v都对应于一条唯一的通路，这条路径的长度称作顶点v的深度depth(v)，于是我们可以对所有的顶点自上而下按照它们的深度进行等价类划分，在每一个等价类中的所有顶点所具有的深度指标都是彼此相等的。而树的层次遍历也可以认为是按照这一指标非降的次序，将所有的顶点逐一枚举出来。</p>
+<p>那么这样一个遍历的过程是否也可以转化为图结构的遍历过程呢？表面看来似乎不太容易，因为此时与树结构极不相同的就是从起始顶点s出发可能有多条路径都最后通往同一个顶点，而且可能出现分叉。然而这样一个问题不难解决，实际上我们只需考察顶点之间的最短通路，并且将这两个顶点之间的距离取作这条最短通路的长度dist(v, s)。</p>
+<p><img src="/2020/02/26/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8812%EF%BC%89%E5%B9%BF%E5%BA%A6-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/QQ图片20200226115437.png" style="zoom: 33%;"></p>
+<p>巧合的是图的BFS搜索与树的层次遍历一样都具有这样一种单调性，即BFS所给出的顶点序列按照这样到起点的距离也是按照非降次单调排列的。在我们最终所生成的BFS树中，每个顶点与s之间的那条通路恰好就是在原图中这两个顶点之间的最短通路。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/25/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8811%EF%BC%89%E5%9B%BE/" rel="prev" title="数据结构与算法（11）图">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（11）图
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-广度优先搜索"><span class="nav-text">1.广度优先搜索</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-算法"><span class="nav-text">1.1.算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-实现"><span class="nav-text">1.2.实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-全图BFS"><span class="nav-text">1.3.全图BFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-复杂度"><span class="nav-text">1.4.复杂度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-最短路径"><span class="nav-text">1.5.最短路径</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">222k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
