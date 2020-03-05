@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="通过合理设定适度平衡的标准，并借助以上等价变换，AVL树可以实现近乎理想的平衡。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（14）AVL树">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="通过合理设定适度平衡的标准，并借助以上等价变换，AVL树可以实现近乎理想的平衡。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305094921.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305100624.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305104007.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305110344.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305110410.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305113736.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305113800.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305161322.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305162914.png">
+<meta property="article:published_time" content="2020-03-05T01:29:44.000Z">
+<meta property="article:modified_time" content="2020-03-05T08:40:33.761Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200305094921.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（14）AVL树 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（14）AVL树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-05 09:29:44 / 修改时间：16:40:33" itemprop="dateCreated datePublished" datetime="2020-03-05T09:29:44+08:00">2020-03-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.7k</span>
+            </span>
+            <div class="post-description">通过合理设定适度平衡的标准，并借助以上等价变换，AVL树可以实现近乎理想的平衡。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>AVL树是由G. M. Adelson-Velsky和E. M. Landis与1962年发明的一种平衡二叉搜索树，并以他们名字的首字母命名。通过合理设定适度平衡的标准，并借助以上等价变换，AVL树可以实现近乎理想的平衡。在渐进意义下，AVL树始终将高度控制在$O(\log n)$以内，从而保证每次查找，插入或删除操作，均可在$O(\log n)$的时间内完成。</p>
+<h1 id="1-定义及性质"><a href="#1-定义及性质" class="headerlink" title="1.定义及性质"></a>1.定义及性质</h1><p>任一节点v的平衡因子（balance factor）定义为“其左、右子树的高度差”，即：</p>
+<p>balFac(v) = height( lc(v) ) - height( rc(v) )</p>
+<p>在AVL树中，任意节点的平衡因子的绝对值不超过1，即|balFac(v)| $\le$ 1，注意空树高度取-1，单节点子树（叶节点）高度取0。AVL树未必理想平衡，但必然<strong>适度平衡</strong>。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305094921.png" style="zoom: 67%;"></p>
+<p>适度平衡要求当节点数固定为n时，树的高度渐进地不超过$O(\log n)$。欲证明AVL树满足适度平衡条件，可转化为证明当树的高度固定时，树中的节点数不会太少。考虑高度为h的所有AVL树，并取S为其中节点数最少的一棵，如下图，$S_L$和$S_R$分别为$S$的左右子树，$S_L$和$S_R$也都是AVL树，而且高度不超过h-1，又因为$S$的节点数最少，所以$S_L$和$S_R$中一个高度为h-1，一个高度为h-2。从而可以得到以下递推关系，并加以整理得到fibonacci数列的形式：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+S(h)&=1+S(h-1)+S(h-2)\\
+S(h)+1&=[S(h-1)+1]+[S(h-2)+1]\\
+fib(h+3)&=fib(h+2)+fib(h+1)
+\end{align*}</script><p>从高度为0，1，2的树的节点数可以推出节点数$S(h)$和fibonacci数的关系，即$S(h)=fib(h+3)$。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305100624.png" style="zoom:80%;"></p>
+<p>可得对于高度为h的AVL数，节点数n满足$n\ge \Omega(\Phi ^h)$，因此对于节点数固定为n的AVL数，其高度h满足$h\le O(\log n)$。</p>
+<p>基于BST模板类，可直接派生出AVL模板类，并根据AVL树的重平衡规则与算法，重写了insert()和remove()接口。另外，为简化对节点平衡性的判断，算法实现时可借用宏定义。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Balanced(x) ( stature( (x).lc ) == stature( (x).rc ) ) <span class="comment">//理想平衡条件</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BalFac(x) ( stature( (x).lc ) - stature( (x).rc ) ) <span class="comment">//平衡因子</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AvlBalanced(x) ( ( -2 &lt; BalFac(x) ) &amp;&amp; ( BalFac(x) &lt; 2 ) ) <span class="comment">//AVL平衡条件</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">class</span> <span class="title">AVL</span> :</span> <span class="keyword">public</span> BST&lt;T&gt; &#123; <span class="comment">//由BST派生AVL树模板类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   BinNodePosi(T) insert ( <span class="keyword">const</span> T&amp; e ); <span class="comment">//插入（重写）</span></span><br><span class="line">   <span class="function"><span class="keyword">bool</span> <span class="title">remove</span> <span class="params">( <span class="keyword">const</span> T&amp; e )</span></span>; <span class="comment">//删除（重写）</span></span><br><span class="line"><span class="comment">// BST::search()等其余接口可直接沿用</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>按照BST规则插入或删除节点之后，AVL中节点的高度可能会发生变化，平衡性可能会破坏，以致于不再满足AVL树的条件。如此因节点x的插入或删除而暂时失衡的节点，构成失衡的节点集，记作UT(x)。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305104007.png" style="zoom:67%;"></p>
+<p>为了恢复AVL的平衡性需要借助等价变换，它有以下优势：</p>
+<ul>
+<li>局部性：所有的旋转都在局部进行         //每行只需$O(1)$时间</li>
+<li>快速性：在每一深度只需检查并旋转至多一次          //共$O(\log n)$次</li>
+</ul>
+<h1 id="2-节点插入"><a href="#2-节点插入" class="headerlink" title="2.节点插入"></a>2.节点插入</h1><p>新引入节点x后，<strong>UT(x)中的节点都是x的祖先，且高度不低于x的祖父</strong>。将其中的最深者记为g(x)，在 x与g(x)的通路上，设p为g(x)的孩子，v为p的孩子，既然g(x)不低于x的祖父，则p必是x的真祖先。</p>
+<p>首先需要找到如上定义的g(x)，可以从x出发沿parent指针逐层上行并核对平衡因此，首次遇到的失衡祖先即为g(x)，既然原树是平衡的，故这一过程需要$O(\log n)$。既然g(x)是因x的引入而失衡，则p和v的高度均不低于其各自的兄弟，因此借助宏定义的<code>tallerChild()</code>，即可反过来由g(x)找到p和v。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> tallerChild(x) ( \</span></span><br><span class="line">   stature( (x)-&gt;lc ) &gt; stature( (x)-&gt;rc ) ? (x)-&gt;lc : ( <span class="comment">/*左高*/</span> \</span><br><span class="line">   stature( (x)-&gt;lc ) &lt; stature( (x)-&gt;rc ) ? (x)-&gt;rc : ( <span class="comment">/*右高*/</span> \</span><br><span class="line">   IsLChild( * (x) ) ? (x)-&gt;lc : (x)-&gt;rc <span class="comment">/*等高：与父亲x同侧者（zIg-zIg或zAg-zAg）优先*/</span> \</span><br><span class="line">   ) \</span><br><span class="line">   ) \</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>以下根据节点g(x)、p和v之间具体的联接方向，采用不同的局部调整方案。</p>
+<p><strong>单旋</strong>：</p>
+<p>当g、p和v在同一侧时，如下图都在右侧（可称为<strong>zag-zag</strong>，对称地若都在左侧可称为zig-zig），在$T_2$或者$T_3$处插入新的节点，插入的节点在底部以浅灰色表示，g的平衡因子由原来的-1变为-2，失衡。这种情况只需g经单次旋转zag(g(x))，图中的子树高度复原，更高的祖先也比平衡，全树复衡。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305110344.png" style="zoom:67%;"></p>
+<p><strong>双旋</strong>：</p>
+<p>当g、p和v不在同一侧时，如下图中p是g的右孩子，v是p的左孩子（可称为<strong>zag-zig</strong>，对称地若p是g的左孩子，v是p的右孩子可称为zig-zag），在$T_1$或者$T_2$处插入新的节点，插入新节点后，g的平衡因子由原来的-1变为-2，失衡。这种情况需要先做顺时针旋转zig(p)，在做逆时针旋转zag(g)，得到一棵平衡的等价二叉树。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305110410.png" style="zoom:67%;"></p>
+<p>无论单旋还是双旋，经局部调整之后，不仅g(x)能够重获平衡，而且局部子树的高度也必将平衡。这就意味着，g(x)以上所有祖先的平衡因子亦将统一地复原，即在AVL树中插入新节点后，仅需要至多两次旋转，即可使整数恢复平衡。</p>
+<p>AVL树插入节点的<strong>代码实现</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BinNodePosi(T) AVL&lt;T&gt;::insert ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//将关键码e插入AVL树中</span></span><br><span class="line">   BinNodePosi(T) &amp; x = search ( e ); <span class="keyword">if</span> ( x ) <span class="keyword">return</span> x; <span class="comment">//确认目标节点不存在</span></span><br><span class="line">   BinNodePosi(T) xx = x = <span class="keyword">new</span> BinNode&lt;T&gt; ( e, _hot ); _size++; <span class="comment">//创建新节点x</span></span><br><span class="line"><span class="comment">// 此时，x的父亲_hot若增高，则其祖父有可能失衡</span></span><br><span class="line">   <span class="keyword">for</span> ( BinNodePosi(T) g = _hot; g; g = g-&gt;parent ) &#123; <span class="comment">//从x之父出发向上，逐层检查各代祖先g</span></span><br><span class="line">      <span class="keyword">if</span> ( !AvlBalanced ( *g ) ) &#123; <span class="comment">//一旦发现g失衡，则（采用“3 + 4”算法）使之复衡，并将子树</span></span><br><span class="line">         FromParentTo ( *g ) = rotateAt ( tallerChild ( tallerChild ( g ) ) ); <span class="comment">//重新接入原树</span></span><br><span class="line">         <span class="keyword">break</span>; <span class="comment">//g复衡后，局部子树高度必然复原；其祖先亦必如此，故调整随即结束</span></span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="comment">//否则（g依然平衡），只需简单地</span></span><br><span class="line">         updateHeight ( g ); <span class="comment">//更新其高度（注意：即便g未失衡，高度亦可能增加）</span></span><br><span class="line">   &#125; <span class="comment">//至多只需一次调整；若果真做过调整，则全树高度必然复原</span></span><br><span class="line">   <span class="keyword">return</span> xx; <span class="comment">//返回新节点位置</span></span><br><span class="line">&#125; <span class="comment">//无论e是否存在于原树中，总有AVL::insert(e)-&gt;data == e</span></span><br></pre></td></tr></table></figure>
+<p>效率：该算法首先按照二叉搜索树的常规算法在$O(\log n)$时间内插入新节点x，既然原树是平衡的，故至多坚持$O(\log n)$个节点即可确定g(x)，而至多旋转两次即可使局部乃至全树恢复平衡，因此<strong>AVL树的节点插入操作可以在$O(\log n)$时间内完成</strong>。</p>
+<h1 id="3-节点删除"><a href="#3-节点删除" class="headerlink" title="3.节点删除"></a>3.节点删除</h1><p>与插入操作不同的是，在删除节点x后，以及在随后的调整过程中，失衡节点集UT(x)始终至多只含一个节点。若该节点g(x)存在，其高度必与失衡前相同，而且g(x)有可能就是x的父亲。</p>
+<p>与插入操作同理，从<code>_hot</code>节点出发沿<code>parent</code>指针上行经过$O(\log n)$时间即可确定g(x)位置，作为失衡节点的g(x)在不包含x的一侧必有一个非空孩子p，且p的高度至少为1。选取p的孩子节点v时可按以下规则：若两个孩子不等高，则v取其中的更高者；若两个孩子等高，则取与p同向者。</p>
+<p>以下不妨假设失衡后g(x)的平衡因子为+2，根据g、p和v的关系，通过等价变换，同样可以使得这一局部恢复平衡。</p>
+<p><strong>单旋</strong>：</p>
+<p>如下图g、p和v在同一侧，在$T_3$中删除节点使得节点g(x)失衡，通过一次顺时针旋转zig( g )即可恢复局部的平衡。这里约定图中以虚线连接的灰色方块所对应的节点，不能同时为空；$T_2$底部的灰色方块所对应的节点，可以为空，也可以非空。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305113736.png" style="zoom: 50%;"></p>
+<p><strong>双旋</strong>：</p>
+<p>如下图g、p和v不在同一侧，在$T_3$中删除节点使得节点g(x)失衡，这种情况需要先做一次逆时针旋转zag( p )，再做一次顺时针旋转zig( g )，即可恢复局部平衡。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305113800.png" style="zoom:50%;"></p>
+<p><strong>失衡传播</strong>：</p>
+<p>经过旋转操作使局部恢复平衡后，子树的高度未必复原，如上图中子树的高度降低，因此其更高的祖先可能失衡。在删除节点之后的调整过程中，这种由于低层失衡节点的重平衡而致使其更高层祖先失衡的现象，称作“失衡传播”。</p>
+<p>失衡传播的方向必然是自底而上的，因而不致于影响到狗带节点。在此过程中的任一时刻，至多只有一个失衡的节点；高层的某一节点由平衡转为失衡，只能发生在下层失衡节点恢复平衡之后。因此可沿parent指针逐层遍历所有祖先，每找到一个失衡的祖先节点，即可套用以上方法式使之恢复平衡。</p>
+<p>AVL树删除节点的<strong>代码实现</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">bool</span> AVL&lt;T&gt;::<span class="built_in">remove</span> ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//从AVL树中删除关键码e</span></span><br><span class="line">   BinNodePosi(T) &amp; x = search ( e ); <span class="keyword">if</span> ( !x ) <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">//确认目标存在（留意_hot的设置）</span></span><br><span class="line">   removeAt ( x, _hot ); _size--; <span class="comment">//先按BST规则删除之（此后，原节点之父_hot及其祖先均可能失衡）</span></span><br><span class="line">   <span class="keyword">for</span> ( BinNodePosi(T) g = _hot; g; g = g-&gt;parent ) &#123; <span class="comment">//从_hot出发向上，逐层检查各代祖先g</span></span><br><span class="line">      <span class="keyword">if</span> ( !AvlBalanced ( *g ) ) <span class="comment">//一旦发现g失衡，则（采用“3 + 4”算法）使之复衡，并将该子树联至</span></span><br><span class="line">         g = FromParentTo ( *g ) = rotateAt ( tallerChild ( tallerChild ( g ) ) ); <span class="comment">//原父亲</span></span><br><span class="line">      updateHeight ( g ); <span class="comment">//并更新其高度（注意：即便g未失衡，高度亦可能降低）</span></span><br><span class="line">   &#125; <span class="comment">//可能需做Omega(logn)次调整——无论是否做过调整，全树高度均可能降低</span></span><br><span class="line">   <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">//删除成功</span></span><br><span class="line">&#125; <span class="comment">//若目标节点存在且被删除，返回true；否则返回false</span></span><br></pre></td></tr></table></figure>
+<p>效率：较之插入操作，删除操作可能需要在重平衡上要多花费 一些时间，既然需要做重平衡的节点都是x的祖先，故重平衡过程累计只需$O(\log n)$时间，因此<strong>AVL树的节点删除操作总体的时间复杂度依然是$O(\log n)$</strong>。</p>
+<h1 id="4-统一重平衡算法"><a href="#4-统一重平衡算法" class="headerlink" title="4.统一重平衡算法"></a>4.统一重平衡算法</h1><p>这一节主要解决如何实现第2、3节中插入/删除操作实现代码中的重平衡算法<code>rotateAt()</code>，上述重平衡的方法实质上可以转换成一种更简明的方法，无论是插入或删除操作，都要从刚发生修改的位置x出发向上直到遇到最低的失衡节点g(x)，在g(x)更高一侧的子树中，其孩子节点p和孙子节点v必然存在，按中序遍历次序，将其重命名为：$a &lt; b &lt; c$。它们总共拥有互不相交的四棵（可能为空）子树，按中序遍历序列，将其重命中为：$T_0&lt;T_1&lt;T_2&lt;T_3$。</p>
+<p>将原先以g为根的子树S，替换为一棵新子树S’：</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305161322.png" style="zoom: 50%;"></p>
+<p>等价变换后得到的新子树也是一棵AVL树，保持中序遍历次序：$T_0&lt;a&lt;T_1&lt;b&lt;T_2&lt;c&lt;T_3$。实际上，这一理解涵盖了此前两节所有的单旋和双旋情况（就相当于不进行“旋转”操作，而是直接将节点和子树“拆开”来按中序遍历次序保持不变重新拼到一起，使之恢复平衡）。相应的重构过程，仅涉及局部的三个节点及四棵子树，故称作<strong>“ 3 + 4 ”重构</strong>。</p>
+<p>这种重构算法可以实现为下面的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************</span></span><br><span class="line"><span class="comment"> * 按照“3 + 4”结构联接3个节点及其四棵子树，返回重组之后的局部子树根节点位置（即b）</span></span><br><span class="line"><span class="comment"> * 子树根节点与上层节点之间的双向联接，均须由上层调用者完成</span></span><br><span class="line"><span class="comment"> * 可用于AVL和RedBlack的局部平衡调整</span></span><br><span class="line"><span class="comment"> *********************************************************************************/</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BinNodePosi(T) BST&lt;T&gt;::connect34 (</span><br><span class="line">   BinNodePosi(T) a, BinNodePosi(T) b, BinNodePosi(T) c,</span><br><span class="line">   BinNodePosi(T) T0, BinNodePosi(T) T1, BinNodePosi(T) T2, BinNodePosi(T) T3</span><br><span class="line">) &#123;</span><br><span class="line">   <span class="comment">//*DSA*/print(a); print(b); print(c); printf("\n");</span></span><br><span class="line">   a-&gt;lc = T0; <span class="keyword">if</span> ( T0 ) T0-&gt;parent = a;</span><br><span class="line">   a-&gt;rc = T1; <span class="keyword">if</span> ( T1 ) T1-&gt;parent = a; updateHeight ( a );</span><br><span class="line">   c-&gt;lc = T2; <span class="keyword">if</span> ( T2 ) T2-&gt;parent = c;</span><br><span class="line">   c-&gt;rc = T3; <span class="keyword">if</span> ( T3 ) T3-&gt;parent = c; updateHeight ( c );</span><br><span class="line">   b-&gt;lc = a; a-&gt;parent = b;</span><br><span class="line">   b-&gt;rc = c; c-&gt;parent = b; updateHeight ( b );</span><br><span class="line">   <span class="keyword">return</span> b; <span class="comment">//该子树新的根节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据g、p和v之间的联接关系，可以将g、p和v，以及它们的四棵子树与$a,b,c,T_0,T_1,T_2.T_3$对应起来，如” zig-zig “的联接方式，对应的是<code>connect34(v, p, g, v-&gt;lc, v-&gt;rc, p-&gt;rc, g-&gt;rc)</code>；而” zig-zag “的联接方式，对应的是<code>connect34(p, v, g, p-&gt;lc, v-&gt;lc, v-&gt;rc, g-&gt;rc)</code>，总之就是按照中序遍历次序代入就可。</p>
+<p><img src="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/QQ图片20200305162914.png" style="zoom: 50%;"></p>
+<p>利用<code>connect34()</code>算法，即可视不同情况，按如下的代码实现重平衡算法<code>rotateAt()</code>，<code>rotateAt()</code>算法的复杂度依然是$O(1)$。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************</span></span><br><span class="line"><span class="comment"> * BST节点旋转变换统一算法（3节点 + 4子树），返回调整之后局部子树根节点的位置</span></span><br><span class="line"><span class="comment"> * 注意：尽管子树根会正确指向上层节点（如果存在），但反向的联接须由上层函数完成</span></span><br><span class="line"><span class="comment"> *********************************************************************************/</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BinNodePosi(T) BST&lt;T&gt;::rotateAt ( BinNodePosi(T) v ) &#123; <span class="comment">//v为非空孙辈节点</span></span><br><span class="line">   <span class="comment">/*DSA*/</span><span class="keyword">if</span> ( !v ) &#123; <span class="built_in">printf</span> ( <span class="string">"\a\nFail to rotate a null node\n"</span> ); <span class="built_in">exit</span> ( <span class="number">-1</span> ); &#125;</span><br><span class="line">   BinNodePosi(T) p = v-&gt;parent; BinNodePosi(T) g = p-&gt;parent; <span class="comment">//视v、p和g相对位置分四种情况</span></span><br><span class="line">   <span class="keyword">if</span> ( IsLChild ( *p ) ) <span class="comment">/* zig */</span></span><br><span class="line">      <span class="keyword">if</span> ( IsLChild ( *v ) ) &#123; <span class="comment">/* zig-zig */</span> <span class="comment">//*DSA*/printf("\tzIg-zIg: ");</span></span><br><span class="line">         p-&gt;parent = g-&gt;parent; <span class="comment">//向上联接</span></span><br><span class="line">         <span class="keyword">return</span> connect34 ( v, p, g, v-&gt;lc, v-&gt;rc, p-&gt;rc, g-&gt;rc );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">/* zig-zag */</span>  <span class="comment">//*DSA*/printf("\tzIg-zAg: ");</span></span><br><span class="line">         v-&gt;parent = g-&gt;parent; <span class="comment">//向上联接</span></span><br><span class="line">         <span class="keyword">return</span> connect34 ( p, v, g, p-&gt;lc, v-&gt;lc, v-&gt;rc, g-&gt;rc );</span><br><span class="line">      &#125;</span><br><span class="line">   <span class="keyword">else</span>  <span class="comment">/* zag */</span></span><br><span class="line">      <span class="keyword">if</span> ( IsRChild ( *v ) ) &#123; <span class="comment">/* zag-zag */</span> <span class="comment">//*DSA*/printf("\tzAg-zAg: ");</span></span><br><span class="line">         p-&gt;parent = g-&gt;parent; <span class="comment">//向上联接</span></span><br><span class="line">         <span class="keyword">return</span> connect34 ( g, p, v, g-&gt;lc, p-&gt;lc, v-&gt;lc, v-&gt;rc );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">/* zag-zig */</span>  <span class="comment">//*DSA*/printf("\tzAg-zIg: ");</span></span><br><span class="line">         v-&gt;parent = g-&gt;parent; <span class="comment">//向上联接</span></span><br><span class="line">         <span class="keyword">return</span> connect34 ( g, v, p, g-&gt;lc, v-&gt;lc, v-&gt;rc, p-&gt;rc );</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对AVL树的<strong>综合评价</strong>：</p>
+<p><strong>优点</strong>：无论查找、插入或删除，最坏情况下的复杂度均为$O(\log n)$，需要$O(n)$的存储空间。</p>
+<p><strong>缺点</strong>：需要借助高度或平衡因子，为此需要改造元素结构，或额外封装。实测复杂度与理论值尚有差距，删除操作后，最多需要重平衡$\Omega(\log n)$次，若需频繁地进行插入/删除操作，未免得不偿失。单次动态调整后，全树的拓扑结构的变化量可能高达$\Omega(\log n)$，我们希望将它们控制到更低，比如在下一章将要介绍的红黑树，则可以将这个变化量严格地控制在每次不超过常数无，论对于插入操作还是删除操作都是如此。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/03/Cpp%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89%E5%AE%B9%E5%99%A8/" rel="prev" title="Cpp基础（14）容器">
+      <i class="fa fa-chevron-left"></i> Cpp基础（14）容器
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-定义及性质"><span class="nav-text">1.定义及性质</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-节点插入"><span class="nav-text">2.节点插入</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-节点删除"><span class="nav-text">3.节点删除</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-统一重平衡算法"><span class="nav-text">4.统一重平衡算法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">269k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
