@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="与前一章的AVL树一样，伸展树也是二叉搜索树的一种形式，相对于AVL，伸展树的实现更为简捷。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（15）伸展树">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="与前一章的AVL树一样，伸展树也是二叉搜索树的一种形式，相对于AVL，伸展树的实现更为简捷。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312211626.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312211939.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312214950.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312220038.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312220506.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312222038.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312223139.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312224920.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312232903.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312234023.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312234848.png">
+<meta property="article:published_time" content="2020-03-12T12:24:46.000Z">
+<meta property="article:modified_time" content="2020-03-12T15:49:11.293Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200312211626.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（15）伸展树 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（15）伸展树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-12 20:24:46 / 修改时间：23:49:11" itemprop="dateCreated datePublished" datetime="2020-03-12T20:24:46+08:00">2020-03-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.6k</span>
+            </span>
+            <div class="post-description">与前一章的AVL树一样，伸展树也是二叉搜索树的一种形式，相对于AVL，伸展树的实现更为简捷。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>与前一章的AVL树一样，伸展树也是二叉搜索树的一种形式，相对于AVL，伸展树的实现更为简捷。伸展树无需时刻严格地保持全树的平衡，但却能够在任何足够长的真实操作序列中保持分摊意义上的高效率。伸展树也不需要对基本的二叉树节点结构，做任何附加的要求或改动，更不需要记录平衡平衡因子或高度之类的额外信息，故适用范围更广。</p>
+<h1 id="1-构思"><a href="#1-构思" class="headerlink" title="1.构思"></a>1.构思</h1><h2 id="1-1-局部性"><a href="#1-1-局部性" class="headerlink" title="1.1.局部性"></a>1.1.局部性</h2><p>信息处理的典型模式是，将所有数据项视作一个集合，并将其组织为某种适宜的数据结构，进而借助操作接口高效访问。通常在任意数据结构的生命周期内，不仅执行不同操作的概率往往极不均衡，而且各操作之间具有极强的相关性，并在整体上多呈现出极强的规律性。其中最为典型的，就是所谓的“数据局部性”（data locality），它包括两个方面的含义：</p>
+<ul>
+<li>刚刚被访问过的元素，极有可能在不久之后再次被访问到；</li>
+<li>将被访问的下一个元素，极有可能就处于不久之前被访问过的某个元素的附近。</li>
+</ul>
+<p>充分利用好此类特性，即可进一步地提高数据结构和算法的效率。就二叉搜索树（BST）而言，数据局部性具体表现为：</p>
+<ul>
+<li>刚刚被访问过的节点，极有可能在不久之后再次被访问到；</li>
+<li>将被访问的下一节点，极有可能就处于不久之前被访问过的某个节点的附近。</li>
+</ul>
+<p>因此需要将刚被访问的节点，及时地“转移”至树根（附近），即可加速后续的操作，转移前后的搜索树必须相互等价，为此仍需借助等价变换的技巧。</p>
+<h2 id="1-2-逐层伸展"><a href="#1-2-逐层伸展" class="headerlink" title="1.2.逐层伸展"></a>1.2.逐层伸展</h2><p>一种直接方式是，每访问过一个节点之后，随即反复地以它的父节点为轴，经适当的旋转将其提升一层，直至最终成为树根。即自下而上，逐层单旋：<code>zig(v-&gt;parent)</code>或<code>zag(v-&gt;parent)</code>，直至v最终被推送至根。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312211626.png" style="zoom: 67%;"></p>
+<p>以下图为例，深度为3的节点E刚被访问（查找，插入或“删除”），都可通过3次旋转，将概述等价变换为以E为根的另一颗二叉树。随着节点E的逐层上升，两侧子树的结构也不断地调整，故这一过程也形象地称为<strong>伸展（splaying）</strong>。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312211939.png" style="zoom: 67%;"></p>
+<p>但目前的策略仍存在致命的缺陷——对于很多访问序列，单词访问的分摊时间复杂度在极端情况下可能高达$\Omega(n)$。以下图为例，若从空树开始依次插入关键码$\{1,2,3,4,5\}$，全树的拓扑结构始终呈单链条结构，等价于一维列表。接下来若通过search()接口，再由小到大地依次访问各节点依次，则概述在各次访问之后的结构形态将如图（b~f）所示。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312214950.png" style="zoom:67%;"></p>
+<p>可见在各次访问之后，为将对应节点伸展调整至树根，分别需做$4、4、3、2、1$次旋转。一般地，若节点数为n，则旋转操作的总次数应为：</p>
+<script type="math/tex; mode=display">
+(n-1)+\{(n-1)+(n-2）+\dots+1\}=(n^2+n-2)/2=\Omega(n^2)</script><p><strong>分摊到每次访问平均需要$\Omega(n)$时间</strong>，而这一效率不仅远远低于AVL树，而且甚至与原始的二叉搜索树的最坏情况相当。图(a)与图(f)中二叉树的结构完全相同，也就是说经过以上连续的5次访问之后，<strong>全树的结构将会复原</strong>，这就意味着以上情况可以持续地再现。</p>
+<p>这一访问序列导致$\Omega(n)$平均单次访问时间的原因，可以解释为：在这一可持续重复的过程中，二叉搜索树的高度始终不小于$\lfloor n/2 \rfloor$（向下取整）；而且至少有一半的节点在接受访问时，不仅没有靠近树根，而且反过来恰好处于最底层。从树高的角度看，问题根源也可再进一步地解释为：在持续访问的过程中，树高依算术级数逐步从$n-1$递减到$\lfloor n/2 \rfloor$，然后在逐步递增回到$n-1$。</p>
+<h2 id="1-3-双层伸展"><a href="#1-3-双层伸展" class="headerlink" title="1.3.双层伸展"></a>1.3.双层伸展</h2><p>为克服上述伸展调整策略的缺陷，一种简便且有效的方法就是：将逐层伸展改为双层伸展。具体地，<strong>每次都从当前节点v向上追溯两层</strong>（而不是仅一层），并根据其父亲p以及祖父g的相对位置，进行相应的旋转，可分为三种具体的情况：</p>
+<p><strong>zig - zag / zag - zig</strong>：（与AVL树的双旋等效，与逐层伸展也别无二致）</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312220038.png" style="zoom:67%;"></p>
+<p><strong>zig - zig / zag - zag</strong>：</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312220506.png" style="zoom:67%;"></p>
+<p><strong>注意顺序是先p后g</strong>，若颠倒次序，局部的细微差别将彻底地改变整体（p变成了g的父亲）</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312222038.png" style="zoom:67%;"></p>
+<p><strong>zig / zag</strong>：</p>
+<p>若v最初的深度为奇数，则经过若干次双层调整至最后一次调整时，v的父亲p即是树根r。此时必有parent(v) == root(T)，且每轮调整中这种情况至多（在最后）出现一次。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312223139.png" style="zoom:67%;"></p>
+<p>与逐层伸展相比，双层伸展中的<strong>zig-zag</strong>和<strong>zag-zig</strong>调整与逐层伸展完全一致，而<strong>zig-zig</strong>和<strong>zag-zag</strong>调整则有所不同，事实上后者才是双层伸展策略优于逐层伸展策略的关键所在。</p>
+<p>以下图为例做一个对比，最深节点(1)被访问之后再经过双层调整，不仅同样可将该节点伸展至树根，而且同时可使树的高度接近于减半。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312224920.png" style="zoom: 50%;"></p>
+<p>即树的形态而言，双层伸展策略可“智能”地折叠被访问的子树分支，从而有效地避免对长分支的连续访问，这就意味着即使节点v的深度为$\Omega(n)$，双层伸展策略即可将v推至树根，亦可令对应分支的长度以几何级数（大致折半）的速度收缩。</p>
+<p>通过双层伸展的策略，伸展树虽不能杜绝最坏情况的发生，却<strong>能有效地控制最坏情况发生的频度</strong>，从而在分摊意义上保证整体的高效率。Tarjan等人证明了<strong>伸展树的单次操作均可在分摊的$O(\log n)$时间内完成</strong>。</p>
+<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2.实现"></a>2.实现</h1><h2 id="2-1-接口定义"><a href="#2-1-接口定义" class="headerlink" title="2.1.接口定义"></a>2.1.接口定义</h2><p>基于<code>BST</code>类，可定义伸展树模板类<code>Splay</code>，直接沿用二叉搜索树类，并根据伸展树的平衡规则，重写了上基本操作接口<code>search()</code>，<code>insert()</code>和<code>remove()</code>，另外针对伸展树调整操作，设有一个内部保护型接口<code>splay()</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"BST/BST.h"</span> <span class="comment">//基于BST实现Splay</span></span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">class</span> <span class="title">Splay</span> :</span> <span class="keyword">public</span> BST&lt;T&gt; &#123; <span class="comment">//由BST派生的Splay树模板类</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">   BinNodePosi(T) splay ( BinNodePosi(T) v ); <span class="comment">//将节点v伸展至根</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   BinNodePosi(T) &amp; search ( <span class="keyword">const</span> T&amp; e ); <span class="comment">//查找（重写）</span></span><br><span class="line">   BinNodePosi(T) insert ( <span class="keyword">const</span> T&amp; e ); <span class="comment">//插入（重写）</span></span><br><span class="line">   <span class="function"><span class="keyword">bool</span> <span class="title">remove</span> <span class="params">( <span class="keyword">const</span> T&amp; e )</span></span>; <span class="comment">//删除（重写）</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="2-2-调整算法"><a href="#2-2-调整算法" class="headerlink" title="2.2.调整算法"></a>2.2.调整算法</h2><p>双层伸展的调整方法，可实现为一下的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> NodePosi&gt; <span class="keyword">inline</span> <span class="comment">//在节点*p与*lc（可能为空）之间建立父（左）子关系</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">attachAsLChild</span> <span class="params">( NodePosi p, NodePosi lc )</span> </span>&#123; p-&gt;lc = lc; <span class="keyword">if</span> ( lc ) lc-&gt;parent = p; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> NodePosi&gt; <span class="keyword">inline</span> <span class="comment">//在节点*p与*rc（可能为空）之间建立父（右）子关系</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">attachAsRChild</span> <span class="params">( NodePosi p, NodePosi rc )</span> </span>&#123; p-&gt;rc = rc; <span class="keyword">if</span> ( rc ) rc-&gt;parent = p; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//Splay树伸展算法：从节点v出发逐层伸展</span></span><br><span class="line">BinNodePosi(T) Splay&lt;T&gt;::splay ( BinNodePosi(T) v ) &#123; <span class="comment">//v为因最近访问而需伸展的节点位置</span></span><br><span class="line">   <span class="keyword">if</span> ( !v ) <span class="keyword">return</span> <span class="literal">NULL</span>; BinNodePosi(T) p; BinNodePosi(T) g; <span class="comment">//*v的父亲与祖父</span></span><br><span class="line">   <span class="keyword">while</span> ( ( p = v-&gt;parent ) &amp;&amp; ( g = p-&gt;parent ) ) &#123; <span class="comment">//自下而上，反复对*v做双层伸展</span></span><br><span class="line">      BinNodePosi(T) gg = g-&gt;parent; <span class="comment">//每轮之后*v都以原曾祖父（great-grand parent）为父</span></span><br><span class="line">      <span class="keyword">if</span> ( IsLChild ( *v ) )</span><br><span class="line">         <span class="keyword">if</span> ( IsLChild ( *p ) ) &#123; <span class="comment">//zig-zig</span></span><br><span class="line">            <span class="comment">/*DSA*/</span><span class="built_in">printf</span> ( <span class="string">"\tzIg-zIg :"</span> ); <span class="built_in">print</span> ( g ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> );</span><br><span class="line">            attachAsLChild ( g, p-&gt;rc ); attachAsLChild ( p, v-&gt;rc );</span><br><span class="line">            attachAsRChild ( p, g ); attachAsRChild ( v, p );</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123; <span class="comment">//zig-zag</span></span><br><span class="line">            <span class="comment">/*DSA*/</span><span class="built_in">printf</span> ( <span class="string">"\tzIg-zAg :"</span> ); <span class="built_in">print</span> ( g ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> );</span><br><span class="line">            attachAsLChild ( p, v-&gt;rc ); attachAsRChild ( g, v-&gt;lc );</span><br><span class="line">            attachAsLChild ( v, g ); attachAsRChild ( v, p );</span><br><span class="line">         &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> ( IsRChild ( *p ) ) &#123; <span class="comment">//zag-zag</span></span><br><span class="line">         <span class="comment">/*DSA*/</span><span class="built_in">printf</span> ( <span class="string">"\tzAg-zAg :"</span> ); <span class="built_in">print</span> ( g ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> );</span><br><span class="line">         attachAsRChild ( g, p-&gt;lc ); attachAsRChild ( p, v-&gt;lc );</span><br><span class="line">         attachAsLChild ( p, g ); attachAsLChild ( v, p );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">//zag-zig</span></span><br><span class="line">         <span class="comment">/*DSA*/</span><span class="built_in">printf</span> ( <span class="string">"\tzAg-zIg :"</span> ); <span class="built_in">print</span> ( g ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> );</span><br><span class="line">         attachAsRChild ( p, v-&gt;lc ); attachAsLChild ( g, v-&gt;rc );</span><br><span class="line">         attachAsRChild ( v, g ); attachAsLChild ( v, p );</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> ( !gg ) v-&gt;parent = <span class="literal">NULL</span>; <span class="comment">//若*v原先的曾祖父*gg不存在，则*v现在应为树根</span></span><br><span class="line">      <span class="keyword">else</span> <span class="comment">//否则，*gg此后应该以*v作为左或右孩子</span></span><br><span class="line">         ( g == gg-&gt;lc ) ? attachAsLChild ( gg, v ) : attachAsRChild ( gg, v );</span><br><span class="line">      updateHeight ( g ); updateHeight ( p ); updateHeight ( v );</span><br><span class="line">   &#125; <span class="comment">//双层伸展结束时，必有g == NULL，但p可能非空</span></span><br><span class="line">   <span class="keyword">if</span> ( p = v-&gt;parent ) &#123; <span class="comment">//若p果真非空，则额外再做一次单旋</span></span><br><span class="line">      <span class="comment">/*DSA*/</span><span class="keyword">if</span> ( IsLChild ( *v ) ) &#123; <span class="built_in">printf</span> ( <span class="string">"\tzIg :"</span> ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> ); &#125;</span><br><span class="line">      <span class="comment">/*DSA*/</span><span class="keyword">else</span>              &#123; <span class="built_in">printf</span> ( <span class="string">"\tzAg :"</span> ); <span class="built_in">print</span> ( p ); <span class="built_in">print</span> ( v ); <span class="built_in">printf</span> ( <span class="string">"\n"</span> ); &#125;</span><br><span class="line">      <span class="keyword">if</span> ( IsLChild ( *v ) ) &#123; attachAsLChild ( p, v-&gt;rc ); attachAsRChild ( v, p ); &#125;</span><br><span class="line">      <span class="keyword">else</span>                   &#123; attachAsRChild ( p, v-&gt;lc ); attachAsLChild ( v, p ); &#125;</span><br><span class="line">      updateHeight ( p ); updateHeight ( v );</span><br><span class="line">   &#125;</span><br><span class="line">   v-&gt;parent = <span class="literal">NULL</span>; <span class="keyword">return</span> v;</span><br><span class="line">&#125; <span class="comment">//调整之后新树根应为被伸展的节点，故返回该节点的位置以便上层函数更新树根</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-3-查找"><a href="#2-3-查找" class="headerlink" title="2.3.查找"></a>2.3.查找</h2><p>在伸展树中查找任一关键e，首先调用二叉搜索树BST的通用算法<code>searchIn()</code>，尝试查找具有关键码e的节点，无论查找是否成功，都继而调用<code>splay()</code>算法，将查找终止位置处的节点伸展到树根。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BinNodePosi(T) &amp; Splay&lt;T&gt;::search ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//在伸展树中查找e</span></span><br><span class="line">   BinNodePosi(T) p = searchIn ( _root, e, _hot = <span class="literal">NULL</span> );</span><br><span class="line">   _root = splay ( p ? p : _hot ); <span class="comment">//将最后一个被访问的节点伸展至根</span></span><br><span class="line">   <span class="keyword">return</span> _root;</span><br><span class="line">&#125; <span class="comment">//与其它BST不同，无论查找成功与否，_root都指向最后被访问的节点</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-4-插入"><a href="#2-4-插入" class="headerlink" title="2.4.插入"></a>2.4.插入</h2><p>为将关键码e插至伸展树T中，首先调用伸展树查找接口<code>Splay::search(e)</code>查找该关键码。于是最后被访问的节点t，将通过伸展树被提升为树根，其左右子树分别被记为$T_L$和$T_R$。接下来，根据e与t的大小关系，以t为界将T分裂为两棵子树。如设e大于t，可切断t与其右孩子之间的联系，再将以e为关键码的新节点v作为树根，并以t作为其左孩子，以$T_R$作为其右子树。v小于t的情况与此完全对称。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312232903.png" style="zoom: 50%;"></p>
+<p>伸展树的插入算法的具体实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BinNodePosi(T) Splay&lt;T&gt;::insert ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//将关键码e插入伸展树中</span></span><br><span class="line">   <span class="keyword">if</span> ( !_root ) &#123; _size++; <span class="keyword">return</span> _root = <span class="keyword">new</span> BinNode&lt;T&gt; ( e ); &#125; <span class="comment">//处理原树为空的退化情况</span></span><br><span class="line">   <span class="keyword">if</span> ( e == search ( e )-&gt;data ) <span class="keyword">return</span> _root; <span class="comment">//确认目标节点不存在</span></span><br><span class="line">   _size++; BinNodePosi(T) t = _root; <span class="comment">//创建新节点。以下调整&lt;=7个指针以完成局部重构</span></span><br><span class="line">   <span class="keyword">if</span> ( _root-&gt;data &lt; e ) &#123; <span class="comment">//插入新根，以t和t-&gt;rc为左、右孩子</span></span><br><span class="line">      t-&gt;parent = _root = <span class="keyword">new</span> BinNode&lt;T&gt; ( e, <span class="literal">NULL</span>, t, t-&gt;rc ); <span class="comment">//2 + 3个</span></span><br><span class="line">      <span class="keyword">if</span> ( HasRChild ( *t ) ) &#123; t-&gt;rc-&gt;parent = _root; t-&gt;rc = <span class="literal">NULL</span>; &#125; <span class="comment">//&lt;= 2个</span></span><br><span class="line">   &#125; <span class="keyword">else</span> &#123; <span class="comment">//插入新根，以t-&gt;lc和t为左、右孩子</span></span><br><span class="line">      t-&gt;parent = _root = <span class="keyword">new</span> BinNode&lt;T&gt; ( e, <span class="literal">NULL</span>, t-&gt;lc, t ); <span class="comment">//2 + 3个</span></span><br><span class="line">      <span class="keyword">if</span> ( HasLChild ( *t ) ) &#123; t-&gt;lc-&gt;parent = _root; t-&gt;lc = <span class="literal">NULL</span>; &#125; <span class="comment">//&lt;= 2个</span></span><br><span class="line">   &#125;</span><br><span class="line">   updateHeightAbove ( t ); <span class="comment">//更新t及其祖先（实际上只有_root一个）的高度</span></span><br><span class="line">   <span class="keyword">return</span> _root; <span class="comment">//新节点必然置于树根，返回之</span></span><br><span class="line">&#125; <span class="comment">//无论e是否存在于原树中，返回时总有_root-&gt;data == e</span></span><br></pre></td></tr></table></figure>
+<p>尽管伸展树并不需要记录和维护节点的高度，为与其他平衡二叉搜索树的实现保持统一，这里对节点的高度做了及时的更新，在实际应用中可视情况省略这类更新。</p>
+<h2 id="2-5-删除"><a href="#2-5-删除" class="headerlink" title="2.5.删除"></a>2.5.删除</h2><p>为从伸展树T中删除关键码为e的节点，首先亦调用接口Splay::search(e)查找该关键码，且不妨设命中节点为v。于是v将随机通过伸展被提升为树根，其左右子树分别记作$T_L$和$T_R$。接下来将v摘除，然后在$T_R$中再次查找关键码e，尽管这一查找注定失败，却可以将$T_R$中的最小节点m伸展提升为树根。</p>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312234023.png" style="zoom:50%;"></p>
+<p>得益于二叉搜索树的顺序性，此时节点m的左子树必然为空；同时$T_L$中所有节点都小于m，于是只需将$T_L$作为左子树与m相互连接，即可得到一棵完整的二叉搜索树。这样不仅删除了v，而且既然新树根m在原树中是v的直接后继，故数据局部性也得到了利用。当然其中第二次查找也可在$T_L$（若非空）中进行。</p>
+<p>伸展的删除算法的具体实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">bool</span> Splay&lt;T&gt;::<span class="built_in">remove</span> ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//从伸展树中删除关键码e</span></span><br><span class="line">   <span class="keyword">if</span> ( !_root || ( e != search ( e )-&gt;data ) ) <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">//若树空或目标不存在，则无法删除</span></span><br><span class="line">   BinNodePosi(T) w = _root; <span class="comment">//assert: 经search()后节点e已被伸展至树根</span></span><br><span class="line">   <span class="keyword">if</span> ( !HasLChild ( *_root ) ) &#123; <span class="comment">//若无左子树，则直接删除</span></span><br><span class="line">      _root = _root-&gt;rc; <span class="keyword">if</span> ( _root ) _root-&gt;parent = <span class="literal">NULL</span>;</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> ( !HasRChild ( *_root ) ) &#123; <span class="comment">//若无右子树，也直接删除</span></span><br><span class="line">      _root = _root-&gt;lc; <span class="keyword">if</span> ( _root ) _root-&gt;parent = <span class="literal">NULL</span>;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123; <span class="comment">//若左右子树同时存在，则</span></span><br><span class="line">      BinNodePosi(T) lTree = _root-&gt;lc;</span><br><span class="line">      lTree-&gt;parent = <span class="literal">NULL</span>; _root-&gt;lc = <span class="literal">NULL</span>; <span class="comment">//暂时将左子树切除</span></span><br><span class="line">      _root = _root-&gt;rc; _root-&gt;parent = <span class="literal">NULL</span>; <span class="comment">//只保留右子树</span></span><br><span class="line">      search ( w-&gt;data ); <span class="comment">//以原树根为目标，做一次（必定失败的）查找</span></span><br><span class="line"><span class="comment">///// assert: 至此，右子树中最小节点必伸展至根，且（因无雷同节点）其左子树必空，于是</span></span><br><span class="line">      _root-&gt;lc = lTree; lTree-&gt;parent = _root; <span class="comment">//只需将原左子树接回原位即可</span></span><br><span class="line">   &#125;</span><br><span class="line">   <span class="built_in">release</span> ( w-&gt;data ); <span class="built_in">release</span> ( w ); _size--; <span class="comment">//释放节点，更新规模</span></span><br><span class="line">   <span class="keyword">if</span> ( _root ) updateHeight ( _root ); <span class="comment">//此后，若树非空，则树根的高度需要更新</span></span><br><span class="line">   <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">//返回成功标志</span></span><br><span class="line">&#125; <span class="comment">//若目标节点存在且被删除，返回true；否则返回false</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-6-优缺点"><a href="#2-6-优缺点" class="headerlink" title="2.6.优缺点"></a>2.6.优缺点</h2><p><strong>优点</strong>：</p>
+<ul>
+<li><p>无需记录节点高度或平衡因子；编程实现简单易行 //优于AVL树</p>
+<p>分摊复杂度$O(\log n)$——与AVL树相当</p>
+</li>
+<li><p>局部性强、缓存命中率极高时（即k &lt;&lt; n &lt;&lt; m）</p>
+<p>效率甚至可以更高——自适应的$O(\  log k)$，任何连续的m次查找，都可在$O(m\log k + n \log n)$时间内完成。</p>
+</li>
+</ul>
+<p><img src="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/QQ图片20200312234848.png" style="zoom: 33%;"></p>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>仍不能保证单词最坏情况的出现   //不适用于对效率敏感的场合</li>
+<li>复杂度的分析稍显复杂</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/05/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8814%EF%BC%89AVL%E6%A0%91/" rel="prev" title="数据结构与算法（14）AVL树">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（14）AVL树
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-构思"><span class="nav-text">1.构思</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-局部性"><span class="nav-text">1.1.局部性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-逐层伸展"><span class="nav-text">1.2.逐层伸展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-双层伸展"><span class="nav-text">1.3.双层伸展</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-实现"><span class="nav-text">2.实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-接口定义"><span class="nav-text">2.1.接口定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-调整算法"><span class="nav-text">2.2.调整算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-查找"><span class="nav-text">2.3.查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-插入"><span class="nav-text">2.4.插入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-删除"><span class="nav-text">2.5.删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-6-优缺点"><span class="nav-text">2.6.优缺点</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">277k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
