@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="B-树是一种多路平衡搜索树，用于多级存储系统中，可针对外部查找，大大减少I&#x2F;O次数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（16）B-树">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="B-树是一种多路平衡搜索树，用于多级存储系统中，可针对外部查找，大大减少I&#x2F;O次数。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313164607.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313164908.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313165002.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313171704.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313172734.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313175652.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313183821.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313193429.png">
+<meta property="article:published_time" content="2020-03-13T02:04:15.000Z">
+<meta property="article:modified_time" content="2020-03-13T15:29:07.903Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ%E5%9B%BE%E7%89%8720200313164607.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（16）B-树 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（16）B-树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-13 10:04:15 / 修改时间：23:29:07" itemprop="dateCreated datePublished" datetime="2020-03-13T10:04:15+08:00">2020-03-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.5k</span>
+            </span>
+            <div class="post-description">B-树是一种多路平衡搜索树，用于多级存储系统中，可针对外部查找，大大减少I/O次数。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-构思"><a href="#1-构思" class="headerlink" title="1.构思"></a>1.构思</h1><h2 id="1-1-分级存储"><a href="#1-1-分级存储" class="headerlink" title="1.1.分级存储"></a>1.1.分级存储</h2><p>从实际应用的需求来看，问题规模的膨胀远远快于存储能力的增长。在同等成本下，存储器的容量越大则访问速度越慢，因此一味地提高存储器容量，亦非解决这一矛盾的良策。实践证明，分级存储才是行之有效的方法。在由内存与外存（磁盘）组成的二阶存储系统中，数据全集往往存放于外存中，计算过程中则可将内存作为外存的高速缓存，存放最常用数据项的复本。借助高效的调度算法，如此便可将内存的“高速度”与外存的“大容量”结合起来。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313164607.png" style="zoom: 40%;"></p>
+<p>两个相邻存储级别之间的数据传输，统称<strong>I/O操作</strong>。各级存储器的访问速度相差悬殊，故应尽可能地减少I/O操作。仍以内存与磁盘为例，其单次访问延迟大致分别在纳秒（ns）和毫秒（ms）级别，相差5至6个数量级。因此在衡量相关算法的性能时，基本可以忽略对内存的访问，转而更多地关注对外存的访问次数。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313164908.png" style="zoom: 40%;"></p>
+<h2 id="1-2-多路搜索树"><a href="#1-2-多路搜索树" class="headerlink" title="1.2.多路搜索树"></a>1.2.多路搜索树</h2><p>当数据规模大道内存已不足以容纳时，常规平衡二叉搜索树的效率将大打折扣，其原因在于，查找过程对外存的访问次数过多。为此，需要充分利用磁盘之类外部存储器的另一特性：就时间成本而言，读取物理地址连续的一千个字节，与读取单个字节几乎没有区别。因此不妨通过时间成本相对较低的多次内存操作，来代替时间成本相对极高的单次外存操作。相应地需要将通常的二叉搜索树，改造为多路搜索树——在中序遍历的意义下，这也是一种等价变换。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313165002.png" style="zoom:40%;"></p>
+<p>如上图，以两层为间隔，将各节点与其左右孩子合并为“大节点”，每个大节点有四个分支，故称作四路搜索树。一般地，以k层为间隔如此重组，可将二叉搜索树转化为等价的2^k路搜索树，统称为<strong>多路搜索树（multi - way search tree）</strong>。</p>
+<p>多路搜索树在逻辑上与BBST等价，同样支持查找等操作，且效果与原二叉搜索树完全等同；然而重要的是，其对外存的访问方式已发生本质变化。实际上，在此时的搜索等下降一层，<strong>都以“大节点”为单位从外存读取一组</strong>（而不再是单个）<strong>关键码</strong>，这组关键码在逻辑上与物理上都彼此相邻，故可以批量方式从外存一次性读出，且所需时间与读取单个关键码几乎一样。而每组关键码的最佳数目，取决于不同外存的批量访问特性。</p>
+<h2 id="1-3-多路平衡搜索树"><a href="#1-3-多路平衡搜索树" class="headerlink" title="1.3.多路平衡搜索树"></a>1.3.多路平衡搜索树</h2><p>所谓m阶B-树（B-tree），即m路平衡搜索树（m$\ge$2）。其中<strong>所有外部节点均深度相等</strong>。同时，<strong>每个内部节点都存有不超过m-1个关键码，以及用以指示对应分支的不超过m个引用</strong>。</p>
+<p>具体地，存有$n\le m-1$个关键码：$K_1&lt;K_2&lt;K_3&lt;K_4&lt;\dots&lt;K_n$的内部节点，同时还配有$n+1&lt;m$个引用：$A_0&lt;A_1&lt;A_2&lt;A_3&lt;A_4&lt;\dots&lt;A_n$。</p>
+<p>反过来，各内部节点的分支数也不能太少，除根以外的所有内部节点，都应满足：$n+1\ge \lceil m/2 \rceil$，而在非空的B-树中，根节点应满足：$n+1\ge2$。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313171704.png" style="zoom:50%;"></p>
+<p>由于个节点的分支数介于$\lceil m/2 \rceil$至$m$之间，故<strong>m阶B-树也称作$(\lceil m/2 \rceil),m)$-树</strong>，如(2,3)-树、(3,6)-树或(7,13)-树等。</p>
+<p>B-树的外部节点（external node）实际上未必意味着查找失败，而可能表示目标关键码存在与更低层的某一次外部存储系统中，顺着该节点的指示，即可深入至下一级存储系统并继续查找。正因如此，在计算B-树高度时，还需要计入其最底层的外部节点。</p>
+<p>作为与二叉搜索树等价的“扁平化”版本，B-树的宽度（亦即最底层外部节点的数目）往往远大于其高度。既然外部节点均同处于最底层，且深度完全一致，故用图表示时在将它们省略，可由下图(a)进一步精简为下图(c)的紧凑形式：</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313172734.png" style="zoom: 45%;"></p>
+<h2 id="2-实现"><a href="#2-实现" class="headerlink" title="2.实现"></a>2.实现</h2><h2 id="2-1-ADT接口"><a href="#2-1-ADT接口" class="headerlink" title="2.1.ADT接口"></a>2.1.ADT接口</h2><p>按照以上定义，可以模板类的形式描述并实现B-树节点以及B-树结构。B-树节点BTNode类，可实现如以下的代码，这里，同一个节点的所有孩子组织为一个向量，各相邻孩子之间的关键码也组织为一个向量。当然按照B-树的定义，孩子向量的实际长度总是比关键码向量多一。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"vector/vector.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BTNodePosi(T) BTNode<span class="meta-string">&lt;T&gt;* //B-树节点位置</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">struct</span> <span class="title">BTNode</span> &#123;</span> <span class="comment">//B-树节点模板类</span></span><br><span class="line"><span class="comment">// 成员（为简化描述起见统一开放，读者可根据需要进一步封装）</span></span><br><span class="line">   BTNodePosi(T) parent; <span class="comment">//父节点</span></span><br><span class="line">   Vector&lt;T&gt; key; <span class="comment">//关键码向量</span></span><br><span class="line">   Vector&lt;BTNodePosi(T)&gt; child; <span class="comment">//孩子向量（其长度总比key多一）</span></span><br><span class="line"><span class="comment">// 构造函数（注意：BTNode只能作为根节点创建，而且初始时有0个关键码和1个空孩子指针）</span></span><br><span class="line">   BTNode() &#123; parent = <span class="literal">NULL</span>; child.insert ( <span class="number">0</span>, <span class="literal">NULL</span> ); &#125;</span><br><span class="line">   BTNode ( T e, BTNodePosi(T) lc = <span class="literal">NULL</span>, BTNodePosi(T) rc = <span class="literal">NULL</span> ) &#123;</span><br><span class="line">      parent = <span class="literal">NULL</span>; <span class="comment">//作为根节点，而且初始时</span></span><br><span class="line">      key.insert ( <span class="number">0</span>, e ); <span class="comment">//只有一个关键码，以及</span></span><br><span class="line">      child.insert ( <span class="number">0</span>, lc ); child.insert ( <span class="number">1</span>, rc ); <span class="comment">//两个孩子</span></span><br><span class="line">      <span class="keyword">if</span> ( lc ) lc-&gt;parent = <span class="keyword">this</span>; <span class="keyword">if</span> ( rc ) rc-&gt;parent = <span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>B-树模板类可实现为如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"BTNode.h"</span> <span class="comment">//引入B-树节点类</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">class</span> <span class="title">BTree</span> &#123;</span> <span class="comment">//B-树模板类</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">   <span class="keyword">int</span> _size; <span class="comment">//存放的关键码总数</span></span><br><span class="line">   <span class="keyword">int</span> _order; <span class="comment">//B-树的阶次，至少为3——创建时指定，一般不能修改</span></span><br><span class="line">   BTNodePosi(T) _root; <span class="comment">//根节点</span></span><br><span class="line">   BTNodePosi(T) _hot; <span class="comment">//BTree::search()最后访问的非空（除非树空）的节点位置</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">solveOverflow</span> <span class="params">( BTNodePosi(T) )</span></span>; <span class="comment">//因插入而上溢之后的分裂处理</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">solveUnderflow</span> <span class="params">( BTNodePosi(T) )</span></span>; <span class="comment">//因删除而下溢之后的合并处理</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   BTree ( <span class="keyword">int</span> order = <span class="number">3</span> ) : _order ( order ), _size ( <span class="number">0</span> ) <span class="comment">//构造函数：默认为最低的3阶</span></span><br><span class="line">   &#123; _root = <span class="keyword">new</span> BTNode&lt;T&gt;(); &#125;</span><br><span class="line">   ~BTree() &#123; <span class="keyword">if</span> ( _root ) <span class="built_in">release</span> ( _root ); &#125; <span class="comment">//析构函数：释放所有节点</span></span><br><span class="line">   <span class="function"><span class="keyword">int</span> <span class="keyword">const</span> <span class="title">order</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> _order; &#125; <span class="comment">//阶次</span></span><br><span class="line">   <span class="function"><span class="keyword">int</span> <span class="keyword">const</span> <span class="title">size</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> _size; &#125; <span class="comment">//规模</span></span><br><span class="line">   BTNodePosi(T) &amp; root() &#123; <span class="keyword">return</span> _root; &#125; <span class="comment">//树根</span></span><br><span class="line">   <span class="function"><span class="keyword">bool</span> <span class="title">empty</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> !_root; &#125; <span class="comment">//判空</span></span><br><span class="line">   BTNodePosi(T) search ( <span class="keyword">const</span> T&amp; e ); <span class="comment">//查找</span></span><br><span class="line">   <span class="function"><span class="keyword">bool</span> <span class="title">insert</span> <span class="params">( <span class="keyword">const</span> T&amp; e )</span></span>; <span class="comment">//插入</span></span><br><span class="line">   <span class="function"><span class="keyword">bool</span> <span class="title">remove</span> <span class="params">( <span class="keyword">const</span> T&amp; e )</span></span>; <span class="comment">//删除</span></span><br><span class="line">&#125;; <span class="comment">//BTree</span></span><br></pre></td></tr></table></figure>
+<p>后面会看到，B-树的关键码插入操作和删除操作，可能会引发节点的上溢和下溢，因此这里设有内部接口<code>solveOverflow()</code>和<code>solveUnderflow()</code>，分别用于修正此类问题。</p>
+<h2 id="2-2-关键码查找"><a href="#2-2-关键码查找" class="headerlink" title="2.2.关键码查找"></a>2.2.关键码查找</h2><p><strong>B-树结构非常适宜于在相对更小的内存中，实现对大规模数据的高效操作</strong>。可以将大数据集组织为B-树并存放与外存，对于活跃的B-树，其根节点会常驻于内存，此外任何时刻通常只有另一节点（称作当前节点）留住于内存。</p>
+<p>B-树的查找过程，与二次搜索树的查找过程基本类似：首先以根节点作为当前节点，然后再逐层深入。若在当前节点（所包含的一组关键码）中能够找到目标关键码，则成功返回。否则必在当前节点中确定某一个引用（“失败”位置），并通过它转至逻辑上处于下一层的另一节点。若该节点不是外部节点，则将其载入内存，并更新为当前节点，然后继续重复上述过程。</p>
+<p>整个过程如下图所示，从根节点开始，通过关键码的比较不断深入至下一层，直到某一关键码命中（查找成功），或者到达某一外部节点（查找失败）。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313175652.png" style="zoom: 40%;"></p>
+<p>与BST的不同之处在于，因此时各节点内通常都包含多个关键码，故有可能需要经过（在内存中的）多次比较，才能确定应该转向下一层的哪个节点并继续查找。</p>
+<p><strong>只有在切换和更新当前节点时才会发生I/O操作</strong>，而在同一节点内部的查找则完全在内存中进行。因内存的访问速度远远高于外存，再考虑到各节点所含关键码数量通常在128~512之间，故可直接使用顺序查找策略，而不必采用二分查找之类的复杂策略。</p>
+<p>B-树的<strong>关键码查找算法实现</strong>如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; BTNodePosi(T) BTree&lt;T&gt;::search ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//在B-树中查找关键码e</span></span><br><span class="line">   BTNodePosi(T) v = _root; _hot = <span class="literal">NULL</span>; <span class="comment">//从根节点出发</span></span><br><span class="line">   <span class="keyword">while</span> ( v ) &#123; <span class="comment">//逐层查找</span></span><br><span class="line">      Rank r = v-&gt;key.search ( e ); <span class="comment">//在当前节点中，找到不大于e的最大关键码</span></span><br><span class="line">      <span class="keyword">if</span> ( ( <span class="number">0</span> &lt;= r ) &amp;&amp; ( e == v-&gt;key[r] ) ) <span class="keyword">return</span> v; <span class="comment">//成功：在当前节点中命中目标关键码</span></span><br><span class="line">      _hot = v; v = v-&gt;child[r + <span class="number">1</span>]; <span class="comment">//否则，转入对应子树（_hot指向其父）——需做I/O，最费时间</span></span><br><span class="line">   &#125; <span class="comment">//这里在向量内是二分查找，但对通常的_order可直接顺序查找</span></span><br><span class="line">   <span class="keyword">return</span> <span class="literal">NULL</span>; <span class="comment">//失败：最终抵达外部节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>与BST的查找实现类似，这里也<strong>约定查找结果由返回的节点位置指代</strong>：成功时返回目标关键码所在的节点，上层调用过程可在该节点内进一步查找以确定准确的命中位置；失败时返回对外部节点，其父亲节点则由变量<code>_hot</code>指代。</p>
+<h3 id="性能分析："><a href="#性能分析：" class="headerlink" title="性能分析："></a>性能分析：</h3><p>由上可见，B-树查找操作所需的时间不外乎消耗于两个方面：将某一节点载入内存，以及在内存中对当前节点进行查找。鉴于内存、外存在访问速度上的句法差异，相对于前一类时间消耗，后一类时间消耗可以忽略不计，即<strong>B-树查找操作的效率主要取决于查找过程中的外存访问次数</strong>。</p>
+<p>与BST类似，B-树的每一次查找过程中，在每一高度上至多访问一个节点，即对于高度为h的B-树，外存访问不超过$O(h-1)$。B-树节点的分支数并不固定，故其高度h并不完全取决于树中关键码的总数n，对于包含N个关键码的m阶B-树，高度h的取值范围为：</p>
+<script type="math/tex; mode=display">
+\log_m(N+1)\le h \le \log_{\lceil m/2 \rceil} \lfloor(N+1)/2 \rfloor+1</script><p>也就是说，存有N个关键码的m阶B-树的高度$h=\Theta(\log_m N)$。因此每次查找过程共需访问$\Theta(\log_m N)$个节点，相应地需要做$\Theta(\log_m N)$次外存读取操作，因此<strong>对存有N个关键码的m阶B-树的每次查找操作，耗时不超过$\Theta(\log_m N)$。</strong></p>
+<p>尽管没有渐进意义上的改进，但相对而言极其耗时的I/O操作的次数，却已大致缩减为原来的$1/ \log_2 m$。鉴于m通常取值在256至1024之间，较之此前大致降低一个数量级，故使用B-树后，实际的访问效率将十分可观的提高。</p>
+<h2 id="2-3-关键码插入"><a href="#2-3-关键码插入" class="headerlink" title="2.3.关键码插入"></a>2.3.关键码插入</h2><p>为在B -树中插入一个新的关键码e，首先调用search(e)在树中查找该关键码。若查找成功，则按照“禁止重复关键码”的约定不予插入，操作完成并返回false。</p>
+<p>否则查找过程必然终止于某一外部节点v，且其父节点由变量_hot指示，此时的 _hot必然指向某一叶节点。接下来在该节点中再次查找目标关键码e，这次查找是失败的但是可以确定e在其中的正确插入位置r，最后只需将e插至这一位置。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313183821.png" style="zoom:67%;"></p>
+<p>B-树的关键码插入算法实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">bool</span> BTree&lt;T&gt;::insert ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//将关键码e插入B树中</span></span><br><span class="line">   BTNodePosi(T) v = search ( e ); <span class="keyword">if</span> ( v ) <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">//确认目标节点不存在</span></span><br><span class="line">   Rank r = _hot-&gt;key.search ( e ); <span class="comment">//在节点_hot的有序关键码向量中查找合适的插入位置</span></span><br><span class="line">   _hot-&gt;key.insert ( r + <span class="number">1</span>, e ); <span class="comment">//将新关键码插至对应的位置</span></span><br><span class="line">   _hot-&gt;child.insert ( r + <span class="number">2</span>, <span class="literal">NULL</span> ); <span class="comment">//创建一个空子树指针</span></span><br><span class="line">   _size++; <span class="comment">//更新全树规模</span></span><br><span class="line">   solveOverflow ( _hot ); <span class="comment">//如有必要，需做分裂</span></span><br><span class="line">   <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">//插入成功</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至此，_hot所指的节点中增加了一个关键码。若该节点关键码的总数依然合法（$\le m-1$），则插入操作随机完成；否则称该节点发生了一次<strong>上溢（overflow）</strong>，此时需要适当的处理，使该节点以及整数重新满足B-树的条件。</p>
+<h3 id="上溢与分裂："><a href="#上溢与分裂：" class="headerlink" title="上溢与分裂："></a>上溢与分裂：</h3><p>一般地，刚发生上溢的节点，应恰好含有m个关键码，若取$s=\lfloor m/2 \rfloor$，则它们依次为：</p>
+<script type="math/tex; mode=display">
+\{k_0,\dots,k_{s-1};\,k_s;\,k_{s+1},\dots,k_{m-1}\}</script><p>以$k_s$为界，可将该节点分为前、后两个字节点，且二者大致等长。可令关键码k上升一层，归入其父节点（若存在）中的适当位置，并分别以这两个子节点作为其左、右孩子，这一过程称作<strong>节点的分裂（split）</strong>。可以验证如此分裂所得的两个孩子节点，均符合m阶B-树关于节点分支数的条件。</p>
+<p><strong>可能的情况</strong>：</p>
+<p>被提升的关键码，可能有三种进一步的处置方式。</p>
+<p><img src="/2020/03/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8816%EF%BC%89B-%E6%A0%91/QQ图片20200313193429.png" style="zoom: 80%;"></p>
+<p>首先如图(a1)，设原上溢节点的父亲节点存在，且足以接纳一个关键码。此种情况下，只需将被提升的关键码(37)按次序插入父节点中，修复即告完成，修复后的局部如图(a2)。</p>
+<p>其次如图(b1)，尽管上溢节点的父节点存在，但也已处于饱和状态。此时如图(b2)，将被提升的关键码插入父节点之后，会导致父节点也发生上溢，这种现象称作<strong>上溢的向上传递</strong>。每经过一次修复，上溢节点的高度必然上升一层，最远不至超过树根。</p>
+<p>最后如图(c1)，<strong>若上溢传递至树根节点</strong>，则可令被提升的关键码(37)自成一个节点，并作为新的树根，如图(c2)，至此上溢修复完毕，<strong>全树增高一层</strong>。这样新创建的树根仅含关键码，这也正是就B-树节点分支数的下限要求而言，树根节点作为例外的原因。</p>
+<p>可见<strong>整个过程中所作分裂操作的次数，必不超过全树的高度</strong>，即$O(\log_m N)$。</p>
+<p>针对上溢的处理算法实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//关键码插入后若节点上溢，则做节点分裂处理</span></span><br><span class="line"><span class="keyword">void</span> BTree&lt;T&gt;::solveOverflow ( BTNodePosi(T) v ) &#123;</span><br><span class="line">   <span class="keyword">if</span> ( _order &gt;= v-&gt;child.<span class="built_in">size</span>() ) <span class="keyword">return</span>; <span class="comment">//递归基：当前节点并未上溢</span></span><br><span class="line">   Rank s = _order / <span class="number">2</span>; <span class="comment">//轴点（此时应有_order = key.size() = child.size() - 1）</span></span><br><span class="line">   BTNodePosi(T) u = <span class="keyword">new</span> BTNode&lt;T&gt;(); <span class="comment">//注意：新节点已有一个空孩子</span></span><br><span class="line">   <span class="keyword">for</span> ( Rank j = <span class="number">0</span>; j &lt; _order - s - <span class="number">1</span>; j++ ) &#123; <span class="comment">//v右侧_order-s-1个孩子及关键码分裂为右侧节点u</span></span><br><span class="line">      u-&gt;child.insert ( j, v-&gt;child.<span class="built_in">remove</span> ( s + <span class="number">1</span> ) ); <span class="comment">//逐个移动效率低</span></span><br><span class="line">      u-&gt;key.insert ( j, v-&gt;key.<span class="built_in">remove</span> ( s + <span class="number">1</span> ) ); <span class="comment">//此策略可改进</span></span><br><span class="line">   &#125;</span><br><span class="line">   u-&gt;child[_order - s - <span class="number">1</span>] = v-&gt;child.<span class="built_in">remove</span> ( s + <span class="number">1</span> ); <span class="comment">//移动v最靠右的孩子</span></span><br><span class="line">   <span class="keyword">if</span> ( u-&gt;child[<span class="number">0</span>] ) <span class="comment">//若u的孩子们非空，则</span></span><br><span class="line">      <span class="keyword">for</span> ( Rank j = <span class="number">0</span>; j &lt; _order - s; j++ ) <span class="comment">//令它们的父节点统一</span></span><br><span class="line">         u-&gt;child[j]-&gt;parent = u; <span class="comment">//指向u</span></span><br><span class="line">   BTNodePosi(T) p = v-&gt;parent; <span class="comment">//v当前的父节点p</span></span><br><span class="line">   <span class="keyword">if</span> ( !p ) &#123; _root = p = <span class="keyword">new</span> BTNode&lt;T&gt;(); p-&gt;child[<span class="number">0</span>] = v; v-&gt;parent = p; &#125; <span class="comment">//若p空则创建之</span></span><br><span class="line">   Rank r = <span class="number">1</span> + p-&gt;key.search ( v-&gt;key[<span class="number">0</span>] ); <span class="comment">//p中指向u的指针的秩</span></span><br><span class="line">   p-&gt;key.insert ( r, v-&gt;key.<span class="built_in">remove</span> ( s ) ); <span class="comment">//轴点关键码上升</span></span><br><span class="line">   p-&gt;child.insert ( r + <span class="number">1</span>, u );  u-&gt;parent = p; <span class="comment">//新节点u与父节点p互联</span></span><br><span class="line">   solveOverflow ( p ); <span class="comment">//上升一层，如有必要则继续分裂——至多递归O(logn)层</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="复杂度："><a href="#复杂度：" class="headerlink" title="复杂度："></a>复杂度：</h3><p>若将B-树的阶次m视作常数，则关键码的移动和复制操作所需的时间都可以忽略。而solveOverflow()算法其中的每一递归实例均只需常数时间，递归层数不超过B-树高度。由此可知，对于存有N个关键码的m阶B-树，每次插入操作都可在$O(\log_m N)$时间内完成。</p>
+<p>实际上，因插入操作而导致$\Omega(\log_m N)$次分裂的情况极为罕见，单次插入操作平均引发的分裂次数，远远低于这一估计，故时间通常主要消耗于对目标关键码的查找。</p>
+<h2 id="2-4-关键码删除"><a href="#2-4-关键码删除" class="headerlink" title="2.4.关键码删除"></a>2.4.关键码删除</h2><p>为从B-树中删除关键码e，也首先需要调用<code>search(e)</code>查找<code>e</code>所属的节点。若查找失败，则说明关键码e尚不存在，删除操作即告完成；否则按照代码的出口约定，目标关键码所在的节点必由返回的位置v指示。此时，通过顺序查找，即可进一步确定<code>e</code>在节点 <code>v</code>中的秩r。</p>
+<p>不妨假定v是叶节点，否则，e的直接后继（前驱）在其右（左）子树中必然存在，而且可在$O(height(v))$时间内确定它们的位置，其中$height(v)$为节点<code>v</code>的高度。此处不妨选用直接后继，于是<code>e</code>的直接后继关键码所属的节点<code>u</code>必为叶节点，且该关键码就是其中的最小者u[0]，然后令<code>e</code>与u[0]互换位置，即可确保删除的关键码<code>e</code>所属的节点是叶节点。</p>
+<p>接下来可直接将<code>e</code>从<code>v</code>中删除，节点<code>v</code>中所含的关键码以及（空）分支将分别减少一半。此时，若该节点所含关键码的总数依然合法（$\ge \lceil m/2 \rceil-1$），则删除操作随机完成。否则，称该节点发生了<strong>下溢（underflow）</strong>，并需要通过适当的处置，使该节点以及整数重新满足B-树的条件。</p>
+<p>B-树的关键码删除算法的实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">bool</span> BTree&lt;T&gt;::<span class="built_in">remove</span> ( <span class="keyword">const</span> T&amp; e ) &#123; <span class="comment">//从BTree树中删除关键码e</span></span><br><span class="line">   BTNodePosi(T) v = search ( e ); <span class="keyword">if</span> ( !v ) <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">//确认目标关键码存在</span></span><br><span class="line">   Rank r = v-&gt;key.search ( e ); <span class="comment">//确定目标关键码在节点v中的秩（由上，肯定合法）</span></span><br><span class="line">   <span class="keyword">if</span> ( v-&gt;child[<span class="number">0</span>] ) &#123; <span class="comment">//若v非叶子，则e的后继必属于某叶节点</span></span><br><span class="line">      BTNodePosi(T) u = v-&gt;child[r+<span class="number">1</span>]; <span class="comment">//在右子树中一直向左，即可</span></span><br><span class="line">      <span class="keyword">while</span> ( u-&gt;child[<span class="number">0</span>] ) u = u-&gt;child[<span class="number">0</span>]; <span class="comment">//找出e的后继</span></span><br><span class="line">      v-&gt;key[r] = u-&gt;key[<span class="number">0</span>]; v = u; r = <span class="number">0</span>; <span class="comment">//并与之交换位置</span></span><br><span class="line">   &#125; <span class="comment">//至此，v必然位于最底层，且其中第r个关键码就是待删除者</span></span><br><span class="line">   v-&gt;key.<span class="built_in">remove</span> ( r ); v-&gt;child.<span class="built_in">remove</span> ( r + <span class="number">1</span> ); _size--; <span class="comment">//删除e，以及其下两个外部节点之一</span></span><br><span class="line">   solveUnderflow ( v ); <span class="comment">//如有必要，需做旋转或合并</span></span><br><span class="line">   <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="下溢与合并："><a href="#下溢与合并：" class="headerlink" title="下溢与合并："></a>下溢与合并：</h3><p>由上，在m阶B-树中，刚发生下溢的节点V必恰好包含$\lceil m/2 \rceil-2$个关键码和$\lceil m/2 \rceil-1$个分支。一下将根据其左、右兄弟所含关键码的数目，分三种情况做相应的处置。</p>
+<ul>
+<li><strong>v的左兄弟L存在，且至少包含$\lceil m/2 \rceil$个关键码：</strong></li>
+</ul>
+<p>如图，不妨设L和V分别是其父节点P中关键码v的左、右孩子</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/12/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8815%EF%BC%89%E4%BC%B8%E5%B1%95%E6%A0%91/" rel="prev" title="数据结构与算法（15）伸展树">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（15）伸展树
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-构思"><span class="nav-text">1.构思</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-分级存储"><span class="nav-text">1.1.分级存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-多路搜索树"><span class="nav-text">1.2.多路搜索树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-多路平衡搜索树"><span class="nav-text">1.3.多路平衡搜索树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-实现"><span class="nav-text">2.实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-ADT接口"><span class="nav-text">2.1.ADT接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-关键码查找"><span class="nav-text">2.2.关键码查找</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能分析："><span class="nav-text">性能分析：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-关键码插入"><span class="nav-text">2.3.关键码插入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#上溢与分裂："><span class="nav-text">上溢与分裂：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复杂度："><span class="nav-text">复杂度：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-关键码删除"><span class="nav-text">2.4.关键码删除</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下溢与合并："><span class="nav-text">下溢与合并：</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">285k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
