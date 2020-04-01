@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="此前的搜索树结构和词典结构，都支持覆盖数据全集的访问和操作，为此搜索树结构需要在所有元素之间定义并维护一个显式的全序关系。本文介绍的优先级队列结构，则将操作对象限定于当前的全局极值者。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法（19）优先级队列">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="此前的搜索树结构和词典结构，都支持覆盖数据全集的访问和操作，为此搜索树结构需要在所有元素之间定义并维护一个显式的全序关系。本文介绍的优先级队列结构，则将操作对象限定于当前的全局极值者。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401094548.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401103115.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401103119.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401103122.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401103125.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401105029.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401105901.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401120132.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401121401.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401165655.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401165708.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401181605.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401182306.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401212154.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401213629.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401213740.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401221347.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401222049.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401223323.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401224135.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401224557.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401225555.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401231811.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401233438.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401233441.png">
+<meta property="article:published_time" content="2020-03-28T08:42:05.000Z">
+<meta property="article:modified_time" content="2020-04-01T15:45:27.116Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ%E5%9B%BE%E7%89%8720200401094548.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>数据结构与算法（19）优先级队列 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法（19）优先级队列
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-28 16:42:05" itemprop="dateCreated datePublished" datetime="2020-03-28T16:42:05+08:00">2020-03-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-01 23:45:27" itemprop="dateModified" datetime="2020-04-01T23:45:27+08:00">2020-04-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <div class="post-description">此前的搜索树结构和词典结构，都支持覆盖数据全集的访问和操作，为此搜索树结构需要在所有元素之间定义并维护一个显式的全序关系。本文介绍的优先级队列结构，则将操作对象限定于当前的全局极值者。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>此前的搜索树结构和词典结构，都支持覆盖数据全集的访问和操作，其中存储的每一数据对象都可作为查找和访问目标，为此搜索树结构需要在所有元素之间定义并维护一个显式的全序关系。<strong>优先级队列</strong>，这类结构则将操作对象限定于当前的全局极值者。这种根据数据对象之间相对优先级对其进行访问的方式，称作<strong>循优先级访问（call-by-priority）</strong>。</p>
+<p>“全局极值”隐含了“所有元素可相互比较”这一性质，但优先级队列并不会也不必动态维护这个全序，却转而维护一个偏序（partial order）关系，如此不仅足以高效地支持仅针对极值对象的接口操作，更可有效地控制整体计算成本。作为不失高效率的轻量数据结构，对于常规的查找、插入或删除操作，优先级队列的效率并不低于此前的结构；而对于数据集的批量构建及相互合并等操作，其性能却更胜一筹。</p>
+<h1 id="1-接口定义"><a href="#1-接口定义" class="headerlink" title="1.接口定义"></a>1.接口定义</h1><p>除了作为存放数据的容器，数据结构还应能够按某种约定的次序动态地组织数据，以支持高效的查找和修改操作，如遵循“先进先出”原则的队列，而有些实际情况则要按某种优先级原则，如医院抢救最危急的病人。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401094548.png" style="zoom:50%;"></p>
+<p>从数据结构的角度看，无论是待排序节点的数值、超字符的权重，还是时间的发生时间，数据项的某种属性只要可以相互比较大小，则这种大小关系即可称作<strong>优先级（priority）</strong>。而按照事先约定的优先级，可以始终高效查找并访问优先级最高数据项的数据结构，也统称作<strong>优先级队列（priority queue）</strong>。</p>
+<p>仿照词典结构，也讲优先级队列中的数据项称作<strong>词条（entry）</strong>，而与特定优先级相对应的数据属性，也称作<strong>关键码（key）</strong>。作为确定词条优先级的依据，关键码之间必须可以比较大小（词典结构仅要求关键码支持判等操作）。因此对于优先级队列，必须以比较器的形式兑现对应的优先级关系，为了简化起见，这里假定关键码或者可直接比较，或者已重载了对应的操作符。</p>
+<p>优先级队列作为一类独特数据的意义恰恰在于，通过转而维护词条的一个偏序关系，不仅依然可以支持对最高优先级词条的动态访问，而且可将相应的计算成本控制在足以令人满意的范围之内。</p>
+<p>优先级队列接口的定义如下表：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">操作接口</th>
+<th>功能描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>size()</code></td>
+<td>报告优先级队列的规模，即其中词条的总数</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>insert()</code></td>
+<td>将指定词条插入优先级队列</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>getMax()</code></td>
+<td>返回优先级最大的词条（若优先级队列非空）</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>delMax()</code></td>
+<td>删除优先级最大的词条（若优先级队列非空）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这里以模板类<code>PQ</code>的形式给出优先级队列的操作接口定义，这一组基本的ADT接口可能有不同的实现方式，故这里均以虚函数形式统一描述这些接口，以便在不同的派生类中具体实现。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">struct</span> <span class="title">PQ</span> &#123;</span> <span class="comment">//优先级队列PQ模板类</span></span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">insert</span> <span class="params">( T )</span> </span>= <span class="number">0</span>; <span class="comment">//按照比较器确定的优先级次序插入词条</span></span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> T <span class="title">getMax</span><span class="params">()</span> </span>= <span class="number">0</span>; <span class="comment">//取出优先级最高的词条</span></span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> T <span class="title">delMax</span><span class="params">()</span> </span>= <span class="number">0</span>; <span class="comment">//删除优先级最高的词条</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2.实现"></a>2.实现</h1><h2 id="2-1-尝试"><a href="#2-1-尝试" class="headerlink" title="2.1.尝试"></a>2.1.尝试</h2><p>考虑用此前学过的数据结构来实现优先级队列，要兼顾efficiency和cost，以下考虑了向量Vector，有序向量Sorted Vector，列表List，有序列表Sorted List和平衡二叉搜索树BBST，但基于它们实现的优先级队列都不能实现高效率和低cost的兼顾。</p>
+<p><strong>Vector:</strong></p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401103115.png" style="zoom: 67%;"></p>
+<p><strong>Sorted Vector：</strong></p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401103119.png" style="zoom:67%;"></p>
+<p><strong>List：</strong></p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401103122.png" style="zoom:67%;"></p>
+<p><strong>Sorted List：</strong></p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401103125.png" style="zoom:67%;"></p>
+<p><strong>BBST：</strong></p>
+<p>对于AVL、Splay、Red-black这三种数据结构，查找、插入和删除三个接口均只需$O(\log n)$时间，但是BBST的功能却远远超出了PQ的需求，可以这么理解：</p>
+<script type="math/tex; mode=display">
+PQ=1\times insert()+0.5\times search()+0.5\times remove()=\frac{2}{3}\times BBST</script><p>若只需查找极单元，则不必维护所有元素之间的全序关系，偏序足矣，因此有理由相信，存在某种更为简单、维护成本更低的实现方式，使得各功能接口时间复杂度依然为$O(\log n)$，而且实际效率更高。</p>
+<h2 id="2-2-完全二叉堆"><a href="#2-2-完全二叉堆" class="headerlink" title="2.2.完全二叉堆"></a>2.2.完全二叉堆</h2><p>有限偏序的极值必然存在，借助<strong>堆（heap）</strong>结构可以维护一个偏序，堆有多种实现形式，这里采用一种最基本的形式——<strong>完全二叉堆（complete binary heap）</strong>，它具有结构性与堆序性。</p>
+<p><strong>结构性</strong>：其逻辑结构等同于完全二叉树（complete binary tree），即平衡因子处处非负（只能是0或1）的AVL树。因此由n个词条组成的完全二叉堆的高度$h=\lfloor \log_2 n \rfloor=O(\log n)$。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401105029.png" style="zoom:67%;"></p>
+<p><strong>堆序性：</strong>堆顶以外的每个节点都不大于其父节点，称为<strong>大顶堆</strong>；还可定义为堆顶以外的每个节点都不小于其父节点，称为<strong>小顶堆</strong>。</p>
+<p>尽管二叉树不属于线性结构，但作为特例的完全二叉树，却与向量有着紧密的对应关系。完全二叉堆的拓扑联接结构，完全由其规模n确定。按照<strong>层次遍历</strong>的次序，每个节点都对应于唯一的编号。故若将所有节点组织为一个向量，则堆中所有节点（编号）与向量各单元（秩）也将彼此一一对应。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401105901.png" style="zoom: 60%;"></p>
+<p>这一实现方式的优势首先体现在，各节点在物理上连续排列，故总共仅需$O(n)$空间，而且更重要的是，利用各节点的编号（或秩），也可便捷地判别父子关系，对于任意节点v，必然满足：</p>
+<ul>
+<li>若v有左孩子，则$i (lchild(v))=2*i(v)+1$;</li>
+<li>若v有右孩子，则$i (rchild(v))=2*i(v)+2$;</li>
+<li>若v有父节点，则$i(parent(v))=\lfloor(i(v)-1)/2\rfloor=\lceil i(v)/2)\rceil-1$</li>
+</ul>
+<p>最后，由于向量支持低分摊成本的扩容调整，故随着堆的 规模和内容不断地动态调整，除标准接口以外的操作所需的时间可以忽略不计。</p>
+<h2 id="2-3-实现"><a href="#2-3-实现" class="headerlink" title="2.3.实现"></a>2.3.实现</h2><p><strong>宏</strong>：为简化后续算法的描述及实现，可如下代码所示预先设置一系列的宏定义。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  Parent(i)         ( ( ( i ) - 1 ) &gt;&gt; 1 ) <span class="comment">//PQ[i]的父节点（floor((i-1)/2)，i无论正负）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LChild(i)         ( 1 + ( ( i ) &lt;&lt; 1 ) ) <span class="comment">//PQ[i]的左孩子</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  RChild(i)         ( ( 1 + ( i ) ) &lt;&lt; 1 ) <span class="comment">//PQ[i]的右孩子</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  InHeap(n, i)      ( ( ( -1 ) &lt; ( i ) ) &amp;&amp; ( ( i ) &lt; ( n ) ) ) <span class="comment">//判断PQ[i]是否合法</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LChildValid(n, i) InHeap( n, LChild( i ) ) <span class="comment">//判断PQ[i]是否有一个（左）孩子</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  RChildValid(n, i) InHeap( n, RChild( i ) ) <span class="comment">//判断PQ[i]是否有两个孩子</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  Bigger(PQ, i, j)  ( lt( PQ[i], PQ[j] ) ? j : i ) <span class="comment">//取大者（等时前者优先）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ProperParent(PQ, n, i) <span class="comment">/*父子（至多）三者中的大者*/</span> \</span></span><br><span class="line">            ( RChildValid(n, i) ? Bigger( PQ, Bigger( PQ, i, LChild(i) ), RChild(i) ) : \</span><br><span class="line">            ( LChildValid(n, i) ? Bigger( PQ, i, LChild(i) ) : i \</span><br><span class="line">            ) \</span><br><span class="line">            ) <span class="comment">//相等时父节点优先，如此可避免不必要的</span></span><br></pre></td></tr></table></figure>
+<p><strong>PQ_ComplHeap模板类</strong>：借助多重继承的机制，定义完全二叉堆模板类<strong><code>PQ_ComplHeap</code></strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"Vector/Vector.h"</span> <span class="comment">//借助多重继承机制，基于向量</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"PQ/PQ.h"</span> <span class="comment">//按照优先级队列ADT实现的</span></span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="class"><span class="keyword">struct</span> <span class="title">PQ_ComplHeap</span> :</span> <span class="keyword">public</span> PQ&lt;T&gt;, <span class="keyword">public</span> Vector&lt;T&gt; &#123; <span class="comment">//完全二叉堆</span></span><br><span class="line">   <span class="comment">/*DSA*/</span><span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">UniPrint</span>;</span> <span class="comment">//演示输出使用，否则不必设置友类</span></span><br><span class="line">   PQ_ComplHeap() &#123; &#125; <span class="comment">//默认构造</span></span><br><span class="line">   PQ_ComplHeap ( T* A, Rank n ) &#123; copyFrom ( A, <span class="number">0</span>, n ); heapify ( _elem, n ); &#125; <span class="comment">//批量构造</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">insert</span> <span class="params">( T )</span></span>; <span class="comment">//按照比较器确定的优先级次序，插入词条</span></span><br><span class="line">   <span class="function">T <span class="title">getMax</span><span class="params">()</span></span>; <span class="comment">//读取优先级最高的词条</span></span><br><span class="line">   <span class="function">T <span class="title">delMax</span><span class="params">()</span></span>; <span class="comment">//删除优先级最高的词条</span></span><br><span class="line">&#125;; <span class="comment">//PQ_ComplHeap</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function"><span class="keyword">void</span> <span class="title">heapify</span> <span class="params">( T* A, Rank n )</span></span>; <span class="comment">//Floyd建堆算法</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function">Rank <span class="title">percolateDown</span> <span class="params">( T* A, Rank n, Rank i )</span></span>; <span class="comment">//下滤</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function">Rank <span class="title">percolateUp</span> <span class="params">( T* A, Rank i )</span></span>; <span class="comment">//上滤</span></span><br></pre></td></tr></table></figure>
+<p><strong>getMax()</strong>：既然全局优先级最高的词条总是位于堆顶，因此只需返回向量的首单元，即可在$O(1)$时间内完成<code>getMax()</code>操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; T PQ_ComplHeap&lt;T&gt;::getMax() &#123;  <span class="keyword">return</span> _elem[<span class="number">0</span>];  &#125; <span class="comment">//取优先级最高的词条</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-4-插入算法"><a href="#2-4-插入算法" class="headerlink" title="2.4.插入算法"></a>2.4.插入算法</h2><p>插入算法首先要调用向量的标准插入接口，将新词条接至向量的末尾，得益于向量结构良好的封装性，这里无需关心这一步骤的具体细节，尤其是无需考虑溢出扩容等特殊情况。</p>
+<p>新引入的词条并未破坏堆的结构性，但只要新词条<code>e</code>不是堆顶，就有可能与其父亲违反堆序性，而其他位置的堆序性依然满足，故以下将调用<code>percolateUp()</code>函数，对新接入的词条做适当调整，在保持结构性的前提下恢复整体的堆序性。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401120132.png" style="zoom:67%;"></p>
+<p><strong>上滤：</strong></p>
+<p>根据e在向量中对应的秩，可以简便地确定词条<code>p</code>对应的秩，即$i(parent(v))=\lfloor(i(v)-1)/2\rfloor$。此时若经比较判定$e\le p$，则堆序性在此局部以至全堆均已满足，插入操作因此即告完成。反之，<strong>若$e&gt;p$，则可在向量中令e和p互换位置</strong>。如此不仅全堆的结构性依然满足，而且<code>e</code>和<code>p</code>之间的堆序性也得以恢复。此后<code>e</code>与其新父亲，可能再次违背堆序性，只需继续套用以上方法。</p>
+<p>每交换一次，新词条<code>e</code>都向上攀升一层，故这一过程也形象地称作<strong>上滤（percolate up）</strong>，<code>e</code>至多上滤至堆顶，一旦上滤完成，全堆的堆序性必将恢复。下面是一个实例：</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401121401.png" style="zoom:67%;"></p>
+<p>上滤调整过程中交换操作的累计次数，不致超过全堆的高度$\lfloor \log_2n \rfloor$，而在向量中，每次交换操作只需常数时间，故上滤调整乃至整个词条插入算法整体的时间复杂度，均为$O(\log n)$。</p>
+<p>插入算法和上滤调整的代码实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> PQ_ComplHeap&lt;T&gt;::insert ( T e ) &#123; <span class="comment">//将词条插入完全二叉堆中</span></span><br><span class="line">   Vector&lt;T&gt;::insert ( e ); <span class="comment">//首先将新词条接至向量末尾</span></span><br><span class="line">   percolateUp ( _elem, _size - <span class="number">1</span> ); <span class="comment">//再对该词条实施上滤调整</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//对向量中的第i个词条实施上滤操作，i &lt; _size</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function">Rank <span class="title">percolateUp</span> <span class="params">( T* A, Rank i )</span> </span>&#123;</span><br><span class="line">   <span class="keyword">while</span> ( <span class="number">0</span> &lt; i ) &#123; <span class="comment">//在抵达堆顶之前，反复地</span></span><br><span class="line">      Rank j = Parent ( i ); <span class="comment">//考查[i]之父亲[j]</span></span><br><span class="line">      <span class="keyword">if</span> ( lt ( A[i], A[j] ) ) <span class="keyword">break</span>; <span class="comment">//一旦父子顺序，上滤旋即完成；否则</span></span><br><span class="line">      swap ( A[i], A[j] ); i = j; <span class="comment">//父子换位，并继续考查上一层</span></span><br><span class="line">   &#125; <span class="comment">//while</span></span><br><span class="line">   <span class="keyword">return</span> i; <span class="comment">//返回上滤最终抵达的位置</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2-5-元素删除"><a href="#2-5-元素删除" class="headerlink" title="2.5.元素删除"></a>2.5.元素删除</h2><p>待删除词条<code>r</code>总是位于堆顶，故可直接将其取出并备份，堆的结构性将破坏。为修复这一缺陷，将最末尾的词条<code>e</code>转移至堆顶。而新的堆顶可能与其孩子们违背堆序性——尽管其他位置的堆序性依然满足，故下调用<code>percolateDown()</code>函数调整新堆顶，在保持结构性的前提下，恢复整体的堆序性。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401165655.png" style="zoom: 67%;"></p>
+<p><strong>下滤：</strong></p>
+<p>若新堆顶e不满足堆序性，将e与其（至多）两个孩子中的大者交换位置。此后，堆中可能的缺陷依然只能来自与词条e——它与新孩子可能再次违背堆序性，只需继续套用以上方法。因每进过一次交换，词条e都会下降一层，故这一调整过程也称作下滤（percolate down）。与上滤同理，这一过程也必然终止，全堆的堆序性必将恢复，下滤乃至整个删除算法的时间复杂度也为$O(\log n)$。下面是一个实例：</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401165708.png" style="zoom:67%;"></p>
+<p>删除算法和下滤调整的代码实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; T PQ_ComplHeap&lt;T&gt;::delMax() &#123; <span class="comment">//删除非空完全二叉堆中优先级最高的词条</span></span><br><span class="line">   T maxElem = _elem[<span class="number">0</span>]; _elem[<span class="number">0</span>] = _elem[ --_size ]; <span class="comment">//摘除堆顶（首词条），代之以末词条</span></span><br><span class="line">   percolateDown ( _elem, _size, <span class="number">0</span> ); <span class="comment">//对新堆顶实施下滤</span></span><br><span class="line">   <span class="keyword">return</span> maxElem; <span class="comment">//返回此前备份的最大词条</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//对向量前n个词条中的第i个实施下滤，i &lt; n</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function">Rank <span class="title">percolateDown</span> <span class="params">( T* A, Rank n, Rank i )</span> </span>&#123;</span><br><span class="line">   Rank j; <span class="comment">//i及其（至多两个）孩子中，堪为父者</span></span><br><span class="line">   <span class="keyword">while</span> ( i != ( j = ProperParent ( A, n, i ) ) ) <span class="comment">//只要i非j，则</span></span><br><span class="line">      &#123; swap ( A[i], A[j] ); i = j; &#125; <span class="comment">//二者换位，并继续考查下降后的i</span></span><br><span class="line">   <span class="keyword">return</span> i; <span class="comment">//返回下滤抵达的位置（亦i亦j）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2-6-建堆"><a href="#2-6-建堆" class="headerlink" title="2.6.建堆"></a>2.6.建堆</h2><p>很多算法中输入词条都是成批给出，故在初始化阶段往往需要解决一个共同问题：给定一组词条，高效地将它们组织成一个堆，这一过程也称作<strong>“建堆”（heapification）</strong>。</p>
+<p><strong>蛮力算法：</strong></p>
+<p>从空堆起反复调用标准insert()接口，即可将词条逐一插入其中，并最终完成建堆。尽管这一方法无疑正确，但其消耗的时间却过多。具体地，若共有n个词条，则共需迭代n次，第k轮迭代耗时$O(\log k)$，故累计耗时时间量应为：</p>
+<script type="math/tex; mode=display">
+O(\log 1+\log 2+\dots +\log n)=O(\log n!)=O(n\log n)</script><p>如此多的时间本来足以将所有词条做全排序，而在这里花费同样多的时间所生成的堆却只能提供一个偏序，这也暗示了存在某种更快的建堆方法。</p>
+<p><strong>自上而下的上滤：</strong></p>
+<p>在将所有输入词条纳入长为n的向量之后，首单元处的词条本身即可视作一个规模为1的堆。接下来考查下一单元，只需调用<code>percolateUp()</code>对其上滤，此后前两单元将构成规模为2的堆，如此反复进行，直到最终得到规模为n的堆。</p>
+<p>这一过程可归纳为：对任何一棵完全二叉树，只需自顶而下、自左向右地对其中每个节点实施一次上滤，即可使之成为完全二叉堆。在此过程中，为将每个节点纳入堆中，所需消耗的时间量将线性正比与该节点的深度。不妨考查高度为$h$、规模为$n=2^{h+1}-1$的满二叉树，其中高度为$i$的节点共有$2^i$个，因此整个算法的总体时间复杂度为：</p>
+<script type="math/tex; mode=display">
+\sum^h_{i=0}(i\cdot 2^i )=(d-1)\times 2^{d+1}+2=(\log_2(n+1)-2)\cdot (n+1)+2=O(n\log n)</script><p><strong>Floyd算法（自下而上的下滤）：</strong></p>
+<p>考虑一个相对简单的问题：任给堆$H_0$和$H_1$，以及另一独立节点<code>p</code>，然后以<code>p</code>为中介将堆$H_0$和$H_1$合并，故称作<strong>堆合并操作</strong>。首先为满足结构性，可将这两个堆当作<code>p</code>的左、右子树，联接成一棵完整的二叉树。此时等效于在<code>delMax()</code>操作中摘除堆顶，再将末位词条（p）转移至堆顶，以下只需对<code>p</code>实施下滤操作，即可将全树转换为堆。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401181605.png" style="zoom:80%;"></p>
+<p>如果将以上过程作为实现堆合并的一个通用算法，则在将所有词条组织为一棵完全二叉树后，只需自底而上地反复套用这一算法，即可不断地将处于下层的堆逐对地合并成更高一层的堆，并最终得到一个完整的堆。按照这构思，即可实现<strong>Floyd建堆算法</strong>。下面是一个实例：</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401182306.png" style="zoom:67%;"></p>
+<p>在前几节知识的基础上，Floyd算法的实现十分简洁：只需自下而上、由深而浅地遍历所有内部节点，并对每个内部节点分别调用一次下滤算法<code>percolateDown()</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="function"><span class="keyword">void</span> <span class="title">heapify</span> <span class="params">( T* A, <span class="keyword">const</span> Rank n )</span> </span>&#123; <span class="comment">//Floyd建堆算法，O(n)时间</span></span><br><span class="line">   <span class="keyword">for</span> ( <span class="keyword">int</span> i = n/<span class="number">2</span> - <span class="number">1</span>; <span class="number">0</span> &lt;= i; i-- ) <span class="comment">//自底而上，依次</span></span><br><span class="line">      percolateDown ( A, n, i ); <span class="comment">//下滤各内部节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度：</strong>Floyd算法依然需要做n步迭代，以对所有节点各做一次下滤。这里每个节点的下滤所需的时间正比与其<strong>高度</strong>，故总体运行时间取决于各节点的高度总和。以高度为$h$，规模为$n=2^{h+1}-1$的满二叉树为例，其运行时间为：</p>
+<script type="math/tex; mode=display">
+\sum^h_{i=0}((d-i)\cdot 2^i)=2^{d+1}-(d+2)=n-\log_2(n+1)=O(n)</script><p>由于在遍历所有词条之前，绝不可能确定堆的结果，故以上已是建堆操作的最优算法。由此反观，蛮力算法低效率的根源，恰在于其“自上而下的下滤”策略。如此，各节点所消耗的时间线性正比于其<strong>深度</strong>——而在完全二叉树中，深度小的节点，远远少于高度小的节点。</p>
+<h2 id="2-7-就地堆排序"><a href="#2-7-就地堆排序" class="headerlink" title="2.7.就地堆排序"></a>2.7.就地堆排序</h2><p>完全二叉堆有另一具体应用：对于向量中的n个词条，如何借助堆的相关算法，实现高效的排序，相应地这类算法也称作堆排序（heapsort）算法。既然此前归并排序算法的渐进复杂度已达到理论上最优的$O(n\log n)$，故这里将更关注与如何降低复杂度常系数。同时也希望空间复杂度能够有所降低，最好是除输入本身以外只需$O(1)$辅助空间。</p>
+<p><strong>原理：</strong></p>
+<p>算法的总体思路和策略与选择排序算法基本相同：将所有词条分成未排序和已排序两类，不断从前一类中取出最大者，顺序加至后一类中。这里不妨将其划分为前缀H和与之互补的后缀S，分别对应于上述未排序和已排序部分。新算法的不同之处在于：整个排序过程中，<strong>无论H包含多少词条，始终都组织为一个堆</strong>。另外，整个算法过程始终满足<strong>不变性</strong>：H中的最大词条不会大于S中的最小词条——除非二者之一为空，比如算法的初始和终止时刻。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401212154.png" style="zoom:67%;"></p>
+<p>首先如图(a)，取出首单元词条M，将其与末单元词条X交换。M即是当前堆中的最大者，同时根据不变性也不大于S中的任何词条，故如此交换之后M必处于正确的排序位置。故如图(b)，此时可等效地认为S向前扩大了一个单元，H相应地缩小了一个单元，注意如此重新分界之后，H和S依然满足以上不变性。最后仿照此前的词条删除算法，只需对X实施一次下滤调整，即可使H整体的堆序性重新恢复，结果如图(c)。</p>
+<p><strong>复杂度：</strong></p>
+<p>在每一步迭代中，交换M和X只需常数时间，对X的下滤调整不超过$O(\log n)$时间，因此全部n步迭代累计耗时不超过$O(n\log n)$，再加上建堆所用时间，整个算法的运行时间也不超过$O(n\log n)$。纵览算法的整个过程，除了用于支持词条交换的一个辅助单元，几乎不需要更多的辅助空间，故的确属于就地算法。</p>
+<p>得益于向量结构的简洁性，几乎所有以上操作都可便捷地实现，因此该算法不仅可简明地编码，其实际运行效率也因此往往要高于其他$O(n \log n)$的算法，这离不开堆这一精巧的数据结构。</p>
+<p><strong>实例：</strong></p>
+<p>以向量$\{4,2,5,1,3\}$的堆排序过程为例，首先采用Floyd算法将该向量整理为一个完全二叉堆，其中虚线示意下滤过程中的词条交换操作。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401213629.png" style="zoom:67%;"></p>
+<p>然后按照堆排序算法只需5步迭代，完成排序。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401213740.png" style="zoom:67%;"></p>
+<p><strong>实现：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> Vector&lt;T&gt;::heapSort ( Rank lo, Rank hi ) &#123; <span class="comment">//0 &lt;= lo &lt; hi &lt;= size</span></span><br><span class="line">   PQ_ComplHeap&lt;T&gt; H( _elem + lo, hi - lo );  <span class="comment">//将待排序区间建成一个完全二叉堆，O(n)</span></span><br><span class="line">   <span class="keyword">while</span> ( !H.empty() ) <span class="comment">//反复地摘除最大元并归入已排序的后缀，直至堆空</span></span><br><span class="line">      _elem[--hi] = H.delMax();  <span class="comment">//等效于堆顶与末元素对换后下滤</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="3-左式堆"><a href="#3-左式堆" class="headerlink" title="3.左式堆"></a>3.左式堆</h1><h2 id="3-1-堆合并"><a href="#3-1-堆合并" class="headerlink" title="3.1.堆合并"></a>3.1.堆合并</h2><p> 除了标准的插入和删除操作，堆结构在实际应用中的另一常见操作即为合并，即任给堆A和堆B，如何将二者所含的词条组织为一个堆。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401221347.png" style="zoom:67%;"></p>
+<p>可以想到两种简单的方法：一是反复取出堆B的最大词条并插入堆A中，将两堆的规模分别记为n和m，且$n\ge m$，每一步迭代均需要做一次删除操作和一次插入操作，分别耗时$O(\log m)$和$O(\log(n+m))$，共需m步迭代，故总体运行时间应为：</p>
+<script type="math/tex; mode=display">
+m\times [O(\log m)+O(\log(n+m))]=O(m\log(n+m))=O(m\log n)</script><p>另一种是将两个堆中的词条视作彼此独立的对象，从而可以借助Floyd算法，将它们组织为一个新的堆H，运行时间为：</p>
+<script type="math/tex; mode=display">
+O(n+m)=O(n)</script><p>尽管其性能梢优于前一个，但仍无法令人满意。实际上，既然所有词条已分两组各自成堆，则意味着它们<strong>已经具有一定的偏序性</strong>，这样构建一个更大的偏序集，理应比由一组相互独立的词条构建偏序集更为容易。以上尝试均未奏效的原因在于，不能保证合并操作所涉及的节点足够少。为此不妨设想，堆是否也必须与二叉搜索树一样，尽可能地保持平衡？而<strong>对于堆来说，为控制合并操作所涉及的节点数，反而需要保持某种意义上的“不平衡”</strong>。</p>
+<h2 id="3-2-单侧倾斜"><a href="#3-2-单侧倾斜" class="headerlink" title="3.2.单侧倾斜"></a>3.2.单侧倾斜</h2><p><strong>左式堆（leftist heap）</strong>是优先级队列的另一实现方式，可高效地支持堆合并操作。其基本思路是：在保持堆序性的前提下附加新的条件，使得在堆的合并过程中，只需调整很少量的节点。具体地，需参与调整的节点不超过$O(\log n)$个，故可达到极高的效率。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401222049.png" style="zoom:67%;"></p>
+<p>左式堆的整体结构呈单侧倾斜状，其中节点的分布均偏向左侧，左式堆将不再如完全二叉堆那样满足结构性。这也不难理解，毕竟<strong>堆序性才是堆结构的关键条件</strong>，而<strong>结构性只不过是堆的一项附加条件</strong>。在将平衡性替换为左倾性之后，左式堆结构的<code>merge()</code>操作乃至<code>insert()</code>和<code>delMax()</code>操作均可高效地实现。</p>
+<p>按照以上思路，可借助多重继承的机制，定义左式堆模板类<code>PQ_LeftHeap</code>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"PQ/PQ.h"</span> <span class="comment">//引入优先级队列ADT</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"BinTree/BinTree.h"</span> <span class="comment">//引入二叉树节点模板类</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PQ_LeftHeap</span> :</span> <span class="keyword">public</span> PQ&lt;T&gt;, <span class="keyword">public</span> BinTree&lt;T&gt; &#123; <span class="comment">//基于二叉树，以左式堆形式实现的PQ</span></span><br><span class="line">   <span class="comment">/*DSA*/</span><span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">UniPrint</span>;</span> <span class="comment">//演示输出使用，否则不必设置友类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   PQ_LeftHeap() &#123; &#125; <span class="comment">//默认构造</span></span><br><span class="line">   PQ_LeftHeap ( T* E, <span class="keyword">int</span> n ) <span class="comment">//批量构造：可改进为Floyd建堆算法</span></span><br><span class="line">   &#123;  <span class="keyword">for</span> ( <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++ ) insert ( E[i] );  &#125;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">insert</span> <span class="params">( T )</span></span>; <span class="comment">//按照比较器确定的优先级次序插入元素</span></span><br><span class="line">   <span class="function">T <span class="title">getMax</span><span class="params">()</span></span>; <span class="comment">//取出优先级最高的元素</span></span><br><span class="line">   <span class="function">T <span class="title">delMax</span><span class="params">()</span></span>; <span class="comment">//删除优先级最高的元素</span></span><br><span class="line">&#125;; <span class="comment">//PQ_LeftHeap</span></span><br></pre></td></tr></table></figure>
+<p><code>PQ_LeftHeap</code>模板类借助多重继承机制，由<code>PQ</code>和<code>BinTree</code>结构共同派生而得。既然左式堆的逻辑结构不再等价于完全二叉树，若沿用此前基于向量的实现方法，必将难以控制空间复杂度。因此改用紧凑型稍差，灵活性更强的二叉树结构，将更具针对性。</p>
+<h2 id="3-3-空节点路径长度"><a href="#3-3-空节点路径长度" class="headerlink" title="3.3.空节点路径长度"></a>3.3.空节点路径长度</h2><p>为控制左式堆的倾斜度，可借鉴AVL树和红黑树的技巧，先引入外部节点，将结构转化为真二叉树，然后为各节点引入“ 空节点路径长度 ”指标，并依此确定相关算法的执行方向。节点<code>x</code>的空节点路径长度（null path length），即做<code>npl(x)</code>。若<code>x</code>为外部节点，则约定<code>npl(x) = npl(null) = 0</code>。反之若<code>x</code>为内部节点，则<code>npl(x)</code>可递归地定义为：<code>npl(x) = 1 + min( npl( lc(x) ), npl( rc(x) ) )</code>，即节点<code>x</code>的<code>npl</code>值取决于其左、右孩子<code>npl</code>值中的小者。  </p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401223323.png" style="zoom:67%;"></p>
+<p>不难验证：<strong><code>npl(x)</code>既等于<code>x</code>到外部节点的最近距离，同时也等于以x为根的最大满子树的高度</strong>。</p>
+<p>左式堆是处处满足“ 左倾性 ”的二叉堆，即任一内部节点x都满足：<code>npl( lc(x) )</code> $\ge$ <code>npl( rc(x) )</code>，即<strong>就<code>npl</code>指标而言，任一内部节点的左孩子都不小于其右孩子</strong>。</p>
+<p>由<code>npl</code>及左倾性的定义可以发现，左式堆中任一内节点<code>x</code>都应满足：<code>npl(x) = 1 + npl( rc(x) )</code>，即<strong>左式堆中每个节点的<code>npl</code>值，仅取决于其右孩子</strong>。要注意的是，“ 左孩子的<code>npl</code>值不小于右孩子 ”并不意味着 “ 左孩子的高度比不小于右孩子 ”。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401224135.png" style="zoom: 80%;"></p>
+<h2 id="3-4-最右侧通路"><a href="#3-4-最右侧通路" class="headerlink" title="3.4.最右侧通路"></a>3.4.最右侧通路</h2><p>从<code>x</code>出发沿右侧分支一直前行直至空节点，经过的通路称作<strong>最右侧通路（rightmost path）</strong>，记作<code>rPath(x)</code>。在左式堆中，尽管右孩子高度可能大于左孩子，但由“ 各节点<code>npl</code>值均决定于其右孩子 ”这一事实不难发现，<strong>每个节点的<code>npl</code>值，应恰好等于其最右侧通路的长度</strong>。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401224557.png" style="zoom: 80%;"></p>
+<p>根节点<code>r</code>的最右侧通路，在此扮演的角色极其重要，<strong><code>rPath(r)</code>的终点必为全堆中深度最小的外部节点</strong>，若记：<code>npl(r) = |rPath(r)| = d</code>，则该堆应包含一棵以r为根，高度为d的满二叉树（黑色部分），且该满二叉树至少应包含$2^{d+1}-1$个节点、$2^d-1$个内部节点——这也是堆的规模下限；反之在包含n个节点的左式堆中，最右侧通路必然不会长于：$\lfloor \log_2(n+1) \rfloor-1=O(\log n)$。</p>
+<h2 id="3-5-合并算法"><a href="#3-5-合并算法" class="headerlink" title="3.5.合并算法"></a>3.5.合并算法</h2><p>假设待合并的左式堆分别以<code>a</code>和<code>b</code>为堆顶，且不失一般性地令$a\ge b$。于是可递归地将<code>a</code>的右子堆$a_R$与堆<code>b</code>合并，然后作为节点<code>a</code>的右孩子替换原先的$a_R$。为保证依然满足左倾性条件，最后还需要比较<code>a</code>左、右孩子的<code>npl</code>值——如有必要还需将二者交换，以保证左孩子的<code>npl</code>值不低于右孩子。</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401225555.png" style="zoom: 80%;"></p>
+<p>下面是一个实例：</p>
+<p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401231811.png" style="zoom: 67%;"></p>
+<p>按照以上思路，左式堆合并算法可实现为如下的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="comment">//根据相对优先级确定适宜的方式，合并以a和b为根节点的两个左式堆</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="title">BinNodePosi</span><span class="params">(T)</span> <span class="title">merge</span> <span class="params">( BinNodePosi(T) a, BinNodePosi(T) b )</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> ( ! a ) <span class="keyword">return</span> b; <span class="comment">//退化情况</span></span><br><span class="line">   <span class="keyword">if</span> ( ! b ) <span class="keyword">return</span> a; <span class="comment">//退化情况</span></span><br><span class="line">   <span class="keyword">if</span> ( lt ( a-&gt;data, b-&gt;data ) ) swap ( a, b ); <span class="comment">//一般情况：首先确保b不大</span></span><br><span class="line">   ( a-&gt;rc = merge ( a-&gt;rc, b ) )-&gt;parent = a; <span class="comment">//将a的右子堆，与b合并</span></span><br><span class="line">   <span class="keyword">if</span> ( !a-&gt;lc || a-&gt;lc-&gt;npl &lt; a-&gt;rc-&gt;npl ) <span class="comment">//若有必要</span></span><br><span class="line">      swap ( a-&gt;lc, a-&gt;rc ); <span class="comment">//交换a的左、右子堆，以确保右子堆的npl不大</span></span><br><span class="line">   a-&gt;npl = a-&gt;rc ? a-&gt;rc-&gt;npl + <span class="number">1</span> : <span class="number">1</span>; <span class="comment">//更新a的npl</span></span><br><span class="line">   <span class="keyword">return</span> a; <span class="comment">//返回合并后的堆顶</span></span><br><span class="line">&#125; <span class="comment">//本算法只实现结构上的合并，堆的规模须由上层调用者负责更新</span></span><br></pre></td></tr></table></figure>
+<p><strong>复杂度：</strong></p>
+<p>以上的合并算法中，所有递归实例可排成一个线性序列，因此该算法实质上属于线性递归，其运行时间应线性正比于递归深度。进一步地，递归只可能发生于两个待合并堆的最右侧通路上，若待合并堆的规模分别为n和m，则其两条最右侧通路的长度分别不会超过$O(\log n)$和$O(\log m)$，因此合并算法总体运行时间应不超过：</p>
+<script type="math/tex; mode=display">
+O(\log n)+O(\log m)=O(\log n+\log m)=O(\log(\max(n,m)))</script><p>若将以上递归版本改写为迭代版本，还可以从常系数的意义上进一步提高效率。</p>
+<h2 id="3-6-基于合并的插入和删除"><a href="#3-6-基于合并的插入和删除" class="headerlink" title="3.6.基于合并的插入和删除"></a>3.6.基于合并的插入和删除</h2><p>若将<strong>merge()</strong>操作当作一项更为基本的操作，则可以反过来实现优先级队列标准的插入和删除等操作。事实上，得益于merge()操作自身的高效率，如此实现的插入和删除操作，在时间效率方面不逊色与常规的实现方式，而其突出的简洁性也使得这一方式在实际中应用广泛。</p>
+<h3 id="3-6-1-delMax"><a href="#3-6-1-delMax" class="headerlink" title="3.6.1.delMax()"></a>3.6.1.delMax()</h3><p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401233438.png" style="zoom:80%;"></p>
+<p>基于<code>merge()</code>操作实现<code>delMax()</code>算法，如图设堆顶x及其子堆$H_L$和$H_R$。在摘除x之后，$H_L$和$H_R$即可被视作为两个彼此独立的待合并的堆，只要通过<code>merge()</code>操作将它们合并其来，则效果完全等同于一次常规的<code>delMax()</code>删除操作。算法的时间复杂度依然不超过$O(\log n)$。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; T PQ_LeftHeap&lt;T&gt;::delMax() &#123;</span><br><span class="line">   BinNodePosi(T) lHeap = _root-&gt;lc; <span class="keyword">if</span> (lHeap) lHeap-&gt;parent = <span class="literal">NULL</span>; <span class="comment">//左子堆</span></span><br><span class="line">   BinNodePosi(T) rHeap = _root-&gt;rc; <span class="keyword">if</span> (rHeap) rHeap-&gt;parent = <span class="literal">NULL</span>; <span class="comment">//右子堆</span></span><br><span class="line">   T e = _root-&gt;data; <span class="keyword">delete</span> _root; _size--; <span class="comment">//删除根节点</span></span><br><span class="line">   _root = merge ( lHeap, rHeap ); <span class="comment">//合并原左、右子堆</span></span><br><span class="line">   <span class="keyword">if</span>( _root ) _root-&gt;parent = <span class="literal">NULL</span>;  <span class="comment">//若堆非空，还需相应设置父子连接</span></span><br><span class="line">   <span class="keyword">return</span> e; <span class="comment">//返回原根节点的数据项</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-6-1-insert"><a href="#3-6-1-insert" class="headerlink" title="3.6.1.insert()"></a>3.6.1.insert()</h3><p><img src="/2020/03/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8819%EF%BC%89%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97/QQ图片20200401233441.png" style="zoom:80%;"></p>
+<p>基于<code>merge()</code>操作实现<code>insert()</code>算法，假设拟将词条<code>x</code>插入堆H中。实际上，只要将<code>x</code>也视作（仅含单个节点的）堆，则通过调用<code>merge()</code>操作将该堆与堆H合并之后，其效果即完全等同完成了一次词条插入操作，时间复杂度依然不超过$O(\log n)$。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">void</span> PQ_LeftHeap&lt;T&gt;::insert ( T e ) &#123;</span><br><span class="line">   BinNodePosi(T) v = <span class="keyword">new</span> BinNode&lt;T&gt; (e);  <span class="comment">//为e创建一个二叉树节点</span></span><br><span class="line">   _root = merge( _root, v);  <span class="comment">//通过合并完成新节点的插入</span></span><br><span class="line">   _root-&gt;parent = <span class="literal">NULL</span>;  <span class="comment">//既然此时堆非空，还需相应设置父子连接</span></span><br><span class="line">   <span class="comment">//_root = merge( _root, new BinNode&lt;T&gt;( e, NULL ) ); //将e封装为左式堆，与当前左式堆合并</span></span><br><span class="line">   _size++; <span class="comment">//更新规模</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8818%EF%BC%89%E8%AF%8D%E5%85%B8/" rel="prev" title="数据结构与算法（18）词典">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（18）词典
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-接口定义"><span class="nav-text">1.接口定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-实现"><span class="nav-text">2.实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-尝试"><span class="nav-text">2.1.尝试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-完全二叉堆"><span class="nav-text">2.2.完全二叉堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-实现"><span class="nav-text">2.3.实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-插入算法"><span class="nav-text">2.4.插入算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-元素删除"><span class="nav-text">2.5.元素删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-6-建堆"><span class="nav-text">2.6.建堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-7-就地堆排序"><span class="nav-text">2.7.就地堆排序</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-左式堆"><span class="nav-text">3.左式堆</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-堆合并"><span class="nav-text">3.1.堆合并</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-单侧倾斜"><span class="nav-text">3.2.单侧倾斜</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-空节点路径长度"><span class="nav-text">3.3.空节点路径长度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-最右侧通路"><span class="nav-text">3.4.最右侧通路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-合并算法"><span class="nav-text">3.5.合并算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-基于合并的插入和删除"><span class="nav-text">3.6.基于合并的插入和删除</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-1-delMax"><span class="nav-text">3.6.1.delMax()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-1-insert"><span class="nav-text">3.6.1.insert()</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">332k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
