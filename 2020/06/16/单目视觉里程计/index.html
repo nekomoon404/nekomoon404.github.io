@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="整理了一下这学期机器视觉课程的大作业。视觉里程计(Visual Odometry，VO)是一种利用连续的图像序列来估计相机或机器人移动距离的方法，要求基于OpenCV初步实现一个简单的视觉里程计，我主要参考了高翔的《视觉slam十四讲》来完成。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单目视觉里程计">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="整理了一下这学期机器视觉课程的大作业。视觉里程计(Visual Odometry，VO)是一种利用连续的图像序列来估计相机或机器人移动距离的方法，要求基于OpenCV初步实现一个简单的视觉里程计，我主要参考了高翔的《视觉slam十四讲》来完成。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200616071621.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E6%B5%81%E7%A8%8B%E5%9B%BE4.jpg">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/2.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/QQ%E5%9B%BE%E7%89%8720200615202025.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/QQ%E5%9B%BE%E7%89%8720200613125004.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E5%9B%BE%E7%89%871.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E5%9B%BE%E7%89%871.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200616071621.png">
+<meta property="article:published_time" content="2020-06-16T02:15:05.000Z">
+<meta property="article:modified_time" content="2020-06-27T02:38:45.792Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200616071621.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>单目视觉里程计 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          单目视觉里程计
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-16 10:15:05" itemprop="dateCreated datePublished" datetime="2020-06-16T10:15:05+08:00">2020-06-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-06-27 10:38:45" itemprop="dateModified" datetime="2020-06-27T10:38:45+08:00">2020-06-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <div class="post-description">整理了一下这学期机器视觉课程的大作业。视觉里程计(Visual Odometry，VO)是一种利用连续的图像序列来估计相机或机器人移动距离的方法，要求基于OpenCV初步实现一个简单的视觉里程计，我主要参考了高翔的《视觉slam十四讲》来完成。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>视觉里程计(Visual Odometry，VO)是一种利用连续的图像序列来估计相机或机器人移动距离的方法，也被称为Visual SLAM问题的前端，是移动机器人定位导航领域中的关键技术之一。作业要求基于OpenCV初步实现一个简单的视觉里程计，我主要参考了高翔的《视觉slam十四讲》来完成，下面整理了这次大作业的报告。</p>
+<h2 id="视觉里程效果截图"><a href="#视觉里程效果截图" class="headerlink" title="视觉里程效果截图"></a>视觉里程效果截图</h2><p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/微信图片_20200616071621.png" style="zoom:80%;"></p>
+<h2 id="程序使用方法"><a href="#程序使用方法" class="headerlink" title="程序使用方法"></a>程序使用方法</h2><p>运行环境：Ubuntu16.04+OpenCV3.4.0</p>
+<p>安装程序所需的依赖库：线性代数库<code>Eigen3</code>，基于图优化的库<code>g2o</code>。</p>
+<p>使用的数据集：KITTI数据集 灰度序列  /00/image_0 中的前2000帧图片</p>
+<p>运行前更改<code>slam-VO.h</code>文件中第137行对应的路径：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ifstream <span class="title">myfile</span> <span class="params">(<span class="string">"/home/neko/slam-VO/poses/00.txt"</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>更改<code>slam-VO.cpp</code>文件中第23到25行，以及第99行对应的路径：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sprintf</span>(filename1, <span class="string">"/home/neko/slam-VO/00/image_0/%06d.png"</span>, <span class="number">0</span>);</span><br><span class="line"><span class="built_in">sprintf</span>(filename2, <span class="string">"/home/neko/slam-VO/00/image_0/%06d.png"</span>, <span class="number">1</span>);</span><br><span class="line"><span class="built_in">string</span> pose_path =  <span class="string">"/home/neko/slam-VO/poses/00.txt"</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">sprintf</span>(filename, <span class="string">"/home/neko/slam-VO/00/image_0/%06d.png"</span>, numFrame);</span><br></pre></td></tr></table></figure>
+<p>进入<code>/build</code>文件夹，在终端依次执行来运行程序：</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">cmake</span></span> ..</span><br><span class="line">make</span><br><span class="line">./slam-VO</span><br></pre></td></tr></table></figure>
+<h2 id="算法详细介绍"><a href="#算法详细介绍" class="headerlink" title="算法详细介绍"></a>算法详细介绍</h2><p>程序的<strong>整体流程</strong>如下：</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/流程图4.jpg" style="zoom: 67%;"></p>
+<p>单目视觉初始化： </p>
+<ol>
+<li>读取第一、二帧图片，并提取第一帧图片的特征点；</li>
+<li>通过光流跟踪法得到第二帧图片的特征点，删除跟踪失败的点；</li>
+<li>计算本质矩阵，并恢复运动，并以该转换矩阵作为初始值。</li>
+</ol>
+<p>主循环：</p>
+<p>连续读取图片，当读取图片帧数小于设定的最大帧数<code>MAX_FRAME</code>时：</p>
+<ol>
+<li>光流跟踪前一帧图片特征点，得到当前帧特征点，并删除跟踪失败的点;</li>
+<li>计算本质矩阵，并恢复旋转运动$\pmb{R}$和平移运动$\pmb{t}$；</li>
+<li>根据匹配到的两帧特征点，进行三角测量，计算两帧图片之间的距离尺度scale;</li>
+<li>由前一帧图片的位置、当前图片旋转、平移矩阵、距离尺度，计算得到当前图片的位置，生成相机轨迹；</li>
+<li>进行BA优化；</li>
+<li>保存优化后的平移运动结果，画出轨迹；</li>
+<li>判断跟踪后的特征点数目是否大于设定阈值<code>MIN_NUM_FEAT</code>，若小于则重新检测</li>
+</ol>
+<h2 id="1-图片提取"><a href="#1-图片提取" class="headerlink" title="1.图片提取"></a>1.图片提取</h2><p>根据网上的教程资料配置了Ubuntu16.04+OpenCV3.4.0的环境，具体步骤为：</p>
+<ol>
+<li><p>下载OpenCV3.4.0  sources版本，解压</p>
+</li>
+<li><p>安装<code>opencv</code>的依赖库和<code>cmake</code>包，通过<code>sudo apt-get install *</code>命令进行安装</p>
+</li>
+<li><p>进入解压完的<code>opencv</code>文件夹，创建编译文件夹，<code>mkdir build</code>，依次执行<code>cd build</code>， <code>cmake ..</code>，<code>make</code>，<code>make install</code>。</p>
+</li>
+<li><p>配置OpenCV的编译环境，将OpenCV的库添加到路径，从而可以让系统找到，<code>sudo gedit /etc/ld.so.conf.d/opencv.conf</code>，在打开的文本中写入<code>/usr/local/lib</code>，执行<code>sudo ldconfig</code></p>
+</li>
+<li><p>配置bash，执行<code>sudo gedit /etc/bash.bashrc</code>，在文本最末尾添加：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PKG_CONFIG_PATH=$<span class="symbol">PKG_CONFIG_PATH:</span>/usr/local/<span class="class"><span class="keyword">lib</span>/<span class="title">pkgconfig</span></span></span><br><span class="line">export PKG_CONFIG_PATH</span><br></pre></td></tr></table></figure>
+<p>保存，执行<code>source /etc/bash.bashrc</code>，使得配置生效：更新<code>sudo updatedb</code> </p>
+</li>
+</ol>
+<p>程序中使用<code>sprintf()</code>函数读入指定路径下的图片序列，用<code>imread()</code>函数读取当前图片，用<code>imshow()</code>函数显示当前图片。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sprintf</span>(filename, /<span class="built_in">home</span>/neko/slam-VO/<span class="number">00</span>/image_0/%<span class="number">06</span>d.png, numFrame);</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; <span class="string">"Current frame number:"</span>&lt;&lt;numFrame &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">currImage = imread(filename);</span><br><span class="line"></span><br><span class="line">imshow( <span class="string">"CAMERA IMAGE"</span>, currImage);</span><br></pre></td></tr></table></figure>
+<h2 id="2-提取特征点"><a href="#2-提取特征点" class="headerlink" title="2.提取特征点"></a>2.提取特征点</h2><p>视觉里程计的核心问题是如何根据图形估计相机运动，比较方便的做法是：首先从图像中选取比较有代表性的点，这些点在相机视角发生少量变化后会保持不变，于是能在各个图像中找到相同的点。然后在这些点的基础上讨论，讨论相机位姿估计问题，以及这些点的定位问题，这些点被称为图像特征。</p>
+<p>在本次作业中我们提取<strong>FAST关键点</strong>，<strong>FAST</strong> 是一种角点，主要检测局部像素灰度变化明显的地方，以速度快著称。它的思想是：如果一个像素与它邻域的像素差别较大（过亮或过暗）, 那它更可能是角点。它的检测过程如下：</p>
+<ol>
+<li>在图像中选取像素<script type="math/tex">p</script>，假设它的亮度为$I_p$。</li>
+<li>设置一个阈值$T$ (比如$I_p$的20%)。</li>
+<li>以像素$p$为中心, 选取半径为3的圆上的16个像素点。</li>
+<li>假如选取的圆上，有连续的$N$个点的亮度大于$I_p+T$ 或小于$I_p-T$，那么像素$p$可以被认为是特征点。</li>
+<li>循环以上四步，对每一个像素执行相同的操作。</li>
+</ol>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/2.png" style="zoom:80%;"></p>
+<p>​                                                                                <strong>图2-1 FAST特征点</strong></p>
+<p>OpenCV中默认采用Fast-9-16，即在周围取16个像素点，若超过连续9个点与中心点差值大于阈值即成为候选角点。为了更高效，可以进行预处理，检测圆周上第1.5.9.13个像素，当其中有三个及以上的符合阈值，才可以入围，若不符合，便可以直接排除。同时需要搜索局部极大值，抑制非极大值元素来避免角点集中的问题。</p>
+<p>程序中通过<code>featureDetection()</code>函数来实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">featureDetection</span><span class="params">(Mat img_1, <span class="built_in">vector</span>&lt;Point2f&gt;&amp; points1)</span>	</span>&#123;   </span><br><span class="line">  <span class="built_in">vector</span>&lt;KeyPoint&gt; kps;</span><br><span class="line">  <span class="keyword">int</span> fast_threshold = <span class="number">10</span>;</span><br><span class="line">  Ptr&lt;FastFeatureDetector&gt; detector=FastFeatureDetector::create();</span><br><span class="line">  detector-&gt;detect(img_1,kps);</span><br><span class="line">  KeyPoint::convert(kps, points1, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-特征跟踪与估计相机运动"><a href="#3-特征跟踪与估计相机运动" class="headerlink" title="3.特征跟踪与估计相机运动"></a>3.特征跟踪与估计相机运动</h2><h3 id="3-1-光流法特征跟踪"><a href="#3-1-光流法特征跟踪" class="headerlink" title="3.1.光流法特征跟踪"></a>3.1.光流法特征跟踪</h3><p>使用<strong>光流（Optical Flow）</strong>来跟踪特征点的运动。这样可以回避计算和匹配描述子带来的时间。光流是一种描述像素随着时间，在图像之间运动的方法。随着时间的经过，同一个像素会在图像中运动。计算部分像素运动的称为稀疏光流，计算所有像素的称为稠密光流。稀疏光流以 Lucas-Kanade 光流为代表，并可以在 SLAM 中用于跟踪特征点位置。</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/QQ图片20200615202025.png" style="zoom:67%;"></p>
+<p>​                                                                           图3-1 LK光流法示意图</p>
+<p>在LK光流中，来自相机的图像是随时间变化的。图像可以看作时间的函数$I(t)$。那么，一个在$t$时刻，位于$(x,y)$处的像素，它的灰度可以写成$I(x,y,t)$。这种方式把图像看成了关于位置与时间的函数，它的值域就是图像中像素的灰度。</p>
+<p>引入<strong>灰度不变假设</strong>：同一个空间点的像素灰度值，在各个图像中是固定不变的。对于t时刻位于$(x,y)$处的像素，设$t+dt$时刻，它运动到$(x + dx, y + dy)$处。由于灰度不变,有：</p>
+<script type="math/tex; mode=display">
+I(x+dx,y+dy,t+dt)=I(x,y,t)</script><p>通过对左边进行泰勒展开，保留一阶项，两边同时除$dt$，并写成矩阵形式：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix} I_x \quad I_y
+\end{bmatrix} \begin{bmatrix} u \\v \end{bmatrix}=-I_t</script><p>引入额外的约束来计算$u, \,\,v$，假设某一个窗口内的像素具有相同的运动，如一个大小为$w \times w$的窗口，它含有$w^2$数量的像素，因此共有$w^2$个方程：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix} I_x \quad I_y
+\end{bmatrix}_k \begin{bmatrix} u \\v \end{bmatrix}=-I_{tk}, \quad k=1,\dots,w^2</script><p>这是一个关于$u,\,\, v$的超定线性方程，可以使用最小二乘法求解，这样就得到了像素在图像间的运动速度$u,\,\, v$。</p>
+<p>如果相机运动较快，两张图像差异较明显，那么单层图像光流法容易达到一个局部极小值，这种情况可以通过引入图像金字塔来改善。图像金字塔是指对同一个图像进行缩放，得到不同分辨率下的图像。以原始的金字塔作为金字塔底层，每往上一层，就对下层图像进行一定倍率的缩放，就得到一个金字塔。然后在计算光流时，先从顶层的图像开始计算，然后把上一层的追踪结果，作为下一层光流的初始值。OpenCV中的<code>calcOpticalFlowPyrLK()</code>函数正是基于这一原理实现多层光流函数。</p>
+<p>在程序中通过<code>featureTracking()</code>函数来实现特征跟踪：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">featureTracking</span><span class="params">(Mat img_1, Mat img_2, <span class="built_in">vector</span>&lt;Point2f&gt;&amp; points1, <span class="built_in">vector</span>&lt;Point2f&gt;&amp; points2, <span class="built_in">vector</span>&lt;uchar&gt;&amp; status)</span>	</span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">float</span>&gt;err;																		   </span><br><span class="line">    calcOpticalFlowPyrLK(img_1, img_2, points1, points2, status, err);  <span class="comment">//调用光流法跟踪特征点</span></span><br><span class="line">    <span class="keyword">int</span> indexCorrection = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">int</span> i=<span class="number">0</span>; i&lt;status.<span class="built_in">size</span>(); i++)   <span class="comment">//删除跟踪失败的点</span></span><br><span class="line">    &#123;  </span><br><span class="line">        Point2f pt = points2.at(i- indexCorrection);</span><br><span class="line">     	<span class="keyword">if</span> ((status.at(i) == <span class="number">0</span>)||(pt.x&lt;<span class="number">0</span>)||(pt.y&lt;<span class="number">0</span>))	</span><br><span class="line">        &#123;</span><br><span class="line">     		  <span class="keyword">if</span>((pt.x&lt;<span class="number">0</span>)||(pt.y&lt;<span class="number">0</span>))</span><br><span class="line">               &#123;</span><br><span class="line">     		  	status.at(i) = <span class="number">0</span>;</span><br><span class="line">     		  &#125;</span><br><span class="line">     		  points1.erase (points1.<span class="built_in">begin</span>() + (i - indexCorrection));</span><br><span class="line">     		  points2.erase (points2.<span class="built_in">begin</span>() + (i - indexCorrection));</span><br><span class="line">     		  indexCorrection++;</span><br><span class="line">     	&#125;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-2-对极几何估计相机运动"><a href="#3-2-对极几何估计相机运动" class="headerlink" title="3.2.对极几何估计相机运动"></a>3.2.对极几何估计相机运动</h3><p>接下来根据匹配的点对估计相机的运动。当相机为单目时，只知道2D的像素坐标，因而问题是根据两组2D点估计运动，可以用<strong>对极几何</strong>来解决。</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/QQ图片20200613125004.png" style="zoom: 80%;"></p>
+<p>​                                                                               图3-2 对极几何约束</p>
+<p>如下图所示，我们希望求取两帧图像$I_1$，$I_2$之间的运动，设第一帧到第二帧的运动为$R$，$t$。两个相机中心分别为$O_1$，$O_2$现在，考虑$I_1$ 中有一个特征点$p_1$，它在$I_2$中对应着特征点$p_2$。根据针孔相机模型，可得两个像素点的$p_1$，$p_2$的像素位置：</p>
+<script type="math/tex; mode=display">
+s_1p_1=KP,\quad s_2p_2=K(RP+t)</script><p>其中$K$为相机内参，$R$，$t$为两个坐标系的相机运动。使用齐次坐标表示像素点，例如$s_1p_1$和$s_2p_2$成投影关系，它们在齐次坐标下的意义是相等的，称为尺度意义下相等。经推导得到对极约束的表达式：</p>
+<script type="math/tex; mode=display">
+p_2^Tk^{-T}t^\land RK^{-1}p_1=0</script><p>把中间部分记作两个矩阵：<strong>基础矩阵</strong>（Fundamental Matrix）$F$ 和<strong>本质矩阵</strong>（Essential Matrix）$E$，可以进一步简化对极约束：</p>
+<script type="math/tex; mode=display">
+E=t ^\land R, \quad F=K^{-T}EK^{-1},\quad x_2^TEx_1=p_2^TFp_1=0</script><p>对极约束简洁地给出了两个匹配点的空间位置关系，相机位姿估计问题变为以下两步：</p>
+<ol>
+<li>根据配对点的像素位置，求出$E$ 或者$F$；</li>
+<li>根据$E$或者$F$，求出$R$，$t$。</li>
+</ol>
+<p>在程序中我们使用本质矩阵$E$求解，然后通过本质矩阵获取摄像机的相对旋转和平移量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//计算本质矩阵并恢复R,t</span></span><br><span class="line">E = findEssentialMat(prevFeatures, currFeatures, focal_length, principal_point, RANSAC, <span class="number">0.999</span>, <span class="number">1.0</span>, mask);</span><br><span class="line">recoverPose(E, prevFeatures,currFeatures,  R, t, focal_length, principal_point, mask);</span><br></pre></td></tr></table></figure>
+<h3 id="3-3-三角测量"><a href="#3-3-三角测量" class="headerlink" title="3.3.三角测量"></a>3.3.三角测量</h3><p>在单目SLAM 中，仅通过单张图像无法获得像素的深度信息，我们需要通过三角测量（Triangulation）（或三角化）的方法来估计地图点的深度。三角测量是指，通过在两处观察同一个点的夹角，确定该点的距离。在SLAM 中主要用三角化来估计像素点的距离。</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/图片1.png" style="zoom: 50%;"></p>
+<p>​                                                          图3-2 通过三角测量的方法获得地图点的深度</p>
+<p>论上直线$O_1p_1$ 与 $O_2p_2$在场景中会相交于一点$P$，该点即是两个特征点所对应的地图点在三维场景中的位置。然而由于噪声的影响，这两条直线往往无法相交。因此，可以通过最二小乘去求解。设$x_1$，$x_2$为两个特征点的归一化坐标，那么它们满足：</p>
+<script type="math/tex; mode=display">
+s_2x_2=s_1Rx_1+t</script><p>如果要算$s_1$，那么先对上式两侧左乘一个$x_2^\land$，得：</p>
+<script type="math/tex; mode=display">
+s_2x_2^\land x_2=0=s_1x_2 ^\land R x_1 +x_2 ^\land t</script><p>该式左侧为零，右侧可以看成是$s_2$的一个方程，根据它可求出$s_2$，进而能求出$s_1$。这样就得到了两帧下的深度，确定了它们的空间坐标。由于噪声的存在，估得的$R,t$不一定精确使上式为零，所以常用最小二乘法求解。</p>
+<p>在程序中通过<code>triangulation()</code>函数实现三角测量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">triangulation</span> <span class="params">( </span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="built_in">vector</span>&lt; Point2f&gt;&amp; points_1, </span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="built_in">vector</span>&lt; Point2f&gt;&amp; points_2, </span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> Mat&amp; R, <span class="keyword">const</span> Mat&amp; t, </span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="built_in">vector</span>&lt; Point3f &gt;&amp; points)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   Mat T1 = (Mat_&lt;<span class="keyword">float</span>&gt; (<span class="number">3</span>,<span class="number">4</span>) &lt;&lt;</span><br><span class="line">        <span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>);</span><br><span class="line">    Mat T2 = (Mat_&lt;<span class="keyword">float</span>&gt; (<span class="number">3</span>,<span class="number">4</span>) &lt;&lt;</span><br><span class="line">        R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">1</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>), t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>),</span><br><span class="line">        R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>),</span><br><span class="line">        R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>), t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>)</span><br><span class="line">    );</span><br><span class="line">    Mat K = ( Mat_&lt;<span class="keyword">double</span>&gt; ( <span class="number">3</span>,<span class="number">3</span> ) &lt;&lt; <span class="number">718.856</span>, <span class="number">0</span>, <span class="number">607.1928</span>, <span class="number">0</span>, <span class="number">718.856</span>, <span class="number">185.2157</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span> );</span><br><span class="line">    <span class="built_in">vector</span>&lt;Point2f&gt; pts_1, pts_2;</span><br><span class="line">    <span class="keyword">for</span> ( <span class="keyword">int</span> idex=<span class="number">0</span>;idex&lt;points_1.<span class="built_in">size</span>();idex++ )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 将像素坐标转换至相机坐标</span></span><br><span class="line">        pts_1.push_back ( pixel2cam( points_1[idex], K) );</span><br><span class="line">        pts_2.push_back ( pixel2cam( points_2[idex], K) );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Mat pts_4d;</span><br><span class="line">    cv::triangulatePoints( T1, T2, pts_1, pts_2, pts_4d );</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 转换成非齐次坐标</span></span><br><span class="line">    <span class="keyword">for</span> ( <span class="keyword">int</span> i=<span class="number">0</span>; i&lt;pts_4d.cols; i++ )</span><br><span class="line">    &#123;</span><br><span class="line">        Mat x = pts_4d.col(i);</span><br><span class="line">        x /= x.at&lt;<span class="keyword">float</span>&gt;(<span class="number">3</span>,<span class="number">0</span>); <span class="comment">// 归一化</span></span><br><span class="line">        <span class="function">Point3f <span class="title">p</span> <span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            x.at&lt;<span class="keyword">float</span>&gt;(<span class="number">0</span>,<span class="number">0</span>), </span></span></span><br><span class="line"><span class="function"><span class="params">            x.at&lt;<span class="keyword">float</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), </span></span></span><br><span class="line"><span class="function"><span class="params">            x.at&lt;<span class="keyword">float</span>&gt;(<span class="number">2</span>,<span class="number">0</span>) </span></span></span><br><span class="line"><span class="function"><span class="params">        )</span></span>;</span><br><span class="line">        points.push_back( p );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="4-生成相机轨迹与Ground-Truth比较"><a href="#4-生成相机轨迹与Ground-Truth比较" class="headerlink" title="4.生成相机轨迹与Ground Truth比较"></a>4.生成相机轨迹与Ground Truth比较</h2><p>Ground Truth轨迹绘制，通过读取00.txt中的数据绘制，<code>slam-VO.h</code>文件中定义了<code>get_Pose()</code>函数，<code>slam-VO.cpp</code>中函数调用程序如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">float</span>&gt;&gt; poses = get_Pose(pose_path);</span><br><span class="line">Point2f trace1 = Point2f(<span class="keyword">int</span>(poses[numFrame][<span class="number">3</span>]) + <span class="number">400</span>, <span class="keyword">int</span>(poses[numFrame][<span class="number">11</span>]) + <span class="number">150</span>); <span class="comment">//绘制Ground Truth      </span></span><br><span class="line"><span class="built_in">circle</span>(trace, trace1, <span class="number">1</span>, Scalar(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>), <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>初步未优化得到的相机运动轨迹绘制，在三角测量得到特征点三维信息后，通过判断两帧间是否有一定程度的位移决定该次三角测量精度是否准确，若可以，则绘制当前位置点，程序如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//三角测量</span></span><br><span class="line">triangulation (prevFeatures,currFeatures,R,t,points);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;<span class="string">"id&lt;points.size():"</span>&lt;&lt;points.<span class="built_in">size</span>()&lt;&lt;<span class="built_in">endl</span>;        	</span><br><span class="line"><span class="keyword">for</span> ( <span class="keyword">int</span> id=<span class="number">0</span>; id&lt;points.<span class="built_in">size</span>(); id++ )&#123;</span><br><span class="line">	 points1.push_back(prevFeatures[id]);</span><br><span class="line">     points2.push_back(currFeatures[id]);</span><br><span class="line">&#125; </span><br><span class="line">        </span><br><span class="line">scale = getAbsoluteScale(numFrame, <span class="number">0</span>, t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>));<span class="comment">//平移的距离     </span></span><br><span class="line"><span class="keyword">if</span> ((scale&gt;<span class="number">0.1</span>)&amp;&amp;(-t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>) &gt; -t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>)) &amp;&amp; (-t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>) &gt; -t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>)))&#123;    <span class="comment">//确保有一定程度的平移而不是纯旋转以保证三角测量的精度 </span></span><br><span class="line">	 t_f = t_f + scale*(R_f*(-t));</span><br><span class="line">     R_f = R.inv()*R_f;			</span><br><span class="line">     <span class="keyword">pre_t</span>=t.clone();</span><br><span class="line">     <span class="keyword">int</span> x = <span class="keyword">int</span>(t_f.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>)) + <span class="number">400</span>;</span><br><span class="line">     <span class="keyword">int</span> y = <span class="keyword">int</span>(t_f.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>)) + <span class="number">150</span>; </span><br><span class="line">     Point2f trace2 = Point2f(x,y) ;     </span><br><span class="line">     <span class="built_in">circle</span>(trace, trace2 ,<span class="number">1</span>, Scalar(<span class="number">0</span>,<span class="number">255</span>,<span class="number">0</span>), <span class="number">1</span>);<span class="comment">//绘制初步估计的轨迹</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">     <span class="built_in">cout</span> &lt;&lt; <span class="string">"scale below 0.1, or incorrect translation"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="5-Bundle-Adjustment优化"><a href="#5-Bundle-Adjustment优化" class="headerlink" title="5.Bundle Adjustment优化"></a>5.Bundle Adjustment优化</h2><p>PnP用于求解3D到2D运动的投影位置方法。可以通过线性方法先求解相机位姿再求解空间投影点，但存在的问题是线性解法鲁棒性不太好，并且需要建立线性方程求代数解较为困难。因此，当运动比较连续时，一般选择非线性优化方法来进行迭代求解最优解，通常采用基于最小二乘问题的<strong>Bundle Adjustment(BA, 捆集调整)方法</strong>。针对本文采用的单目相机数据集，必须先对其进行初始化，再使用BA算法。</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/图片1.png" style="zoom:50%;"></p>
+<p>非线性优化将相机位姿、空间特征点等多个参数看作优化变量。如上图所示，根据之前的特征匹配，已知$p_1$、$p_2$为同一空间点的两个投影点，利用最小化重投影误差对相机位姿进行优化，使计算得到的$p_2’$与实际$p_2$不断接近，直到达到精度范围或最大迭代次数。设相机位姿变换为$R$，$t$，对应李代数为$\xi$。相机内参矩阵为$K$。任一三维空间点P的坐标$ \pmb{P}_i=[X_i,Y_i,Z_i]^T$。对应的投影像素坐标为$\pmb{u}_i=[u_i,v_i]^T$。则像素点与空间点存在如下关系：</p>
+<script type="math/tex; mode=display">
+s_i\begin{bmatrix}u_i\\v_i\\1 \end{bmatrix}=\pmb{K}(\exp(\pmb{\xi}^\land)\begin{bmatrix}X_i\\Y_i\\Z_i\\1 \end{bmatrix})_{1:3}</script><p>即：</p>
+<script type="math/tex; mode=display">
+s_i\pmb{u}_i=\pmb{K}(\exp(\pmb{\xi}^\land)\pmb{P}_i)_{1:3}</script><p>因此，以相机位姿李代数$\xi$、特征点空间位置等为优化变量，以重投影误差为目标函数，计算将像素坐标观测值与按相机位姿计算得到的像素坐标计算值之间的误差，构建最小二乘问题，利用Gauss-Newton法或Levenburg-Marquadt优化算法寻找最优相机位姿和特征点空间坐标。优化模型如下所示：</p>
+<script type="math/tex; mode=display">
+\xi^*=\arg \min\limits_{\xi}\frac{1}{2}\sum^n_{i=1}\Arrowvert u_i-\frac{1}{s_i}K\exp (\xi^\land)P_i\Arrowvert_2^2</script><p>在利用优化算法进行迭代的时候，最重要的是计算每次迭代的下降梯度方向，对目标函数误差求导可得：</p>
+<script type="math/tex; mode=display">
+e(x+\Delta x)\approx e(x)+J\Delta x</script><p>其中，$J$为$2 \times 6$的雅各比矩阵。通过扰动模型求解李代数导数，计算过程如下：由上文已知像素点与空间点的关系，设$\pmb{P}’$为空间点$\pmb{P}$经相机位姿变换后的空间坐标，即$\pmb{P}’=(\exp(\pmb{\xi}^\land)\pmb{P})_{1:3}=[X’,Y’,Z’]^T$。将相机内参$K$展开得：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}su\\ sv \\s \end{bmatrix}=\begin{bmatrix}f_x &0 &c_x\\ 0 &f_y &c_y\\0 & 0 &1 \end{bmatrix} \begin{bmatrix} X' \\ Y' \\Z' \end{bmatrix}</script><p>消元可得：</p>
+<script type="math/tex; mode=display">
+u=f_x\frac{X'}{Z'}+c_x, \quad v=f_y\frac{Y'}{Z'}+c_y</script><p>将相机位姿李代数左乘扰动量$\delta \pmb{\xi}$，再通过误差变化对扰动量的求导可得：</p>
+<script type="math/tex; mode=display">
+\frac{\partial e}{\partial \delta \pmb{\xi}}=\lim \limits_{\delta \pmb{\xi}\to0}\frac{\delta \pmb{\xi}\bigoplus \pmb{\xi}}{\delta \pmb{\xi}}=\frac{\partial e}{\partial \pmb{P}'}\frac{\partial \pmb{P}'}{\partial\delta \pmb{\xi}}</script><p>误差变化$e$对于$\pmb{P}’$的求导可以根据之前消元得到的$u$、$v$表达式得到：</p>
+<script type="math/tex; mode=display">
+\frac{\partial e}{\partial \pmb{P}'}= -\begin{bmatrix} \displaystyle\frac{\partial u}{\partial {X}'} & \displaystyle\frac{\partial u}{\partial {Y}'} & \displaystyle\frac{\partial u}{\partial {Z}'}  \\  \displaystyle\frac{\partial v}{\partial {X}'} & \displaystyle\frac{\partial v}{\partial {Y}'} & \displaystyle\frac{\partial v}{\partial {Z}'} \end{bmatrix} =- \begin{bmatrix} \displaystyle\frac{f_x}{Z'} & 0 & -\displaystyle\frac{f_x X'}{Z'^2}  \\  0 & \displaystyle\frac{f_y}{Z'} & -\displaystyle\frac{f_y Y'}{Z'^2} \end{bmatrix}</script><p>$\pmb{P}’$对扰动量$\delta \pmb{\xi}$求导为：</p>
+<script type="math/tex; mode=display">
+\frac{\partial \pmb{P}'}{\partial\delta \pmb{\xi}}=[\pmb{I},\,\,-\pmb{P}'^ \land]</script><p>于是最终得到相机位姿导数的雅各比矩阵：</p>
+<script type="math/tex; mode=display">
+\frac{\partial e}{\partial \delta \pmb{\xi}}=-\begin{bmatrix} \displaystyle\frac{f_x}{Z'} & 0 & -\displaystyle\frac{f_x X'}{Z'^2} & -\displaystyle\frac{f_x X' Y'}{Z'^2} &f_x+\displaystyle\frac{f_x X'}{Z'^2} &-\displaystyle\frac{f_x Y'}{Z'} \\ 0 & \displaystyle\frac{f_y}{Z'} & -\displaystyle\frac{f_y Y'}{Z'^2} &-f_y-\displaystyle\frac{f_y Y'}{Z'^2} & -\displaystyle\frac{f_y X' Y'}{Z'^2} &-\displaystyle\frac{f_y X'}{Z'}
+\end{bmatrix}</script><p>同理，对于特征点空间位置的优化，还需要将误差$e$对空间点$\pmb{P}$进行求导，可以得到如下计算模型：</p>
+<script type="math/tex; mode=display">
+\frac{\partial e}{\partial \pmb{P}}=\frac{\partial e}{\partial \pmb{P}'}\frac{\partial \pmb{P}'}{\partial\delta \pmb{P}}</script><script type="math/tex; mode=display">
+\pmb{P}'=\exp(\pmb{\xi}^\land)\pmb{P}=\pmb{RP}+\pmb{t}</script><script type="math/tex; mode=display">
+\frac{\partial e}{\partial \delta \pmb{\xi}}=-- \begin{bmatrix} \displaystyle\frac{f_x}{Z'} & 0 & -\displaystyle\frac{f_x X'}{Z'^2}  \\  0 & \displaystyle\frac{f_y}{Z'} & -\displaystyle\frac{f_y Y'}{Z'^2} \end{bmatrix}\pmb{R}</script><p>基于以上推导，采用<code>g2o</code>库实现相机位姿图优化，部分代码如下图所示。图优化时以下一个相机位姿和所有特征点空间坐标为节点，以下一个相机中的投影坐标为边。以<code>RANSAC PnP</code>结果为初值，调用<code>g2o</code>进行优化。</p>
+<p><code>slam-VO.h</code>文件中定义 <code>Bundle Adjustment()</code>函数程序如下：函数输入前一帧的三维信息和后一帧的两维信息，以及相机内参矩阵，则可得到优化后的相机变化位姿矩阵。函数定义中，首先初始化<code>g2o</code>，定义优化求解器，定义图优化的边和节点，定义误差函数等。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bundleAdjustment</span> <span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="built_in">vector</span>&lt; Point3f &gt; points_3d,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="built_in">vector</span>&lt; Point2f &gt; points_2d,</span></span></span><br><span class="line"><span class="function"><span class="params">    Mat K,</span></span></span><br><span class="line"><span class="function"><span class="params">    Mat R, Mat t,</span></span></span><br><span class="line"><span class="function"><span class="params">    Mat&amp; RR, Mat&amp; tt )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 初始化g2o</span></span><br><span class="line">    <span class="keyword">typedef</span> g2o::BlockSolver&lt; g2o::BlockSolverTraits&lt;<span class="number">6</span>,<span class="number">3</span>&gt; &gt; Block; </span><br><span class="line">    <span class="comment">// pose 维度为 6, landmark 维度为 3</span></span><br><span class="line">    Block::LinearSolverType* linearSolver = <span class="keyword">new</span> g2o::LinearSolverCSparse&lt;Block::PoseMatrixType&gt;(); <span class="comment">// 线性方程求解器</span></span><br><span class="line">    Block* solver_ptr  = <span class="keyword">new</span> Block (linearSolver);    <span class="comment">// 矩阵块求解器</span></span><br><span class="line">    </span><br><span class="line">    g2o::OptimizationAlgorithmLevenberg* solver = <span class="keyword">new</span> g2o::OptimizationAlgorithmLevenberg (solver_ptr);</span><br><span class="line">    g2o::SparseOptimizer optimizer;</span><br><span class="line">    optimizer.setAlgorithm ( solver );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// vertex</span></span><br><span class="line">    g2o::VertexSE3Expmap* pose = <span class="keyword">new</span> g2o::VertexSE3Expmap(); <span class="comment">// camera pose</span></span><br><span class="line">    Eigen::Matrix3d R_mat;</span><br><span class="line">    R_mat &lt;&lt;</span><br><span class="line">               R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">0</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">1</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">2</span> ),</span><br><span class="line">               R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">1</span>,<span class="number">0</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">1</span>,<span class="number">1</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">1</span>,<span class="number">2</span> ),</span><br><span class="line">               R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">2</span>,<span class="number">0</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">2</span>,<span class="number">1</span> ), R.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">2</span>,<span class="number">2</span> );</span><br><span class="line">    pose-&gt;setId ( <span class="number">0</span> );</span><br><span class="line">    pose-&gt;setEstimate ( g2o::SE3Quat (R_mat,Eigen::Vector3d ( t.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">0</span> ), t.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">1</span>,<span class="number">0</span> ), t.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">2</span>,<span class="number">0</span> ) ) ) );</span><br><span class="line">    optimizer.addVertex ( pose );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> index = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> ( <span class="keyword">const</span> Point3f p:points_3d )   <span class="comment">// landmarks</span></span><br><span class="line">    &#123;</span><br><span class="line">        g2o::VertexSBAPointXYZ* <span class="built_in">point</span> = <span class="keyword">new</span> g2o::VertexSBAPointXYZ();</span><br><span class="line">        <span class="built_in">point</span>-&gt;setId ( index++ );</span><br><span class="line">        <span class="built_in">point</span>-&gt;setEstimate ( Eigen::Vector3d ( p.x, p.y, p.z ) );</span><br><span class="line">        <span class="built_in">point</span>-&gt;setMarginalized ( <span class="literal">true</span> ); </span><br><span class="line">        optimizer.addVertex ( <span class="built_in">point</span> );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// parameter: camera intrinsics</span></span><br><span class="line">    g2o::CameraParameters* camera = <span class="keyword">new</span> g2o::CameraParameters ( K.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">0</span> ), Eigen::Vector2d ( K.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">0</span>,<span class="number">2</span> ), K.at&lt;<span class="keyword">double</span>&gt; ( <span class="number">1</span>,<span class="number">2</span> ) ), <span class="number">0</span> );</span><br><span class="line">    camera-&gt;setId ( <span class="number">0</span> );</span><br><span class="line">    optimizer.<span class="built_in">addParameter</span> ( camera );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// edges</span></span><br><span class="line">    index = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> ( <span class="keyword">const</span> Point2f p:points_2d )</span><br><span class="line">    &#123;</span><br><span class="line">        g2o::EdgeProjectXYZ2UV* edge = <span class="keyword">new</span> g2o::EdgeProjectXYZ2UV();</span><br><span class="line">        edge-&gt;setId ( index );</span><br><span class="line">        edge-&gt;setVertex ( <span class="number">0</span>, <span class="keyword">dynamic_cast</span>&lt;g2o::VertexSBAPointXYZ*&gt; ( optimizer.vertex ( index ) ) );</span><br><span class="line">        edge-&gt;setVertex ( <span class="number">1</span>, pose );</span><br><span class="line">        edge-&gt;setMeasurement ( Eigen::Vector2d ( p.x, p.y ) );</span><br><span class="line">        edge-&gt;setParameterId ( <span class="number">0</span>,<span class="number">0</span> );</span><br><span class="line">        edge-&gt;setInformation ( Eigen::Matrix2d::Identity() );</span><br><span class="line">	edge-&gt;setRobustKernel( <span class="keyword">new</span> g2o::RobustKernelHuber() );</span><br><span class="line">        optimizer.addEdge ( edge );</span><br><span class="line">        index++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    optimizer.setVerbose ( <span class="literal">false</span> );</span><br><span class="line">    optimizer.initializeOptimization();</span><br><span class="line">    optimizer.optimize ( <span class="number">5</span>);</span><br><span class="line">    </span><br><span class="line">    Eigen::Isometry3d T = Eigen::Isometry3d ( pose-&gt;estimate() );</span><br><span class="line">    <span class="comment">//RR、t为优化后的R和t</span></span><br><span class="line">    RR=(Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">3</span>,<span class="number">3</span>)&lt;&lt;</span><br><span class="line">    T(<span class="number">0</span>,<span class="number">0</span>),T(<span class="number">0</span>,<span class="number">1</span>),T(<span class="number">0</span>,<span class="number">2</span>),</span><br><span class="line">    T(<span class="number">1</span>,<span class="number">0</span>),T(<span class="number">1</span>,<span class="number">1</span>),T(<span class="number">1</span>,<span class="number">2</span>),</span><br><span class="line">    T(<span class="number">2</span>,<span class="number">0</span>),T(<span class="number">2</span>,<span class="number">1</span>),T(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line"></span><br><span class="line">    tt=(Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">3</span>,<span class="number">1</span>)&lt;&lt;</span><br><span class="line">    T(<span class="number">0</span>,<span class="number">3</span>),T(<span class="number">1</span>,<span class="number">3</span>),T(<span class="number">2</span>,<span class="number">3</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>slam-VO.cpp</code>文件中调用该函数程序如下：输入前后两帧的三维特征信息、相机内参、相机变换位姿，可以返回 优化后的位资矩阵。同样，需要判断两帧间平移是否到达一定程度，否则需要进行尺度修正。然后将每次循环得到的轨迹进行实时绘制。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//BA优化</span></span><br><span class="line">bundleAdjustment ( points,points2, K,R,t, RR,tt );</span><br><span class="line"><span class="keyword">if</span> ((scale&gt;<span class="number">0.1</span>)&amp;&amp;(-tt.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>) &gt; -tt.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>)) &amp;&amp; (-tt.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>) &gt; -tt.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>)))</span><br><span class="line">&#123;		</span><br><span class="line">	<span class="keyword">if</span>(<span class="built_in">abs</span>(tt.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>)-t.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>))&lt;<span class="number">0.05</span>)</span><br><span class="line">    &#123;</span><br><span class="line">		 t_E = t_E + scale*(R_E*(-tt));</span><br><span class="line">      	 R_E = RR.inv()*R_E;</span><br><span class="line">         <span class="keyword">pre_t</span>=tt.clone();								</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">    &#123;	</span><br><span class="line">         <span class="built_in">cout</span>&lt;&lt;<span class="string">"优化失败"</span>&lt;&lt;<span class="built_in">endl</span>;                        	</span><br><span class="line">		 t_E = t_E + scale*(R_E*(-t));</span><br><span class="line">         R_E = R.inv()*R_E;			</span><br><span class="line">         <span class="keyword">pre_t</span>=t.clone();						</span><br><span class="line">	&#125;								     		       	</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">     <span class="built_in">cout</span> &lt;&lt; <span class="string">"scale below 0.1, or incorrect translation"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line">Point2f trace3 = Point2f(<span class="keyword">int</span>(t_E.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>)) + <span class="number">400</span>, <span class="keyword">int</span>(t_E.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>)) + <span class="number">150</span>);</span><br><span class="line"><span class="built_in">circle</span>(trace, trace3, <span class="number">1</span>, Scalar(<span class="number">0</span>,<span class="number">0</span>,<span class="number">255</span>), <span class="number">1</span>);<span class="comment">//绘制BA优化后的轨迹</span></span><br></pre></td></tr></table></figure>
+<p>得到的BA优化轨迹如图中红色轨迹所示，右上角可以看出，累积误差较大的时候，BA优化的轨迹展示出了更好的性能。由于这里只考虑相邻两帧之间的优化，因此随着累积误差的增大，对极约束估计以及BA优化得到的轨迹效果都越来越差，需要通过局部地图以及后端的回环检测等方法来优化。</p>
+<p><img src="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/微信图片_20200616071621.png" style="zoom: 67%;"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%EF%BC%8820%EF%BC%89%E4%B8%B2/" rel="prev" title="数据结构与算法（20）串">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法（20）串
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#视觉里程效果截图"><span class="nav-text">视觉里程效果截图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#程序使用方法"><span class="nav-text">程序使用方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法详细介绍"><span class="nav-text">算法详细介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-图片提取"><span class="nav-text">1.图片提取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-提取特征点"><span class="nav-text">2.提取特征点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-特征跟踪与估计相机运动"><span class="nav-text">3.特征跟踪与估计相机运动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-光流法特征跟踪"><span class="nav-text">3.1.光流法特征跟踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-对极几何估计相机运动"><span class="nav-text">3.2.对极几何估计相机运动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-三角测量"><span class="nav-text">3.3.三角测量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-生成相机轨迹与Ground-Truth比较"><span class="nav-text">4.生成相机轨迹与Ground Truth比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Bundle-Adjustment优化"><span class="nav-text">5.Bundle Adjustment优化</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">365k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
