@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文以宝可梦分类为例，从概率的角度来解释一个二元分类问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML笔记（2）Classification">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文以宝可梦分类为例，从概率的角度来解释一个二元分类问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701150638.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701150644.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701151214.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701151702.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701152159.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701152137.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701111739.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701113417.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701113421.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701113858.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701114737.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701115026.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701120221.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701140609.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701141141.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701142029.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701142630.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701144150.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701144720.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701144725.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701144732.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701145229.png">
+<meta property="article:published_time" content="2020-07-01T03:06:27.000Z">
+<meta property="article:modified_time" content="2020-07-01T07:33:37.811Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Machine Learning">
+<meta property="article:tag" content="Classification">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ%E5%9B%BE%E7%89%8720200701150638.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>ML笔记（2）Classification | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ML笔记（2）Classification
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-07-01 11:06:27 / 修改时间：15:33:37" itemprop="dateCreated datePublished" datetime="2020-07-01T11:06:27+08:00">2020-07-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.5k</span>
+            </span>
+            <div class="post-description">本文以宝可梦分类为例，从概率的角度来解释一个二元分类问题</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="Classification"><a href="#Classification" class="headerlink" title="Classification"></a>Classification</h3><p>这节课的例子是对宝可梦进行分类（老宝可梦训练大师了），宝可梦有18种属性，现在要解决的分类问题就是做一个宝可梦种类的分类器，我们要找一个function，这个function的input是某一只宝可梦，它的output就是这只宝可梦属于这18类别中的哪一个type。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701150638.png" style="zoom: 33%;"></p>
+<p>对每一只宝可梦（比如皮卡丘），可以用7个feature的数值组成的vector来描述它。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701150644.png" style="zoom:33%;"></p>
+<p>把编号400以下的宝可梦当做training data，编号400以上的当做testing data。这里我们先只考虑二分类，只考虑水系Water和一般系Normal宝可梦。</p>
+<h4 id="Classification-as-Regression？"><a href="#Classification-as-Regression？" class="headerlink" title="Classification as Regression？"></a>Classification as Regression？</h4><p>以binary classification为例，我们在Training时让输入为class 1的输出为1，输入为class 2的输出为-1；那么在testing的时候，regression的output是一个数值，它接近1则说明它是class 1，它接近-1则说明它是class 2。但Regression中对“好，坏”的定义并不适用于Classification。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701151214.png" style="zoom:33%;"></p>
+<h4 id="Ideal-Alternatives"><a href="#Ideal-Alternatives" class="headerlink" title="Ideal Alternatives"></a>Ideal Alternatives</h4><p>理想的方法是这样的：我们要找的function f(x)里面会有另外一个function g(x)，当我们的input x输入后，如果g(x)&gt;0，那f(x)的输出就是class 1，如果g(x)&lt;0，那f(x)的输出就是class 2，这个方法保证了function的output都是离散的表示class的数值。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701151702.png" style="zoom:33%;"></p>
+<p>把loss function定义成$L(f)=\sum\limits_n\delta(f(x^n)≠\hat{y}^n)$，即这个model在所有的training data上predict预测错误的次数，也就是说分类错误的次数越少，这个function表现得就越好</p>
+<p>但是这个loss function没有办法微分，是无法用gradient descent的方法去解的，当然有Perceptron、SVM这些方法可以用（感知机和支持向量机的内容，在林轩田老师的机器学习基石和技法课程中都有详细的讲解），但这里先用另外一个solution来解决这个问题，即从概率的角度来考虑二分类问题。</p>
+<h3 id="Solution-Generative-model"><a href="#Solution-Generative-model" class="headerlink" title="Solution: Generative model"></a>Solution: Generative model</h3><p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701152159.png" style="zoom:33%;"></p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701152137.png" style="zoom:33%;"></p>
+<p>这两张图的内容很好理解，就是贝叶斯公式啦。这种想法叫做<strong>Generative model</strong>(生成模型)，因为有这个model，就可以拿它来generate $x$(如果你可以计算出每一个$x$出现的概率，就可以用这个distribution分布来生成$x$、sample $x$出来)。</p>
+<p>接下来考虑怎么计算其中的四项：$P(C_1)，P(C_2)，P(x|C_1)，P(x|C_2)$。</p>
+<h4 id="Prior"><a href="#Prior" class="headerlink" title="Prior"></a>Prior</h4><p>$P(C_1)$和$P(C_2)$这两个概率，被称为Prior，计算这两个值还是很简单的。</p>
+<p>假设我们还是考虑二元分类问题，编号小于400的data用来Training，编号大于400的data用来testing，如果想要严谨一点，可以在Training data里面分一部分validation出来模拟testing的情况</p>
+<p>在Training data里面，有79只水系宝可梦，61只一般系宝可梦，那么$P(C_1)=79/(79+61)=0.56$，$P(C_2)=61/(79+61)=0.44$</p>
+<h4 id="Probability-from-Class"><a href="#Probability-from-Class" class="headerlink" title="Probability from Class"></a>Probability from Class</h4><p>计算$P(x|C_1)$和$P(x|C_2)$的值，假设$x$是一只新来的海龟，它显然是水系的，但是在79只水系的宝可梦training data里面根本就没有海龟，那要如何计算$P(x|C_1)$呢。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701111739.png" style="zoom: 33%;"></p>
+<p>每一只宝可梦可以用由特征值组成的向量来表示，每个sample有7个feature，为了方便可视化，这里只考虑Defense和SP Defence两种feature。我们需要用已有的数据去估测海龟出现的可能性，你可以想象说这已有的79只水系宝可梦的data其实只是冰山一角，假定水系神奇宝贝的Defense和SP Defense是从一个Gaussian的distribution里面sample出来的，下图只是采样了79个点之后得到的分布，但是从高斯分布里采样出海龟这个点的几率并不是0。现在的问题是怎么从这79个已有的点计算出Gaussian distribution函数。</p>
+<h4 id="Gaussian-distribution函数"><a href="#Gaussian-distribution函数" class="headerlink" title="Gaussian distribution函数"></a>Gaussian distribution函数</h4><script type="math/tex; mode=display">
+f_{u,\Sigma}(x)=\frac{1}{(2\pi)^{\frac{D}{2}}}\frac{1}{|\Sigma|^{\frac{1}{2}}} \exp \{ -\frac{1}{2}(x-u)^T\Sigma^{-1}(x-u) \}</script><p>Input: vector $x$, output: probability of sampling x ；其中$\mu$表示方差均值mean，$\Sigma$表示协方差矩阵covariance matrix。</p>
+<p>从下图中可以看出，同样的$\Sigma$，不同的$u$，概率分布最高点的地方是不一样的：</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701113417.png" style="zoom: 25%;"></p>
+<p>如果是同样的$u$，不同的$\Sigma$，概率分布最高点的地方是一样的，但是分布的密集程度是不一样的：</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701113421.png" style="zoom:25%;"></p>
+<p>Gaussian distribution函数是由$\mu$和$\Sigma$决定的，估计$\mu$和$\Sigma$可以使用极大似然估计(Maximum Likelihood)的方法，其思路是找出最特殊的那对$u$和$\Sigma$，从它们决定的高斯函数中再次采样出79个点，使”得到的分布情况与当前已知79点的分布情况相同“这件事情发生的可能性最大。</p>
+<p>实际上任意一组$u$和$\Sigma$对应的高斯函数($u$表示该Gaussian的中心点，$\Sigma$表示该Gaussian的分散程度)都有可能sample出跟当前分布一致的样本点，就像上图中的两个红色圆圈所代表的高斯函数，但肯定存在着发生概率最大的哪一个Gaussian，而这个函数就是我们要找的。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701113858.png" style="zoom:33%;"></p>
+<p>似然函数：</p>
+<script type="math/tex; mode=display">
+L(u,\Sigma)=f_{u,\Sigma}(x^1)\cdot f_{u,\Sigma}(x^2)...f_{u,\Sigma}(x^{79})</script><p>实际上就是该事件发生的概率就等于每个点都发生的概率之积，要求的$\mu$和$\Sigma$就是使似然函数取极大值的$\mu$和$\Sigma$：</p>
+<script type="math/tex; mode=display">
+u^*,\Sigma^*=\arg \max\limits_{u,\Sigma} L(u,\Sigma)</script><p>对$\mu$和$\Sigma$分别偏导，使微分等于0，得到的高斯函数的$u$和$\Sigma$的最优解如下：</p>
+<script type="math/tex; mode=display">
+u^*=\frac{1}{79}\sum\limits_{n=1}^{79}x^n \\ \Sigma^*=\frac{1}{79}\sum\limits_{n=1}^{79}(x^n-u^*)(x^n-u^*)^T</script><p>这样我们由Training Data就可以分别求出Class 1和Class 2的$\mu$和$\Sigma$，从而计算出海龟这个sample的$P(x|C_1),P(x|C_2)$。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701114737.png" style="zoom: 33%;"></p>
+<h4 id="Do-Classification"><a href="#Do-Classification" class="headerlink" title="Do Classification"></a>Do Classification</h4><p>接着将$P(C_1),P(x|C_1),P(C_2),P(x|C_2)$代入公式计算出$P(C_1|x)$，若大于0.5，则说明sample $x$属于Class 1啦。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701115026.png" style="zoom:33%;"></p>
+<p>将得到的结果在图中表示出来，横轴是Defense，纵轴是SP Defense，蓝色的点是水系的宝可梦的分布，红色的点是一般系的宝可梦的分布，对图中的每一个点都计算出它是class 1的概率$P(C_1|x)$，这个概率用颜色来表示，如果某点在红色区域，表示它是水系宝可梦的概率更大；如果该点在其他颜色的区域，表示它是水系宝可梦的概率比较小</p>
+<p>因为我们做的是分类问题，因此令几率&gt;0.5的点为类别1，几率&lt;0.5的点为类别2，也就是右上角的图中的红色和蓝色两块区域，再把testing data上得到的结果可视化出来，即右下角的图，发现分的不是太好，正确率才是47%。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701120221.png" style="zoom:33%;"></p>
+<p>我们之前用的只是Defense和SP Defense这两个feature，在二维空间上得到的效果不太好，但实际上一开始就提到了宝可梦总共是有7个features的，也许在二维空间上它们是重叠在一起的，但是在六维空间上看它们也许会区分得很好。​考虑7个feature时，$\mu$是一个7-dim的vector，$\Sigma$则是一个7*7的matrix，发现得到的准确率也才54%，这个分类器表现并不好，接下来考虑如何改进这个分类器。</p>
+<h4 id="Modify-Model"><a href="#Modify-Model" class="headerlink" title="Modify Model"></a>Modify Model</h4><p>上面用到的Gaussian distribution函数，我们给每一个Class的Gaussian都计算了自己的mean和convariance，这种做法其实并不实用，常用的做法是，<strong>不同的class可以share同一个cocovariance matrix</strong>。variance是跟input的feature size的平方成正比的，所以当feature的数量很大的时候，$\Sigma$大小的增长是可以非常快的，在这种情况下，给不同的Gaussian以不同的covariance matrix，会造成model的参数太多，而参数多会导致该model的variance过大，出现overfitting的现象，因此对不同的class使用同一个covariance matrix，可以有效减少参数，减小overfitting。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701140609.png" style="zoom:33%;"></p>
+<p>这样用$\mu_1$、$\mu_2$和$\Sigma$来决定一个总的似然函数，求出其取极大值时的$\mu_1$、$\mu_2$和$\Sigma$，发现得到的$u_1$和$u_2$和原来一样，还是各自的均值，而$\Sigma$则是原先两个$\Sigma_1$和$\Sigma_2$的加权。</p>
+<p>将结果表示在图中，你会发现，class 1和class 2在没有共用covariance matrix之前，它们的分界线是一条曲线；如果共用covariance matrix的话，它们之间的分界线就会变成一条直线，这样的model，我们也称之为linear model(尽管Gaussian不是linear的，但是它分两个class的boundary是linear)。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701141141.png" style="zoom:33%;"></p>
+<p>如果考虑宝可梦的所有的7个feature，且共用covariance的话，正确率会从原来的54%提升到73%。</p>
+<h4 id="Three-Steps-of-classification"><a href="#Three-Steps-of-classification" class="headerlink" title="Three Steps of classification"></a>Three Steps of classification</h4><p>回顾一下做classification的三个步骤，实际上也就是做machine learning的三个步骤：</p>
+<ul>
+<li><p>Find a function set(model)</p>
+<p>这些required probability $P(C)$和probability distribution $P(x|C)$就是model的参数，选择不同的Probability distribution(比如不同的分布函数，或者是不同参数的Gaussian distribution)，就会得到不同的function，把这些不同参数的Gaussian distribution集合起来，就是一个model，如果不适用高斯函数而选择其他分布函数，就是一个新的model了</p>
+<p>当这个posterior Probability $P(C|x)&gt;0.5$的话，就output class 1，反之就output class 2</p>
+</li>
+<li><p>Goodness of function</p>
+<p>对于Gaussian distribution这个model来说，要评价的是决定这个高斯函数形状的均值$u$和协方差$\Sigma$这两个参数的好坏，而极大似然函数$L(u,\Sigma)$的输出值，就评价了这组参数的好坏</p>
+</li>
+<li><p>Find the best function</p>
+<p>找到的那个最好的function，就是使$L(u,\Sigma)$值最大的那组参数，实际上就是所有样本点的均值和协方差：</p>
+<script type="math/tex; mode=display">
+u^*=\frac{1}{n}\sum\limits_{i=0}^n x^i \ \ \ \ \Sigma^*=\frac{1}{n}\sum\limits_{i=0}^n (x^i-u^*)(x^i-u^*)^T</script><p>式中的$x$表示一个feature的vector，上标$i$表示第$i$个sample</p>
+</li>
+</ul>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701142029.png" style="zoom: 33%;"></p>
+<h4 id="Probability-distribution"><a href="#Probability-distribution" class="headerlink" title="Probability distribution"></a>Probability distribution</h4><p>上面的讨论中我们使用的是Gaussian distribution函数，当然你也可以使用其他分布函数，这通常要根据数据集的具体情况来确定，比如一个特征是binary feature，那选择使用伯努利分布Bernoulli distribution比较好。如果选择的是简单的分布函数(参数比较少)，那么bias就偏大，variance就小；如果选择复杂的分布函数，那么bias就偏小，variance就偏大。</p>
+<h5 id="Naive-Bayes-Classifier-朴素贝叶斯分类法"><a href="#Naive-Bayes-Classifier-朴素贝叶斯分类法" class="headerlink" title="Naive Bayes Classifier(朴素贝叶斯分类法)"></a>Naive Bayes Classifier(朴素贝叶斯分类法)</h5><p>考虑这样一件事情，假设$x=[x_1 \ x_2 \ x_3 \ … \ x_k \ … \ ]$中每一个dimension $x_k$的分布都是相互独立的，它们之间的covariance都是0，那我们就可以把x产生的几率拆解成$x_1,x_2,…,x_k$产生的几率之积。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701142630.png" style="zoom:33%;"></p>
+<p>这里每一个dimension的分布函数都是一维的Gaussian distribution，就相当于原高维的Gaussian，它的covariance matrix变成是diagonal(对角的)，在不是对角线的地方，值都是0，这样就可以更加减少需要的参数量，就可以得到一个更简单的model。</p>
+<p>这种方法叫做Naive Bayes Classifier(朴素贝叶斯分类法)，如果真的明确了<u>所有的feature之间是相互独立的</u>，是不相关的，使用朴素贝叶斯分类法的performance是会很好的；如果这个假设是不成立的，那么Naive bayes classfier的bias就会很大，它就不是一个好的classifier(朴素贝叶斯分类法本质就是减少参数)。</p>
+<p>在宝可梦这个例子中（李老师也是个老二次元了|ू･ω･` )），使用朴素贝叶斯的效果并不好，因为不同feature之间还是有相关的，各种feature之间的covariance还是必要的，比如战斗力和防御力它们之间是正相关的，covariance不能等于0。</p>
+<h4 id="Analysis-Posterior-Probability"><a href="#Analysis-Posterior-Probability" class="headerlink" title="Analysis Posterior Probability"></a>Analysis Posterior Probability</h4><p>接下来我们来分析一下这个后置概率的表达式，会发现一些有趣的现象</p>
+<p>表达式上下同除以分子，再引入变量$z$，得到$\sigma(z)=\frac{1}{1+e^{-z}}$，这个function叫做sigmoid function</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701144150.png" style="zoom: 25%;"></p>
+<p>sigmoid函数真是再熟悉不过了，接下来推导一下$z$的具体表达式，Warning of Math（老师原话：下面这部分推导听不懂的同学可以先睡一会⊙(・◇・)？，之后直接听结论）</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701144720.png" style="zoom:33%;"></p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701144725.png" style="zoom:33%;"></p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701144732.png" style="zoom:33%;"></p>
+<p>推导是有些复杂，但当$\Sigma_1$和$\Sigma_2$相同时，经过化简$z$就变成了一个linear的function，$x$前的一项可以当做vector $w$，后面的几项相加是一个scalar，当做常数$b$。</p>
+<p><img src="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/QQ图片20200701145229.png" style="zoom:33%;"></p>
+<p>$P(C_1|x)=\sigma (w\cdot x+b)$这个式子就解释了，当class 1和class 2共用$\Sigma$的时候，它们之间的boundary会是线性的。</p>
+<p>这样在Generative model里，我们要做的就是用某些方法去找出$N_1,N_2,u_1,u_2,\Sigma$，找出这些以后就算出$w$和$b$，把它们代进$P(C_1|x)=\sigma(w\cdot x+b)$这个式子，计算概率。</p>
+<p>但是为什么要这么麻烦呢(ｷ｀ﾟДﾟ´)？我们的最终目标都是要找一个vector $w$和const $b$，何必先去计算概率，算出一些$u,\Sigma$，然后再回过头来又去算$w$和$b$。那么能不能直接把$w$和$b$计算出来呢，下一节课Logistic Regression将会解决这个问题。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Machine-Learning/" rel="tag"># Machine Learning</a>
+              <a href="/tags/Classification/" rel="tag"># Classification</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/" rel="prev" title="ML笔记（1）Gradient_Descent">
+      <i class="fa fa-chevron-left"></i> ML笔记（1）Gradient_Descent
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Classification"><span class="nav-text">Classification</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Classification-as-Regression？"><span class="nav-text">Classification as Regression？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Ideal-Alternatives"><span class="nav-text">Ideal Alternatives</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-Generative-model"><span class="nav-text">Solution: Generative model</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Prior"><span class="nav-text">Prior</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Probability-from-Class"><span class="nav-text">Probability from Class</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Gaussian-distribution函数"><span class="nav-text">Gaussian distribution函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Do-Classification"><span class="nav-text">Do Classification</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Modify-Model"><span class="nav-text">Modify Model</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Three-Steps-of-classification"><span class="nav-text">Three Steps of classification</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Probability-distribution"><span class="nav-text">Probability distribution</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Naive-Bayes-Classifier-朴素贝叶斯分类法"><span class="nav-text">Naive Bayes Classifier(朴素贝叶斯分类法)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Analysis-Posterior-Probability"><span class="nav-text">Analysis Posterior Probability</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">371k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
