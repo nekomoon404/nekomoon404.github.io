@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文主要介绍了使用Gradient Dsecent时的三个Tips：Tuning your learning rates；Stochastic Gradient Descent；Feature Scaling，以及Gradient Descent背后的数学原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML笔记（1）Gradient_Descent">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文主要介绍了使用Gradient Dsecent时的三个Tips：Tuning your learning rates；Stochastic Gradient Descent；Feature Scaling，以及Gradient Descent背后的数学原理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212455.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212506.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212510.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212514.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212519.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212523.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212527.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212530.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701213759.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212538.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212543.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212548.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212552.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212556.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701214114.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212559.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212603.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212620.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212616.png">
+<meta property="article:published_time" content="2020-06-30T03:05:18.000Z">
+<meta property="article:modified_time" content="2020-06-30T04:05:18.000Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Machine Learning">
+<meta property="article:tag" content="Gradient Descent">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ%E5%9B%BE%E7%89%8720200701212455.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>ML笔记（1）Gradient_Descent | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ML笔记（1）Gradient_Descent
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-30 11:05:18 / 修改时间：12:05:18" itemprop="dateCreated datePublished" datetime="2020-06-30T11:05:18+08:00">2020-06-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.3k</span>
+            </span>
+            <div class="post-description">本文主要介绍了使用Gradient Dsecent时的三个Tips：Tuning your learning rates；Stochastic Gradient Descent；Feature Scaling，以及Gradient Descent背后的数学原理。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这周开始学李宏毅老师的Machine Learning 2020的课程了，从第一节课的课程概述来看，这门课除了会介绍传统的Machine Learning算法外，还会介绍很多Deep Learning的内容，时长也是非常感人(ㄒoㄒ)，希望自己能坚持学下去吧。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212455.png" style="zoom: 60%;"></p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212506.png" style="zoom:50%;"></p>
+<p>前面几节课（p3-p7）分别讲了回归 Regression，误差来源 Where does the error come from，梯度下降 Gradient Descent，老师用的预测宝可梦pokemon的CP值的例子还是蛮有趣的hhh。这部分的理论内容自己是比较熟悉，也有之前做的纸质笔记，在这里就不详细展开了，这里主要写一下使用Gradient Descent的Tips，以及其背后的Theory。</p>
+<h1 id="1-Gradient-Descent-Tips"><a href="#1-Gradient-Descent-Tips" class="headerlink" title="1. Gradient Descent Tips"></a>1. Gradient Descent Tips</h1><h2 id="1-1-Tip-1-Tuning-your-learning-rates"><a href="#1-1-Tip-1-Tuning-your-learning-rates" class="headerlink" title="1.1.Tip 1: Tuning your learning rates"></a>1.1.Tip 1: Tuning your learning rates</h2><p>gradient descent过程中，影响结果的一个很关键的因素就是learning rate的大小</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212510.png" style="zoom: 67%;"></p>
+<p>当参数有很多个的时候(&gt;3)，其实我们很难做到将loss随每个参数的变化可视化出来(因为最多只能可视化出三维的图像，也就只能可视化三维参数)，但是我们可以把update的次数作为唯一的一个参数，将loss随着update的增加而变化的趋势给可视化出来(上图右半部分)</p>
+<p>所以做gradient descent时可以把不同的learning rate下，loss随update次数的变化曲线给可视化出来，它可以提醒你该如何调整当前的learning rate的大小，直到出现稳定下降的曲线</p>
+<h3 id="Adaptive-Learning-rates"><a href="#Adaptive-Learning-rates" class="headerlink" title="Adaptive Learning rates"></a>Adaptive Learning rates</h3><p>显然这样手动地去调整learning rates很麻烦，因此我们需要有一些自动调整learning rates的方法。最基本、最简单的大原则是：learning rate通常是随着参数的update越来越小的。可以这样理解：在起始点的时候，通常是离最低点是比较远的，这时候步伐就要跨大一点；而经过几次update以后，会比较靠近目标，这时候就应该减小learning rate，让它能够收敛在最低点的地方。如可以设置到了第t次update，$\eta^t=\eta/ \sqrt{t+1}$。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212514.png" style="zoom: 67%;"></p>
+<p>这种方法使所有参数以同样的方式同样的learning rate进行update，而最好的状况是每个参数都给他不同的learning rate去update</p>
+<h3 id="Adagrad"><a href="#Adagrad" class="headerlink" title="Adagrad"></a>Adagrad</h3><p><strong>Adagrad</strong>就是将不同参数的learning rate分开考虑的一种算法(adagrad算法update到后面速度会越来越慢，当然这只是adaptive算法中最简单的一种)。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212519.png" style="zoom:67%;"></p>
+<p>这里的$w$是function中的某个参数，$t$表示第$t$次update，$g^t$表示Loss对$w$的偏微分，而$\sigma^t$是之前所有Loss对$w$偏微分的<strong>均方根 root mean square</strong>这个值对每一个参数来说都是不一样的。</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{split}
+&Adagrad\\
+&w^1=w^0-\frac{\eta^0}{\sigma^0}\cdot g^0 \ \ \ \sigma^0=\sqrt{(g^0)^2} \\
+&w^2=w^1-\frac{\eta^1}{\sigma^1}\cdot g^1 \ \ \ \sigma^1=\sqrt{\frac{1}{2}[(g^0)^2+(g^1)^2]} \\
+&w^3=w^2-\frac{\eta2}{\sigma^2}\cdot g^2 \ \ \ \sigma^2=\sqrt{\frac{1}{3}[(g^0)^2+(g^1)^2+(g^2)^2]} \\
+&... \\
+&w^{t+1}=w^t-\frac{\eta^t}{\sigma^t}\cdot g^t \ \ \ \sigma^t=\sqrt{\frac{1}{1+t}\sum\limits_{i=0}^{t}(g^i)^2}
+\end{split}
+\end{equation}</script><p>由于$\eta^t$和$\sigma^t$中都有一个$\sqrt{\frac{1}{1+t}}$的因子，两者相消，即可得到Adagrad的最终表达式：</p>
+<script type="math/tex; mode=display">
+w^{t+1}=w^t-\frac{\eta}{\sqrt{\sum\limits_{i=0}^t(g^i)^2}}\cdot g^t</script><h3 id="对Adagrad中的contradiction的解释"><a href="#对Adagrad中的contradiction的解释" class="headerlink" title="对Adagrad中的contradiction的解释"></a>对Adagrad中的contradiction的解释</h3><p>Adagrad的表达式$w^{t+1}=w^t-\frac{\eta}{\sqrt{\sum\limits_{i=0}^t(g^i)^2}}\cdot g^t$里面有一件很矛盾的事情：我们在做gradient descent的时候，希望的是当梯度值即微分值$g^t$越大的时候(此时斜率越大，还没有接近最低点)更新的步伐要更大一些，但是Adagrad的表达式中，分母表示梯度越大步伐越大，分子却表示梯度越大步伐越小，两者似乎相互矛盾。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212523.png" style="zoom:67%;"></p>
+<p>在一些paper里是这样解释的：Adagrad要考虑的是，这个gradient有多surprise，即反差有多大，假设t=4的时候$g^4$与前面的gradient反差特别大，那么$g^t$与$\sqrt{\frac{1}{t+1}\sum\limits_{i=0}^t(g^i)^2}$之间的大小反差就会比较大，它们的商就会把这一反差效果体现出来。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212527.png" style="zoom:67%;"></p>
+<p>而且需要注意的是：gradient越大，离最低点越远，这个有点直观的想法在有多个参数的情况下是不一定成立的。如下图所示，$w_1$和$w_2$分别是loss function的两个参数，loss的值投影到该平面中以颜色深度表示大小，分别在$w_2$和$w_1$处垂直切一刀(这样就只有另一个参数的gradient会变化)，对应的情况为右边的两条曲线，可以看出，比起a点，c点距离最低点更近，但是它的gradient却越大。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212530.png" style="zoom:67%;"></p>
+<p>考虑一个简单的情况，对于一个二次函数$y=ax^2+bx+c$来说，最小值点的$x=-\frac{b}{2a}$，而对于任意一点$x_0$，它迈出最好的步伐长度是$|x_0+\frac{b}{2a}|=|\frac{2ax_0+b}{2a}|$(这样就一步迈到最小值点了)，联系该函数的一阶和二阶导数$y’=2ax+b$、$y’’=2a$，可以发现the best step 就是 $|\frac{y’}{y’’}|$，即|一阶导数|/|二阶导数|，可见best step不仅跟一阶导数(gradient)有关，还跟二阶导数有关，用这个best step可以来反映Loss Function上一点到最低点的距离。</p>
+<p>再来回顾Adagrad的表达式：</p>
+<script type="math/tex; mode=display">
+w^{t+1}=w^t-\frac{\eta}{\sqrt{\sum\limits_{i=0}^t(g^i)^2}}\cdot g^t</script><p>其中，$g^t$是一次微分，而分母中的$\sqrt{\sum\limits_{i=0}^t(g^i)^2}$则反映了二次微分的大小。Adagrad中用root mean square of the previous derivatives of parameter w来近似二次微分的大小，避免引入额外的计算量。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701213759.png" style="zoom:33%;"></p>
+<h2 id="1-2-Tip-2-Stochastic-Gradient-Descent"><a href="#1-2-Tip-2-Stochastic-Gradient-Descent" class="headerlink" title="1.2.Tip 2: Stochastic Gradient Descent"></a>1.2.Tip 2: Stochastic Gradient Descent</h2><p><strong>随机梯度下降 Stochastic Gradient Descent</strong>的方法可以让训练更快速，传统的gradient descent的思路是遍历所有的样本点之后再构建loss function，然后去update参数；而stochastic gradient descent的做法是，看到一个样本点就update一次，因此它的loss function不是所有样本点的error平方和，而是这个随机样本点的error平方。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212538.png" style="zoom: 67%;"></p>
+<p>Stochastic Gradient Descent与传统Gradient Descent的效果对比如下：</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212543.png" style="zoom:67%;"></p>
+<h2 id="1-3-Tip-3-Feature-Scaling"><a href="#1-3-Tip-3-Feature-Scaling" class="headerlink" title="1.3.Tip 3: Feature Scaling"></a>1.3.Tip 3: Feature Scaling</h2><p><strong>特征缩放Feature Scaling</strong>，当多个特征的尺度很不一样时，最好将这些不同feature的范围缩放成一样的。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212548.png" style="zoom:67%;"></p>
+<p>举个例子来解释为什么需要做feature scaling，$y=b+w_1x_1+w_2x_2$，假设$x_1$的值都是很小的，比如1,2…；$x_2$的值都是很大的，比如100,200…。此时去画出loss的error surface，如果对$w_1$和$w_2$都做一个同样的变动$\Delta w$，那么$w_1$的变化对$y$的影响是比较小的，而$w_2$的变化对$y$的影响是比较大的。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212552.png" style="zoom:67%;"></p>
+<p>左边的error surface表示，w1对y的影响比较小，所以w1对loss是有比较小的偏微分的，因此在w1的方向上图像是比较平滑的；w2对y的影响比较大，所以w2对loss的影响比较大，因此在w2的方向上图像是比较sharp的。如果x1和x2的的scale是接近的，那么w1和w2对loss就会有差不多的影响力，loss的图像接近于圆形，那这样做对gradient descent有什么好处呢？</p>
+<p><strong>对Gradient Descent的帮助</strong></p>
+<p>之前我们做的demo已经表明了，对于这种长椭圆形的error surface，如果不使用Adagrad之类的方法，是很难搞定它的，因为在像w1和w2这样不同的参数方向上，会需要不同的learning rate，用相同的learning rate很难达到最低点。如果x1和x2有相同的scale的话，loss在参数w1、w2平面上的投影就是一个正圆形，update参数会比较容易。</p>
+<p>而且gradient descent的每次update并不都是向着最低点走的，每次update的方向是顺着等高线的方向(梯度gradient下降的方向)，而不是径直走向最低点；但是当经过对input的scale使loss的投影是一个正圆的话，不管在这个区域的哪一个点，它都会向着圆心走。因此feature scaling对参数update的效率是有帮助的</p>
+<p><strong>如何做feature scaling</strong></p>
+<p>假设有R个example(上标i表示第i个样本点)，$x^1,x^2,x^3,…,x^r,…x^R$，每一个example，它里面都有一组feature(下标j表示该样本点的第j个特征)</p>
+<p>对每一个feature (demension)  i，都去算出它的平均值mean=$m_i$，以及标准差standard deviation=$\sigma_i$</p>
+<p>对第r个example的第i个feature的值，减掉均值，除以标准差，即：</p>
+<script type="math/tex; mode=display">
+x_i^r=\frac{x_i^r-m_i}{\sigma_i}</script><p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212556.png" style="zoom:67%;"></p>
+<h1 id="2-Gradient-Descent-Theory"><a href="#2-Gradient-Descent-Theory" class="headerlink" title="2.Gradient Descent Theory"></a>2.Gradient Descent Theory</h1><p>考虑当用梯度下降解决问题：</p>
+<script type="math/tex; mode=display">
+\theta^*=\arg \underset{\theta}{\min} L(\theta)</script><p>每次更新参数 $\theta$，都得到一个新的$ \theta$，它都使得损失函数更小。即：</p>
+<script type="math/tex; mode=display">
+L(\theta^0)>L(\theta^1)>L(\theta^2)>\dots</script><p>上述结论正确吗？其实是不正确的，我们并不能每次更新$\theta$，都能使损失函数更小。那么如何更新$\theta$才能使损失函数更小呢。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701214114.png" style="zoom: 33%;"></p>
+<p>比如在$\theta^0$ 处，可以在一个小范围的圆圈内找到使损失函数最小的$\theta^1$，不断的这样去寻找。接着就考虑如何在这样一个小圆圈中寻找到$\theta^1$。这里就需要引入泰勒展开式（高数里都有讲啦）。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212559.png" style="zoom:67%;"></p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212603.png" style="zoom:67%;"></p>
+<p>回到刚才的问题上，我们将点(a,b)附件的小圆内的损失函数在点(a,b)处展开：</p>
+<script type="math/tex; mode=display">
+L(\theta)≈L(a,b)+\frac{\partial L(a,b)}{\partial \theta_1}(\theta_1-a)+\frac{\partial L(a,b)}{\partial \theta_2}(\theta_2-b)</script><p>令</p>
+<script type="math/tex; mode=display">
+s=L(a,b),\quad u=\frac{\partial L(a,b)}{\partial \theta_1},\quad v=\frac{\partial L(a,b)}{\partial \theta_2}</script><p>则</p>
+<script type="math/tex; mode=display">
+L(\theta)≈s + u\cdot (\theta_1-a)+v\cdot (\theta_2-b)</script><p>设红色圆圈的半径为d，则有限制条件：</p>
+<script type="math/tex; mode=display">
+(\theta_1-a)^2+(\theta_2-b)^2≤d^2</script><p>求$L(\theta)_{min}$，这里有个小技巧，把$L(\theta)$转化为两个向量的乘积：</p>
+<script type="math/tex; mode=display">
+u\cdot (\theta_1-a)+v\cdot (\theta_2-b)=(u,v)\cdot (\theta_1-a,\theta_2-b)=(u,v)\cdot (\Delta \theta_1,\Delta \theta_2)</script><p>显然，当向量$(\theta_1-a,\theta_2-b)$与向量$(u,v)$反向，且刚好到达red circle的边缘时(用$\eta$去控制向量的长度)，$L(\theta)$最小。</p>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212620.png" style="zoom:67%;"></p>
+<p>于是$L(\theta)$局部最小值对应的参数为中心点减去gradient的加权：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}
+\Delta \theta_1 \\ 
+\Delta \theta_2
+\end{bmatrix}=
+-\eta
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix}=>
+\begin{bmatrix}
+\theta_1 \\
+\theta_2
+\end{bmatrix}=
+\begin{bmatrix}
+a\\
+b
+\end{bmatrix}-\eta
+\begin{bmatrix}
+u\\
+v
+\end{bmatrix}=
+\begin{bmatrix}
+a\\
+b
+\end{bmatrix}-\eta
+\begin{bmatrix}
+\frac{\partial L(a,b)}{\partial \theta_1}\\
+\frac{\partial L(a,b)}{\partial \theta_2}
+\end{bmatrix}</script><p>这就是gradient descent在数学上的推导，注意它的重要<strong>前提</strong>是，<strong>设定的红色圈圈的范围要足够小</strong>，这样泰勒展开给我们的近似才会精确，而$\eta$的值是与圆的半径成正比的，因此理论上learning rate要无穷小才能够保证每次gradient descent在update参数之后的loss会越来越小。于是当learning rate没有设置好，泰勒近似不成立，就有可能使gradient descent过程中的loss没有越来越小</p>
+<p>当然泰勒展开可以使用二阶、三阶乃至更高阶的展开，但这样会使得运算量大大增加，反而降低了运行效率。</p>
+<h1 id="3-More-Limitation-of-Gradient-Descent"><a href="#3-More-Limitation-of-Gradient-Descent" class="headerlink" title="3.More Limitation of Gradient Descent"></a>3.More Limitation of Gradient Descent</h1><p>之前已经讨论过，gradient descent有一个问题是它会停在local minima的地方就停止update了。事实上还有一个问题是，微分值是0的地方并不是只有local minima，settle point （鞍点）的微分值也是0。以上都是理论上的探讨，到了实践的时候，其实当gradient的值接近于0的时候，我们就已经把它停下来了，但是微分值很小，不见得就是很接近local minima，也有可能是在一个鞍点上。还有个限制就是在”坡度“小的区域update得很慢。总结一下就是下面三点：</p>
+<ul>
+<li>Very slow at the plateau</li>
+<li>Stuck at saddle point</li>
+<li>Stuck at local minima</li>
+</ul>
+<p><img src="/2020/06/30/ML%E7%AC%94%E8%AE%B0%EF%BC%881%EF%BC%89Gradient-Descent/QQ图片20200701212616.png" style="zoom:67%;"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Machine-Learning/" rel="tag"># Machine Learning</a>
+              <a href="/tags/Gradient-Descent/" rel="tag"># Gradient Descent</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/16/%E5%8D%95%E7%9B%AE%E8%A7%86%E8%A7%89%E9%87%8C%E7%A8%8B%E8%AE%A1/" rel="prev" title="单目视觉里程计">
+      <i class="fa fa-chevron-left"></i> 单目视觉里程计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/01/ML%E7%AC%94%E8%AE%B0%EF%BC%882%EF%BC%89Classification/" rel="next" title="ML笔记（2）Classification">
+      ML笔记（2）Classification <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Gradient-Descent-Tips"><span class="nav-text">1. Gradient Descent Tips</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-Tip-1-Tuning-your-learning-rates"><span class="nav-text">1.1.Tip 1: Tuning your learning rates</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Adaptive-Learning-rates"><span class="nav-text">Adaptive Learning rates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Adagrad"><span class="nav-text">Adagrad</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对Adagrad中的contradiction的解释"><span class="nav-text">对Adagrad中的contradiction的解释</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-Tip-2-Stochastic-Gradient-Descent"><span class="nav-text">1.2.Tip 2: Stochastic Gradient Descent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Tip-3-Feature-Scaling"><span class="nav-text">1.3.Tip 3: Feature Scaling</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-Gradient-Descent-Theory"><span class="nav-text">2.Gradient Descent Theory</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-More-Limitation-of-Gradient-Descent"><span class="nav-text">3.More Limitation of Gradient Descent</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">378k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
