@@ -46,12 +46,12 @@
   };
 </script>
 
-  <meta name="description" content="回顾 Review 在上一节课 Classification中，讨论了如何通过样本点的均值$u$和协方差$\Sigma$来计算$P(C_1),P(C_2),P(x|C_1),P(x|C_2)$，进而利用$P(C_1|x)&#x3D;\frac{P(C_1)P(x|C_1)}{P(C_1)P(x|C_1)+P(C_2)P(x|C_2)}$计算得到新的样本点$x$属于class 1的概率，由于是二元分类，属于c">
+  <meta name="description" content="本文介绍了如何用Logisic Regression逻辑回归解决二分类和多分类问题，解释了逻辑回归中为什么不用square error作为loss，以及逻辑回归的局限性，并比较了Discriminative model和Generaive model的区别。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ML笔记（3）Logistic_Regression">
 <meta property="og:url" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/index.html">
 <meta property="og:site_name" content="nekomoon的个人小站">
-<meta property="og:description" content="回顾 Review 在上一节课 Classification中，讨论了如何通过样本点的均值$u$和协方差$\Sigma$来计算$P(C_1),P(C_2),P(x|C_1),P(x|C_2)$，进而利用$P(C_1|x)&#x3D;\frac{P(C_1)P(x|C_1)}{P(C_1)P(x|C_1)+P(C_2)P(x|C_2)}$计算得到新的样本点$x$属于class 1的概率，由于是二元分类，属于c">
+<meta property="og:description" content="本文介绍了如何用Logisic Regression逻辑回归解决二分类和多分类问题，解释了逻辑回归中为什么不用square error作为loss，以及逻辑回归的局限性，并比较了Discriminative model和Generaive model的区别。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/blog/source/_posts/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/QQ%E5%9B%BE%E7%89%8720200708190620.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/blog/source/_posts/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/QQ%E5%9B%BE%E7%89%8720200708190653.png">
@@ -77,10 +77,11 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/blog/source/_posts/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/QQ%E5%9B%BE%E7%89%8720200708200056.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/blog/source/_posts/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/QQ%E5%9B%BE%E7%89%8720200708194808.png">
 <meta property="article:published_time" content="2020-07-08T10:48:14.000Z">
-<meta property="article:modified_time" content="2020-07-08T12:05:32.000Z">
+<meta property="article:modified_time" content="2020-07-08T12:16:27.085Z">
 <meta property="article:author" content="nekomoon">
 <meta property="article:tag" content="Machine Learning">
 <meta property="article:tag" content="Logistic Regression">
+<meta property="article:tag" content="Discriminaive model">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/blog/source/_posts/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/QQ%E5%9B%BE%E7%89%8720200708190620.png">
 
@@ -235,7 +236,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-07-08 18:48:14 / 修改时间：20:05:32" itemprop="dateCreated datePublished" datetime="2020-07-08T18:48:14+08:00">2020-07-08</time>
+              <time title="创建时间：2020-07-08 18:48:14 / 修改时间：20:16:27" itemprop="dateCreated datePublished" datetime="2020-07-08T18:48:14+08:00">2020-07-08</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,6 +258,7 @@
                 <span class="post-meta-item-text">本文字数：</span>
               <span>8.9k</span>
             </span>
+            <div class="post-description">本文介绍了如何用Logisic Regression逻辑回归解决二分类和多分类问题，解释了逻辑回归中为什么不用square error作为loss，以及逻辑回归的局限性，并比较了Discriminative model和Generaive model的区别。</div>
 
         </div>
       </header>
@@ -409,6 +411,7 @@ w_i=w_i-\eta \sum\limits_{n}-(\hat{y}^n-f_{w,b}(x^n))x_i^n</script><p>那这个�
           <div class="post-tags">
               <a href="/tags/Machine-Learning/" rel="tag"># Machine Learning</a>
               <a href="/tags/Logistic-Regression/" rel="tag"># Logistic Regression</a>
+              <a href="/tags/Discriminaive-model/" rel="tag"># Discriminaive model</a>
           </div>
 
         
@@ -509,7 +512,7 @@ w_i=w_i-\eta \sum\limits_{n}-(\hat{y}^n-f_{w,b}(x^n))x_i^n</script><p>那这个�
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
