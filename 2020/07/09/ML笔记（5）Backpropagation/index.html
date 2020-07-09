@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文主要介绍了Backpropagation 反向传播的原理,Backpropagation是一种有效的求梯度的方法，并不是一种区别于Gradient Descent的新算法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML笔记（5）Backpropagation">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文主要介绍了Backpropagation 反向传播的原理,Backpropagation是一种有效的求梯度的方法，并不是一种区别于Gradient Descent的新算法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709191138.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709191418.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709191916.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709193921.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194132.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194628.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194631.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194802.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194806.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194809.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709194813.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709204309.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709201544.png">
+<meta property="article:published_time" content="2020-07-09T10:58:41.000Z">
+<meta property="article:modified_time" content="2020-07-09T12:49:53.186Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Backpropagation">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ%E5%9B%BE%E7%89%8720200709191138.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>ML笔记（5）Backpropagation | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ML笔记（5）Backpropagation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-07-09 18:58:41 / 修改时间：20:49:53" itemprop="dateCreated datePublished" datetime="2020-07-09T18:58:41+08:00">2020-07-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.3k</span>
+            </span>
+            <div class="post-description">本文主要介绍了Backpropagation 反向传播的原理,Backpropagation是一种有效的求梯度的方法，并不是一种区别于Gradient Descent的新算法。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>训练Neural Network依然可以使用此前学过的Gradient Descent的方法来更新参数，基本步骤与linear Regression或Logistic Regression中是相同的，但Neural network中的parameters $\theta=w_1,w_2,…,b_1,b_2,…$里面可能会有将近million个参数。所以现在最大的困难是，如何有效地把这个近百万维的vector给计算出来，这就是Backpropagation要做的事情，<strong>Backpropagation并不是一个和gradient descent不同的training的方法，它只是一个比较有效率的算法</strong>，使得求gradient更有效率。</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709191138.png" style="zoom:40%;"></p>
+<p><strong>Chain Rule</strong></p>
+<p>Backpropagation的数学原理其实很简单，只需记住<strong>Chain Rule 链式法则</strong>。</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709191418.png" style="zoom:40%;"></p>
+<h3 id="Backpropagation"><a href="#Backpropagation" class="headerlink" title="Backpropagation"></a>Backpropagation</h3><p>对整个neural network，定义一个loss function：$L(\theta)=\sum\limits_{n=1}^N l^n(\theta)$，它等于所有training data的loss之和。我们把training data里任意一个样本点$x^n$代到neural network里面，它会output一个$y^n$，我们把这个output跟样本点本身的label标注的target $\hat{y}^n$作cross entropy，这个<strong>交叉熵定义了output $y^n$和target $\hat{y}^n$之间的距离$l^n(\theta)$</strong>，如果cross entropy比较大的话，说明output和target之间距离很远，这个network的parameter的loss是比较大的，反之则说明这组parameter是比较好的。然后summation over所有training data的cross entropy $l^n(\theta)$，得到total loss $L(\theta)$，这就是我们的loss function，用这个$L(\theta)$对某一个参数w做偏微分，表达式如下：</p>
+<script type="math/tex; mode=display">
+\frac{\partial L(\theta)}{\partial w}=\sum\limits_{n=1}^N\frac{\partial l^n(\theta)}{\partial w}</script><p>从表达式中可知，只需要考虑如何计算对某一笔data的$\frac{\partial l^n(\theta)}{\partial w}$，再将所有training data的cross entropy对参数w的偏微分累计求和，就可以把total loss对某一个参数w的偏微分给计算出来。</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709191916.png" style="zoom:50%;"></p>
+<p>我们先考虑某一个neuron（图中被红色三角形圈住的neuron），假设只有两个input $x_1,x_2$，通过这个neuron，我们先得到$z=b+w_1 x_1+w_2 x_2$，然后经过activation function从这个neuron中output出来，作为后续neuron的input，再经过了很多层的运算之后，会得到最终的output $y_1,y_2$</p>
+<p>接着考虑计算$\frac{\partial l}{\partial w}$，按照chain rule，可以把它拆分成两项，$\frac{\partial l}{\partial w}=\frac{\partial z}{\partial w} \frac{\partial l}{\partial z}$，这两项分别去把它计算出来：</p>
+<ul>
+<li>计算前一项$\frac{\partial z}{\partial w}$的process，称之为<strong>Forward pass</strong>；</li>
+<li>计算后一项$\frac{\partial l}{\partial z}$的process，称之为<strong>Backward pass</strong>。</li>
+</ul>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709193921.png" style="zoom: 40%;"></p>
+<h4 id="Forward-Pass"><a href="#Forward-Pass" class="headerlink" title="Forward Pass"></a>Forward Pass</h4><p>$\frac{\partial z}{\partial w}$这一项计算很简单，$\frac{\partial z}{\partial w_1}=x_1 ,\ \frac{\partial z}{\partial w_2}=x_2$。它的规律是这样的：求$\frac{\partial z}{\partial w}$，就是看$w$前面连接的input是什么，那微分后的$\frac{\partial z}{\partial w}$值就是什么，因此只要计算出neural network里面每一个neuron的output就可以知道任意的$z$对$w$的偏微分：</p>
+<ul>
+<li>比如input layer作为neuron的输入时，$w_1$前面连接的是$x_1$，所以微分值就是$x_1$；$w_2$前面连接的是$x_2$，所以微分值就是$x_2$</li>
+<li>比如hidden layer作为neuron的输入时，那该neuron的input就是前一层neuron的output，于是$\frac{\partial z}{\partial w}$的值就是前一层的z经过activation function之后输出的值(下图中的数据是假定activation function为sigmoid function得到的)</li>
+</ul>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194132.png" style="zoom: 67%;"></p>
+<h4 id="Backward-Pass"><a href="#Backward-Pass" class="headerlink" title="Backward Pass"></a>Backward Pass</h4><p>$\frac{\partial l}{\partial z}$这一项比较复杂的，这里我们依旧假设activation function是sigmoid function。$z$通过activation function后得到$a$，这个neuron的output是$a=\sigma(z)$，接下来这个a会乘上某一个weight $w_3$，再加上其它的value得到$z’$，它是下一个neuron activation function的input，然后a又会乘上另一个weight $w_4$，再加上其它value得到$z’’$，后面还会经过很多运算，这里我们先考虑下一步会发生什么事情。</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194628.png" style="zoom: 67%;"></p>
+<p>由Chain Rule，$\frac{\partial l}{\partial z}$可以写成</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z}=\frac{\partial a}{\partial z} \frac{\partial l}{\partial a}</script><p>这里的$\frac{\partial a}{\partial z}$实际上就是activation function的微分(在这里就是sigmoid function的微分)，接下来的问题是$\frac{\partial l}{\partial a}$应该长什么样子呢？a会影响$z’$和$z’’$，而$z’$和$z’’$会影响$l$，所以通过chain rule可以得到</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial a}=\frac{\partial z'}{\partial a} \frac{\partial l}{\partial z'}+\frac{\partial z''}{\partial a} \frac{\partial l}{\partial z''}</script><p>这里的$\frac{\partial z’}{\partial a}=w_3$，$\frac{\partial z’’}{\partial a}=w_4$，那$\frac{\partial l}{\partial z’}$和$\frac{\partial l}{\partial z’’}$又该怎么算呢？这里先假设我们已经通过某种方法把$\frac{\partial l}{\partial z’}$和$\frac{\partial l}{\partial z’’}$这两项给算出来了，然后回过头去就可以把$\frac{\partial l}{\partial z}$给轻易地算出来</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z}=\frac{\partial a}{\partial z} \frac{\partial l}{\partial a}=\sigma'(z)[w_3 \frac{\partial l}{\partial z'}+w_4 \frac{\partial l}{\partial z''}]</script><p>那么由Forward pass和Backward就可以得到$\frac{\partial l}{\partial w_1}$：</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial w_1}=\frac{\partial z}{\partial w_1} \frac{\partial l}{\partial z}=x_1 \cdot \sigma'(z)[w_3 \frac{\partial l}{\partial z'}+w_4 \frac{\partial l}{\partial z''}]</script><h4 id="换个角度"><a href="#换个角度" class="headerlink" title="换个角度"></a>换个角度</h4><p>我们可以从另外一个观点来看待这个式子。想象现在有另外一个neuron，它不在我们原来的network里面，在下图中它被画成三角形，这个neuron的input就是$\frac{\partial l}{\partial z’}$和$\frac{\partial l}{\partial z’’}$，那input $\frac{\partial l}{\partial z’}$乘上$w_3$，input $\frac{\partial l}{\partial z’’}$乘上$w_4$，它们两个相加再乘上activation function的微分 $\sigma’(z)$，就可以得到output $\frac{\partial l}{\partial z}$</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194631.png" style="zoom:67%;"></p>
+<p>这张图描述了一个新的“neuron”，它的含义跟图下方的表达式是一模一样的，作这张图的目的是为了方便理解。值得注意的是，这里的<strong>$\sigma’(z)$是一个constant常数</strong>，它并不是一个function，<strong>因为$z$其实在计算forward pass的时候就已经被计算好了</strong>（$z=w_1x_1+w_2x_2+b$），在这里$z$是一个固定的值。</p>
+<p>所以这个neuron其实跟我们之前看到的sigmoid function是不一样的，它并不是把input通过一个non-linear进行转换，而是直接把input乘上一个constant $\sigma’(z)$，就得到了output，因此这个neuron被画成三角形，代表它跟我们之前看到的圆形的neuron的运作方式是不一样的，它是直接乘上一个constant(这里的三角形有点像电路里的运算放大器op-amp，它也是乘上一个constant)</p>
+<p>现在需要解决的问题是，怎么计算$\frac{\partial l}{\partial z’}$和$\frac{\partial l}{\partial z’’}$这两项，这里需要考虑两种case：</p>
+<p><strong>case 1：Output Layer</strong></p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194802.png" style="zoom:67%;"></p>
+<p>假设蓝色的这个neuron已经是hidden layer的最后一层了，也就是说连接在$z’$和$z’’$后的这两个红色的neuron已经是output layer，它的output就已经是整个network的output了，这个时候计算就比较简单：</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z'}=\frac{\partial y_1}{\partial z'} \frac{\partial l}{\partial y_1}</script><p>其中$\frac{\partial y_1}{\partial z’}$就是output layer的activation function (softmax) 对$z’$的偏微分</p>
+<p>而$\frac{\partial l}{\partial y_1}$就是loss对$y_1$的偏微分，它取决于你的loss function是怎么定义的，也就是你的output和target之间是怎么evaluate的，可以是cross entropy或者是mean square error，用不同的定义，$\frac{\partial l}{\partial y_1}$的值就不一样。这样就可以把$l$对$w_1$和$w_2$的偏微分$\frac{\partial l}{\partial w_1}$、$\frac{\partial l}{\partial w_2}$算出来了。</p>
+<p><strong>Case 2：Not Output Layer</strong></p>
+<p>假设现在红色的neuron并不是整个network的output，那$z’$经过红色neuron的activation function得到$a’$，然后output $a’$和$w_5$、$w_6$相乘并加上一堆其他东西分别得到$z_a$和$z_b$，如下图所示</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194806.png" style="zoom:67%;"></p>
+<p>根据之前的推导证明类比，如果知道$\frac{\partial l}{\partial z_a}$和$\frac{\partial l}{\partial z_b}$，我们就可以计算$\frac{\partial l}{\partial z’}$，如下图所示，借助运算放大器的辅助理解，将$\frac{\partial l}{\partial z_a}$乘上$w_5$和$\frac{\partial l}{\partial z_b}$乘上$w_6$的值加起来再通过op-amp，乘上放大系数$\sigma’(z’)$，就可以得到output $\frac{\partial l}{\partial z’}$</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z'}=\sigma'(z')[w_5 \frac{\partial l}{\partial z_a} + w_6 \frac{\partial l}{\partial z_b}]</script><p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194809.png" style="zoom:67%;"></p>
+<p>知道$z’$和$z’’$就可以知道$z$，知道$z_a$和$z_b$就可以知道$z’$，…… ，现在这个过程就可以反复进行下去，直到找到output layer，我们可以算出确切的值，然后再一层一层反推回去。</p>
+<p>这个方法听起来挺让人崩溃的，每次要算一个微分的值，都要一路往后走，一直走到network的output，如果写成表达式的话，一层一层往后展开，感觉会是一个很可怕的式子，但是实际上并不是这样做的。</p>
+<p>你只要换一个方向，<strong>从output layer的$\frac{\partial l}{\partial z}$开始算</strong>，你就会发现它的运算量跟原来的network的Feedforward path其实是一样的。假设现在有6个neuron，每一个neuron的activation function的input分别是$z_1$、$z_2$、$z_3$、$z_4$、$z_5$、$z_6$，我们要计算$l$对这些$z$的偏微分，按照原来的思路，我们想要知道$z_1$的偏微分，就要去算$z_3$和$z_4$的偏微分，想要知道$z_3$和$z_4$的偏微分，就又要去计算两遍$z_5$和$z_6$的偏微分，这样做没有效率。</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709194813.png" style="zoom:67%;"></p>
+<p>但是，如果反过来先去计算$z_5$和$z_6$的偏微分的话，这个process就会变得有效率。我们先去计算$\frac{\partial l}{\partial z_5}$和$\frac{\partial l}{\partial z_6}$，然后就可以算出$\frac{\partial l}{\partial z_3}$和$\frac{\partial l}{\partial z_4}$，最后就可以算出$\frac{\partial l}{\partial z_1}$和$\frac{\partial l}{\partial z_2}$，而这一整个过程，就可以转化为op-amp运算放大器的那张图</p>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709204309.png" style="zoom:67%;"></p>
+<p>这里每一个op-amp的放大系数就是$\sigma’(z_1)$、$\sigma’(z_2)$、$\sigma’(z_3)$、$\sigma’(z_4)$，所以整一个流程就是，先快速地计算出$\frac{\partial l}{\partial z_5}$和$\frac{\partial l}{\partial z_6}$，然后再把这两个偏微分的值乘上路径上的weight汇集到neuron上面，再通过op-amp的放大，就可以得到$\frac{\partial l}{\partial z_3}$和$\frac{\partial l}{\partial z_4}$这两个偏微分的值，再让它们乘上一些weight，并且通过一个op-amp，就得到$\frac{\partial l}{\partial z_1}$和$\frac{\partial l}{\partial z_2}$这两个偏微分的值，这样就计算完了，这个步骤，就叫做<strong>Backward pass</strong>。</p>
+<p>以上面这个图中的neural network为例，network共有12个$w$，写一下反向传播求梯度的过程，假如现在要求$\frac{\partial l}{\partial w_1}$和$\frac{\partial l}{\partial w_2}$，由Chain Rule知：</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial w_1}=\frac{\partial l}{\partial z_1} \cdot\frac{\partial z_1}{\partial w_1}\\
+\frac{\partial l}{\partial w_2}=\frac{\partial l}{\partial z_1} \cdot\frac{\partial z_1}{\partial w_2}</script><p><strong>Forward Pass：</strong></p>
+<script type="math/tex; mode=display">
+\frac{\partial z_1}{\partial w_1}=x_1\\
+\frac{\partial z_1}{\partial w_2}=x_2</script><p><strong>Backward Pass：</strong></p>
+<ul>
+<li>Step 1：</li>
+</ul>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z_5}=\frac{\partial l}{\partial y_1}\cdot\frac{\partial y_1}{\partial z_5} \\
+\frac{\partial l}{\partial z_6}=\frac{\partial l}{\partial y_2}\cdot\frac{\partial y_2}{\partial z_5}</script><ul>
+<li>Step 2:</li>
+</ul>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z_3}=\sigma'(z_3)[w_9 \frac{\partial l}{\partial z_5} + w_{11} \frac{\partial l}{\partial z_6}] \\
+\frac{\partial l}{\partial z_4}=\sigma'(z_4)[w_{10} \frac{\partial l}{\partial z_5} + w_{12} \frac{\partial l}{\partial z_6}]</script><ul>
+<li>Step 3:</li>
+</ul>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial z_1}=\sigma'(z_1)[w_5 \frac{\partial l}{\partial z_3} + w_7 \frac{\partial l}{\partial z_4}] \\
+\frac{\partial l}{\partial z_2}=\sigma'(z_2)[w_6 \frac{\partial l}{\partial z_3} + w_8 \frac{\partial l}{\partial z_4}]</script><p>最后就可以得到损失函数$l$对参数$w_1$，$w_2$的梯度：</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial w_1}=\frac{\partial l}{\partial z_1} \cdot\frac{\partial z_1}{\partial w_1}=x_1 \cdot \sigma'(z_1)[w_5 \frac{\partial l}{\partial z_3} + w_7 \frac{\partial l}{\partial z_4}] \\
+\frac{\partial l}{\partial w_2}=\frac{\partial l}{\partial z_1} \cdot\frac{\partial z_1}{\partial w_2}=x_2 \cdot \sigma'(z_1)[w_6 \frac{\partial l}{\partial z_3} + w_8 \frac{\partial l}{\partial z_4}]</script><p>在做Backward pass的时候，实际上的做法就是建另外一个neural network，本来正向neural network里面的activation function都是sigmoid function，而现在计算Backward pass的时候，就是<strong>建一个反向的neural network，它的activation function就是一个运算放大器op-amp</strong>，每一个反向neuron的input是loss $l$对后面一层layer的$z$的偏微分$\frac{\partial l}{\partial z}$，output则是loss $l$对这个neuron的$z$的偏微分$\frac{\partial l}{\partial z}$，做Backward pass就是通过这样一个反向neural network的运算，把loss $l$对每一个neuron的$z$的偏微分$\frac{\partial l}{\partial z}$都给算出来。</p>
+<p>（注：如果是正向做Backward pass的话，实际上每次计算一个$\frac{\partial l}{\partial z}$，就需要把该neuron后面所有的$\frac{\partial l}{\partial z}$都给计算一遍，会造成很多不必要的重复运算，如果写成code的形式，就相当于调用了很多次重复的函数；而如果是反向做Backward pass，实际上就是把这些调用函数的过程都变成调用“值”的过程，因此可以直接计算出结果，而不需要占用过多的堆栈空间。）</p>
+<h4 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h4><p>最后来总结一下Backpropagation是怎么做的</p>
+<p><strong>Forward pass</strong>，每个neuron的activation function的$w$前连接的input，就是$\frac{\partial z}{\partial w}$；</p>
+<p><strong>Backward pass</strong>，建一个与原来方向相反的neural network，它的三角形neuron的output就是$\frac{\partial l}{\partial z}$</p>
+<p>把通过forward pass得到的$\frac{\partial z}{\partial w}$和通过backward pass得到的$\frac{\partial l}{\partial z}$乘起来就可以得到$l$对$w$的梯度$\frac{\partial l}{\partial w}$</p>
+<script type="math/tex; mode=display">
+\frac{\partial l}{\partial w} = \frac{\partial z}{\partial w}|_{forward\ pass} \cdot \frac{\partial l}{\partial z}|_{backward \ pass}</script><p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/QQ图片20200709201544.png" style="zoom:67%;"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Backpropagation/" rel="tag"># Backpropagation</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/" rel="prev" title="ML笔记（4）Brief Introduction of Deep Learning">
+      <i class="fa fa-chevron-left"></i> ML笔记（4）Brief Introduction of Deep Learning
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Backpropagation"><span class="nav-text">Backpropagation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Forward-Pass"><span class="nav-text">Forward Pass</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Backward-Pass"><span class="nav-text">Backward Pass</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#换个角度"><span class="nav-text">换个角度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Summary"><span class="nav-text">Summary</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">409k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>

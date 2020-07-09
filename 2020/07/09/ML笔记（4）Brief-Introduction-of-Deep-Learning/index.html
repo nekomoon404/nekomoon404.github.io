@@ -61,6 +61,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709160357.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709160404.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709161118.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709174501.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709161556.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709161756.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709162020.png">
@@ -77,7 +78,7 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709173821.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ%E5%9B%BE%E7%89%8720200709174025.png">
 <meta property="article:published_time" content="2020-07-09T07:24:47.000Z">
-<meta property="article:modified_time" content="2020-07-09T09:41:19.054Z">
+<meta property="article:modified_time" content="2020-07-09T09:46:01.342Z">
 <meta property="article:author" content="nekomoon">
 <meta property="article:tag" content="Deep Learning">
 <meta property="article:tag" content="Deep Neural Network">
@@ -235,7 +236,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-07-09 15:24:47 / 修改时间：17:41:19" itemprop="dateCreated datePublished" datetime="2020-07-09T15:24:47+08:00">2020-07-09</time>
+              <time title="创建时间：2020-07-09 15:24:47 / 修改时间：17:46:01" itemprop="dateCreated datePublished" datetime="2020-07-09T15:24:47+08:00">2020-07-09</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -341,8 +342,7 @@
 <p>在这个手写字体识别的demo里，我们需要的就是一个function，这个function的input是一个256的vector，output是一个10维的vector，这个function就是neural network(这里我们用简单的Feedforward network)。</p>
 <p>input固定为256维，output固定为10维的feedforward neural network，实际上这个network structure就已经确定了一个function set(model)的形状，在这个function set里的每一个function都可以拿来做手写数字识别，接下来我们要做的事情是用gradient descent去计算出一组参数，挑一个最适合拿来做手写数字识别的function。（input、output的dimension，加上<strong>network structure</strong>，就可以确定一个model的形状，前两个是容易知道的，而确定这个network的structure则是整个Deep Learning中最为关键的步骤）</p>
 <p>所以这里很重要的一件事情是，我们要对network structure进行design，之前在做Logistic Regression或者是linear Regression的时候，我们对model的structure是没有什么好设计的，但是对neural network来说，我们现在已知的constraint只有input是256维，output是10维，而中间要有几个hidden layer，每个layer要有几个neuron，都是需要我们自己去设计的，它们近乎是决定了function set长什么样子。如果network structure设计的很差，这个function set里面根本就没有好的function，那就会像大海捞针一样，结果针并不在海里(=´ω｀=)</p>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">A(input)</span><br><span class="line">A--&gt; |256 dimension|B[network structure]</span><br><span class="line">B--&gt; |10 dimension|C(output)</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%884%EF%BC%89Brief-Introduction-of-Deep-Learning/QQ图片20200709174501.png" style="zoom: 50%;"></p>
 <p>input 256维，output 10维，以及自己design的network structure =》function set(model)</p>
 <p><strong>Step 2：Goodness of function</strong></p>
 <p>定义一个function的好坏，由于我们做的是一个Multi-class classification，所以image为数字1的label “1”告诉我们，现在的target是一个10维的vector，只有在第一维对应数字1的地方，它的值是1，其他都是0</p>
@@ -436,7 +436,10 @@ Cross \ Entropy :l(y,\hat{y})=-\sum\limits_{i=1}^{10}\hat{y}_i lny_i</script><p>
     <a href="/2020/07/08/ML%E7%AC%94%E8%AE%B0%EF%BC%883%EF%BC%89Logistic-Regression/" rel="prev" title="ML笔记（3）Logistic_Regression">
       <i class="fa fa-chevron-left"></i> ML笔记（3）Logistic_Regression
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/09/ML%E7%AC%94%E8%AE%B0%EF%BC%885%EF%BC%89Backpropagation/" rel="next" title="ML笔记（5）Backpropagation">
+      ML笔记（5）Backpropagation <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -512,7 +515,7 @@ Cross \ Entropy :l(y,\hat{y})=-\sum\limits_{i=1}^{10}\hat{y}_i lny_i</script><p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -525,7 +528,7 @@ Cross \ Entropy :l(y,\hat{y})=-\sum\limits_{i=1}^{10}\hat{y}_i lny_i</script><p>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -571,7 +574,7 @@ Cross \ Entropy :l(y,\hat{y})=-\sum\limits_{i=1}^{10}\hat{y}_i lny_i</script><p>
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">399k</span>
+    <span title="站点总字数">409k</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
