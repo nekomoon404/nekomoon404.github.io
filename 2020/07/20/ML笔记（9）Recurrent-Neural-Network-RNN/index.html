@@ -46,12 +46,12 @@
   };
 </script>
 
-  <meta name="description" content="本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，以及RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM)。">
+  <meta name="description" content="本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM），以及如何训练RNN，和RNN在NLP领域的一些具体应用。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ML笔记（9）Recurrent Neural Network(RNN)">
 <meta property="og:url" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/index.html">
 <meta property="og:site_name" content="nekomoon的个人小站">
-<meta property="og:description" content="本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，以及RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM)。">
+<meta property="og:description" content="本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM），以及如何训练RNN，和RNN在NLP领域的一些具体应用。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200720223600.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200720224046.png">
@@ -83,12 +83,53 @@
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722221035.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722221039.png">
 <meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722224341.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230111.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230119.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230123.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230127.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230131.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230135.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230139.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200722230143.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140734.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140739.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140743.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140747.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140751.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140756.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140801.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140804.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140814.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140819.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140823.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723140828.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172010.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172010.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172015.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172019.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172023.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172031.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723172035.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723174945.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723174950.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723174954.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723174958.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175909.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175915.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175920.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175924.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175929.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175934.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200723175941.png">
 <meta property="article:published_time" content="2020-07-20T13:38:02.000Z">
-<meta property="article:modified_time" content="2020-07-22T14:46:09.474Z">
+<meta property="article:modified_time" content="2020-07-23T11:37:41.293Z">
 <meta property="article:author" content="nekomoon">
 <meta property="article:tag" content="RNN">
 <meta property="article:tag" content="Bidirectional RNN">
 <meta property="article:tag" content="LSTM">
+<meta property="article:tag" content="BPTT">
+<meta property="article:tag" content="Sequence to sequence learning">
+<meta property="article:tag" content="Attention-based model">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://nekomoon404.github.io/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ%E5%9B%BE%E7%89%8720200720223600.png">
 
@@ -249,7 +290,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-07-22 22:46:09" itemprop="dateModified" datetime="2020-07-22T22:46:09+08:00">2020-07-22</time>
+                <time title="修改时间：2020-07-23 19:37:41" itemprop="dateModified" datetime="2020-07-23T19:37:41+08:00">2020-07-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -269,9 +310,9 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>15k</span>
+              <span>30k</span>
             </span>
-            <div class="post-description">本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，以及RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM)。</div>
+            <div class="post-description">本文从一个例子-Slot Filling出发，介绍了Recurrent Neural Network(RNN，循环神经网络)的基本概念和作用，RNN的几种变形，其中重点介绍了Long Short-term Memory(LSTM），以及如何训练RNN，和RNN在NLP领域的一些具体应用。</div>
 
         </div>
       </header>
@@ -411,6 +452,108 @@
 <p>当然LSTM也可以有很多层，即Multiple-layer LSTM。目前人们使用RNN，通常就是在用LSTM。</p>
 <p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722224341.png" style="zoom: 80%;"></p>
 <p>Keras支持三种RNN：LSTM，GRU，SimpleRNN。GRU是LSTM稍微简化的版本，它只有两个gate，虽然少了一个gate，但是performance跟LSTM差不多，少了1/3的参数，比较不容易overfitting。文章第二节中讲的那种RNN就是simple RNN。</p>
+<h3 id="4-How-to-train-RNN"><a href="#4-How-to-train-RNN" class="headerlink" title="4. How to train RNN"></a>4. How to train RNN</h3><h4 id="4-1-BPTT"><a href="#4-1-BPTT" class="headerlink" title="4.1 BPTT"></a>4.1 BPTT</h4><p>那如何训练一个RNN model呢，我们之前讲过如果要做learning的话，要定义一个cost function来evaluate model的好坏，选一个parameter让loss 最小。那在Recurrent Neural Network里面，要怎么定义这个loss呢，下面先举个比价直观的例子。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230111.png" style="zoom:67%;"></p>
+<p>假设现在要做的是Slot Filling，train data是给一些sentence，sentence的label是其中的每个word分别属于哪个Slot。比如上图中这歌Training Sentence，告诉machine第一个word它是属于other slot，“Taipei是”Destination slot,”on”属于other slot，“November”和“2nd”属于time slot，</p>
+<p>然后把“arrive”输入到RNN，RNN会得到一个output $y^1$，接下来$y^1$会和它的reference vector（other这个Slot的vector）来计算cross entropy。可以这样来定义reference vector，其长度等于slot的数目，某一个slot对应的vector中某一个dimension为1，其余为0。那我们就希望输入”arrive”后得到的$y^1$与”other”对应的reference vector越接近越好。</p>
+<p>对于training RNN要注意的事是，我们<strong>不能把sentence的word顺序打散后输入到RNN中</strong>，而必须<strong>要按照原来的sequence order输入到RNN中</strong>，因为sequence order会影响memory中存的值，进而影响output $y$。</p>
+<p>RNN的损失函数，即output和reference vector的entropy的和，就是要最小化的对象。这里也是用梯度下降来做，有了定义好的loss function $L$，要update这个neural network里面的某个参数$w$，就是计算$L$对$w$的偏微分，偏微分计算出来以后，就用梯度下降的方法去update里面的参数。在讲feedforward neural network的时候，可以用一个有效率的求梯度的方法，即Backpropagation（反向传播）。那Recurrent Neural Network领域，有开发一套Backpropagation的进阶版，叫做<strong>Backpropagation through time（BPTT）</strong>。它跟Backpropagation是很类似的，只是RNN它是在high sequence上运作，所以BPTT要考虑时间上的information。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230119.png" style="zoom: 80%;"></p>
+<h4 id="4-2-Difficulty-in-training-RNN"><a href="#4-2-Difficulty-in-training-RNN" class="headerlink" title="4.2 Difficulty in training RNN"></a>4.2 Difficulty in training RNN</h4><p>不幸的是，RNN的training是比较困难的。一般在做training的时候，你会期待learning curve是像下图中蓝色这条线（纵轴是total loss，横轴是epoch的数目），即随着epoch的数目越来越多，随着参数不断的update，loss会慢慢的下降最后趋向收敛。但是不幸的是在训练Recurrent Neural Network的时候，你有时候会看到绿色这条线。如果是第一次train Recurrent Neural Network的人，看到绿色这条learning curve非常剧烈的抖动，到某个地方变成NaN，肯定会想这程序有bug啊(╬￣皿￣)。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230123.png" style="zoom:67%;"></p>
+<p>Razvan分析了下RNN的性质，发现RNN的error surface的变化是非常陡峭的/崎岖的(error surface有一些地方非常的平坦，一些地方非常的陡峭，就像是悬崖峭壁一样)。这样会造成什么样的问题呢？假设橙色的点当做初始点，用Gradient Descent开始调整你的参数，updata参数时，可能会刚好跳过一个悬崖，这时loss会突然爆长，loss会非常上下剧烈的震荡)。更惨的情况是，如果在悬崖上之前的gradient会很小，那learning rate可能已经调的很大的，当下一步update时正好踩过悬崖，gradient爆长，很大的gradient乘上很大的learning rate结果参数就会update很多，参数就“飞”出去了。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230127.png" style="zoom:67%;"></p>
+<p>作者是用工程的思想来解决了这个问题，这一招就是Clipping（当Gradient大于某一个threshold的时候，不要让它超过那个threshold，比如设定threshold为15，那当gradient大于15时，让gradient等于15。因为gradient不会太大，所以你要做Clipping的时候，就算是“踩着这个悬崖上”，也不飞出来，而是会updaye到一个比较近的地方，这样还可以继续做RNN的training。</p>
+<p>为什么RNN会有这种奇特的特性呢。有人觉得是来自sigmoid function，我们之前讲Relu activation function的时候，讲过一个问题gradient vanish，这个问题是从sigmoid function来的，RNN会有很平滑的error surface是因为来自于gradient vanish，但其实问题并不是出在sigmoid function上，把RNN中的sigmoid function换成Relu， performance通常是比较差的，所以在train RNN时很少用Relu做activation function。</p>
+<p>你应该会从BRTT的式子中更直观的看出为什么会有这个问题。当然也有更直观的方法来知道一个gradient的大小：把某一个参数做小小的变化，看它对network output的变化有多大，就可以估算出这个参数的gradient的大小。</p>
+<p>举一个很简单的RNN例子，它只有一个neuron，这个neuron是linear。input没有bias，input的weight是1，output的weight也是1，transition的weight是w。也就是说从memory接到neuron的input的weight是w。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230131.png" style="zoom:67%;"></p>
+<p>假设给neural network的input sequence是$1,0,0,0,\dots$，共1000个数，很容易计算出最后的output $y^{1000}$是$w^{999}$。现在假设$w$是要learn的参数，我们想要知道它的gradient，即当我们改变$w$的值时候，对neural的output有多大的影响。</p>
+<p>现在假设$w=1$，那现在$y^{1000}=1$；当$w=1.01$时，$y^{1000}\approx 20000$，可见当$w \in (1, 1+\epsilon)$时，$w$有一点小小的变化，就会对output产生很大的影响，所以这时$w$有很大的gradient，那这时我们把learning rate设小一点就好了。</p>
+<p>但当$w=0.99$时，那$y^{1000}\approx0$；把$w$做一个较大的变化，设$w=0.01$，则有$y^{1000}\approx0$。可见当$w\in(0,1-\epsilon)$时，gradient就突然变得非常非常的小，这个时候我们就需要一个很大的learning rate。这种gradient的突变，使得error surface很崎岖，设置learning rate很麻烦。</p>
+<p>从这个例子可以看出RNN training的问题其实来自它把同样的东西在transition的时候反复使用。$w$变化时，它完全可能没有造成任何影响，而一旦造成影响，影响都是“天崩地裂”的。所以<strong>RNN不好训练的原因是来自于它有high sequence，同样的weight在不同的时间点被反复的使用</strong>，而不是来自activation function。</p>
+<h4 id="4-3-Helpful-Techniques-for-RNN"><a href="#4-3-Helpful-Techniques-for-RNN" class="headerlink" title="4.3 Helpful Techniques for RNN"></a>4.3 Helpful Techniques for RNN</h4><p>有什么技巧可以帮助我们解决这个问题呢？其实广泛被使用的技巧就是LSTM，LSTM可以让你的error surface不要那么崎岖。它可以做到的事情是，它会把那些平坦的地方拿掉，解决gradient vanish的问题，但不能解决gradient explode的问题。有些地方还是非常的崎岖的，有些地方仍然是变化非常剧烈的，但是不会有特别平坦的地方。做LSTM时，error surface大部分地方变化的很剧烈，所以你可以放心的把learning rate设置的小一点，保证在learning rate很小的情况下进行训练。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230135.png" style="zoom:67%;"></p>
+<p>那为什么LSTM 可以解决梯度消失的问题，避免gradient特别小呢？RNN跟LSTM在面对memory的时候，它处理的操作其实是不一样的。在RNN里面，在每一个时间点，memory里面的值都是会被洗掉，neuron的output都要memory里面去，所以在每一个时间点，memory里面的值都是会被覆盖掉。但是在LSTM里面不一样，它是把原来memory里面的值乘上一个值再把input的值加起来放到cell里面。所以它的memory input是相加的。</p>
+<p>所以LSTM和RNN不同的是，RNN在每个时间点的值都会被format掉，所以只要这个影响被format掉它就消失了。但是在LSTM里面，一旦对memory造成影响，那影响一直会被留着，memory一旦有改变，只会把新的东西加进来，不会把原来的值洗掉，除非forget gate要把memory的值洗掉，所以它不会有gradient vanishing的问题。</p>
+<p>那你可能会想现在有forget gate，仍然会把memory的值洗掉。其实LSTM的第一个版本就是为了解决gradient vanishing的问题，所以它是没有forget gate，后来的版本中才加入了forget gate。甚至现在有个说法是：在训练LSTM的时候要给forget gate特别大的bias，你要确保forget gate在多数的情况下都是开启的（即不会洗掉memory），只要少数的情况是关闭的（洗掉memory）。</p>
+<p>还有另外一个版本用gate操控memory cell，叫做Gates Recurrent Unit(GRU)，LSTM有三个Gate，而GRU有两个gate，所以GRU需要的参数是比较少的。因为它需要的参数量比较少，它在training时是比较鲁棒的。如果在train LSTM时，你觉得overfitting的情况很严重，不妨可以试下GRU。GRU的思想就是：“旧的不去，新的不来”。它会把input gate跟forget gate联动起来，当input gate打开的时候，forget gate会自动的关闭(format存在memory里面的值)，当forget gate没有要format里面的值（即forget gate开启），input gate就会被关起来，也就是说你要把memory里面的值清掉，才能把新的值放进来。</p>
+<p>还有其他的technique可以handle gradient vanishing的问题。比如说clockwise RNN或者说是Structurally Constrained Recurrent Network (SCRN)等等。有一个蛮有趣的paper是这样的：一般的RNN用identity matrix（单位矩阵）来initialized transformation weight+ReLU activaton function它可以得到很好的performance。刚才不是说用ReLU的performance会比较拉胯，一般train的方法initiaed weight是random，那ReLU跟sigmoid function来比的话，sigmoid performance 会比较好。但是用了identity matrix来initialized的话，用ReLU performance会比较好。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230139.png" style="zoom: 67%;"></p>
+<h3 id="5-More-Applications"><a href="#5-More-Applications" class="headerlink" title="5. More Applications"></a>5. More Applications</h3><p>RNN有很多的application，前面举得那个solt filling的例子中，我们假设input跟output的数目是一样的，我们给input中的每一个word一个slot label。其实RNN可以做到更复杂的事情。</p>
+<p>（下面老师举的例子基本都是NLP领域的，我还了解甚少，所以只根据老师上课讲的内容作一些简单的介绍，可能会有些纰漏。而且老师2020年的课程内容跳跃性挺大的，需要结合2017年的ML课程一起看，RNN这节课中有些知识点是在之前的2017年课程里讲到的，我需要看过之后再来对这篇笔记做一个补充更新）</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200722230143.png" style="zoom:67%;"></p>
+<h4 id="5-1-Many-to-one"><a href="#5-1-Many-to-one" class="headerlink" title="5.1. Many to one"></a>5.1. Many to one</h4><p>RNN可以做到更复杂的事情，比如说input是一个sequence，output是一个vector，这种Many to one 的常见的应用有<strong>sentiment analysis（情感分析）</strong>。sentiment analysis现在有很广泛的应用，比如某家公司想要知道，他们的产品在网上的评价是positive 还是negative。他们可能会写一个爬虫，把跟他们产品有关的文章都爬下来。那这一篇一篇的看太累了，所以你可以用一个machine learning 的方法learn一个classifier去分类哪些document的评价是正向的，哪些document是负向的。那你就可以去train一个Recurrent Neural Network，input是character sequence，然后RNN把这个sequence读过一遍，在最后一个时间点，把hidden layer拿出来，在通过几个transform，然后你就可以得到最后的sentiment analysis（这是一个分类的问题，但是因为input是sequence，所以用RNN来处理）。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140734.png" style="zoom: 67%;"></p>
+<p>还可以用RNN来作<strong>key term extraction（关键词抽取）</strong>。key term extraction意思是给machine看一个文章，machine要预测出这篇文章有哪些关键词。如果你能够收集到一些training data(一些document，这些document都有label，哪些词汇是关键词，那就可以直接train一个RNN)，RNN把document当做input，通过Embedding layer，然后用RNN把这个document读过一次，然后把出现在最后一个时间点的output拿过来做attention，你可以把这样的information抽出来再丢到feedforward neural network得到最后的output。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140739.png" style="zoom:67%;"></p>
+<h4 id="5-2-Many-to-Many"><a href="#5-2-Many-to-Many" class="headerlink" title="5.2. Many to Many"></a>5.2. Many to Many</h4><h5 id="5-2-1-Output-is-shorter-Speech-Recognition"><a href="#5-2-1-Output-is-shorter-Speech-Recognition" class="headerlink" title="5.2.1. Output is shorter - Speech Recognition"></a>5.2.1. Output is shorter - Speech Recognition</h5><p>RNN的输入输出也可以是多对多的，比如input和output都是sequence，但是output sequence比input sequence短的时候，RNN可以处理这个问题。<strong>Speech Recognition（语音辨识）</strong>就是这样input sequence长，output sequence短的问题。比如在语音辨识这个任务里面input是acoustic sequence(说一句话，这句话就是一段声音讯号)。一般处理声音讯号的方式是，在这个声音讯号里面，每隔一小段时间，就把它用vector来表示。这个一小段时间是很短的(比如说，0.01秒)，那output sequence是character sequence。</p>
+<p>如果你是原来的simple RNN(slot filling的那个RNN)，把这一串input丢进去，它只能做到告诉你每一个vector对应到哪一个character。比如对于一个中文的语音辨识系统，那你的output target理论上就是这个世界上所有可能中文的词汇，常用的可能是八千个，那你RNN classifier的数目可能就是八千个。虽然很大，但也是有办法做的。但是充其量只能做到：每一个声音的vector会得到一个character。每一个input对应的时间间隔是很小的(0.01秒)，所以通常是好多个vector对应到同一个character，那对一句内容是“好棒”的语音，辨识结果可能为“好好好棒棒棒棒棒”，那这显然不是语音辨识正确的结果。为了解决这个问题有一招叫做“<strong>Trimming</strong>”(修剪，切除的意思，这里指把重复的东西拿掉)，就变成“好棒”。但这样也会有一个较严重的问题，因为它没有辨识一些有含义的叠词，比如“好棒棒”（老师说“好棒棒”是贬义的，好机车哦）。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140743.png" style="zoom:67%;"></p>
+<p>那要怎么把“好棒”跟“好棒棒”分开来呢，有一招叫做<strong>Connectionist temporal classification（CTC）</strong>，主要是解决神经网络label 和output 不对齐的问题（Alignment problem）。它的思想可以这样理解：在output时候不只是output所有中文的character，还会output一个符号，叫做”null””(没有任何东西)。所以我今天input一段acoustic feature sequence,它的output是“好 null null 棒 null null null null”，然后我就把“null”的部分拿掉，它就变成“好棒”。如果我们输入另外一个sequence，它的output是“好 null null 棒 null 棒 null null”，然后把“null”拿掉，所以它的output就是“好棒棒”。这样就可以解决叠字的问题了。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140747.png" style="zoom:67%;"></p>
+<p>CTC在做training的时候，你的train data就会告诉这一串acoustic features对应到这一串character sequence，但它不会告诉你说“好”是对应第几个character 到第几个character。这时可以穷举所有可能的alignments。简单来说就是，我们不知道“好”对应到那几个character，“棒”对应到哪几个character。假设我们所有的状况都是可能的。可能第一个是“好 null 棒 null null null”，可能是“好 null null 棒 null null”，也可能是“好 null null null 棒 null”。我们不知道哪个是对的，那假设全部都是对的。在training的时候，全部都当做是正确的，然后一起train。当然也有更巧妙的算法可以解决这个问题，这里就不细讲了。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140751.png" style="zoom:67%;"></p>
+<p>在做英文辨识的时候，你的RNN output target就是character(英文的字母+空白)。直接output字母，然后如果字和字之间有boundary，就自动有空白。看下面的例子，第一个frame是output h，第二个frame是output null，第三个frame是output null，第四个frame是output I等等。如果你看到output是这样子话，那最后把“null”的地方拿掉，那这句话的辨识结果就是“HIS FRIEND’S”。你不需要告诉machine说：”HIS”是一个词汇，“FRIEND’s”是一个词汇,machine通过training data会自己学到这件事情。</p>
+<p>据说Google的语音辨识系统已经全面换成CTC。如果你用CTC来做语音辨识的话，就算是有某一个词汇(比如是：英文中人名，地名)在training data中从来没有出现过，machine也是有机会把它辨识出来。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140756.png" style="zoom:67%;"></p>
+<h5 id="5-2-2-No-limitation-Sequence-to-sequence-learning"><a href="#5-2-2-No-limitation-Sequence-to-sequence-learning" class="headerlink" title="5.2.2. No limitation - Sequence to sequence learning"></a>5.2.2. No limitation - Sequence to sequence learning</h5><p>RNN还有一个应用叫做<strong>sequence to sequence learning</strong>，在sequence to sequence learning里面，RNN的input跟output都是sequence(但是两者的长度是不一样的)。刚在在CTC时，input比较长，output比较短。在这边我们要考虑的是不确定input跟output谁比较长谁比较短。</p>
+<p>比如做machine translation（机器翻译），input英文word sequence把它翻译成中文的character sequence。那我们并不知道说，英文跟中文谁比较长谁比较短(有可能是output比较长，output比较短)。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140801.png" style="zoom:67%;"></p>
+<p>假如现在input一个 “machine learning” ，然后用RNN读过去，然后在最后一个时间点，这个memory里面就存了所有input sequence的information。接下来你让machine “吐”一个character(机)，然后就让它output下一个character，把之前的output出来的character当做input，再把memory里面的值读进来，它就会output “器”。那这个“机”怎么接到这个地方呢，有很多支支节节的技巧，还有很多不同的变形。在下一个时间input “器”，output“学”，然后output“习”，然后一直output下去，machine没办法知道它何时要停下来。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140804.png" style="zoom:67%;"></p>
+<p>要怎么告诉machine何时停止呢？你可以多加一个symbol “===”，代表停止，那现在manchine不只是output可能的character，它还有一个可能的output 是“===”。这样我们的utput sequence中“习”后面是“===”(断)的话，就停下来了。那这中方法也是可以train的起来的。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140814.png" style="zoom:67%;"></p>
+<p>还有篇papre是这样做的，对于sequence to sequence learning，我们原来是input 某种语言的文字，output是翻译成另外一种语言的文字(假设是做机器翻译的话)。那我们有没有可能直接input某种语言的声音讯号，output另外一种语言的文字呢？我们完全不做语音辨识。比如说你要把英文句子的语音翻译成中文句子的文本，你就可以收集一大堆英文句子的语音，以及它对应的中文翻译，完全不要做语音辨识，直接把英文的声音讯号丢到这个model里面去，看它能不能output正确的中文。这一招居然是行得通的。假设你今天要把台语转成英文，但是台语的语音辨识系统不好做，因为台语根本就没有standard文字系统，所以这项技术可以成功的话，未来你在训练台语转英文语音辨识系统的时候，你只需要收集台语的声音讯号跟它的英文翻译就可以刻了。你就不需要台语语音辨识的结果，你也不需要知道台语的文字，也可以做这件事。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140819.png" style="zoom:67%;"></p>
+<p><strong>Beyond Sequence</strong></p>
+<p>利用sequence to sequence的技术，甚至可以做到Beyond Sequence。这个技术也被用到<strong>syntactic parsing（句法分析）</strong>。synthetic parsing是指，让machine看一个句子，它要得到这个句子的结构树，得到一个树状的结构。过去你可能要用structured learning的技术能够解这个问题，但是现在有了 sequence to sequence learning的技术以后，只要把这个树状图描述成一个sequence（具体看图中 john has a dog）。你就可以直接learn 一个sequence to sequence model，它的output就是syntactic parsing tree。这个是可以train的起来的，performance也很好。你可能会担心machine的output的sequence不符合文法结构，比如它记得加左括号，却忘记加右括号，神奇的地方就是LSTM不会忘记右括号。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140823.png" style="zoom:67%;"></p>
+<p><strong>Sequence - to - sequence    Auto - encoder - Text</strong></p>
+<p>当我们要将一个document表示成一个vector时，往往会用bag-of-word的方法，用这个方法的时候，往往会忽略掉 word order information。举例来说，有一个word sequence是“white blood cells destroying an infection”，另外一个word sequence是：“an infection destroying white blood cells”，这两句话的意思完全是相反的。但是用bag-of-word的方法来描述的话，它们的bag-of-word完全是一样的。虽然这两个word sequence里面有完全一摸一样的六个词汇，但因为词汇的order是不一样的，所以他们的意思一个变成positive，一个变成negative，它们的意思是很不一样的。那现在我们可以用sequence to sequence Auto-encoder这种做法来考虑word sequence order的情况下，把一个document变成一个vector。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723140828.png" style="zoom:67%;"></p>
+<p>我们可以input一个word sequence，通过Recurrent Neural Network变成一个invalid vector，然后把这个invalid vector当做decoder的输入，然后让这个decoder，找回一模一样的句子。如果今天Recurrent Neural Network可以做到这件事情的话，那Encoding这个vector就代表这个input sequence里面重要的information。在trian Sequence-to-sequence Auto-encoder的时候，不需要label data，你只需要收集大量的文章，然后直接train下去就好了。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172010.png" style="zoom:67%;"></p>
+<p>Sequence-to-sequence 还有另外一个版本叫skip thought，如果用Sequence-to-sequence的，输入输出都是同一个句子，如果用skip thought的话，输出的目标就会是下一个句子，用sequence-to-sequence得到的结果通常容易表达，如果要得到语义的意思的，那么skip thought会得到比较好的结果。这个结构甚至可以是hierarchical，每一个句子都先得到一个vector（Mary was hungry得到一个vector，she didn’t find any food得到一个vector），然后把这些vector加起来，然后变成一个整个 document high label vector，在让这整个vector去产生一串sentence vector，在根据每一个sentence vector再去解回word sequence。这是一个四层的LSTM(从word 变成sentence sequence ，变成document lable，再解回sentence sequence，再解回word sequence。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172010.png" style="zoom:67%;"></p>
+<p><strong>Sequence - to - sequence    Auto - encoder - Speech</strong></p>
+<p>这种Sequence to sequence  Auto encoder的方法也可以用到语音上，在语音上，它可以把一段audio segment变成一个fixed length vector。比如说，左边有一段声音讯号，长长短短都不一样，那你把他们变成vector的话，可能dog跟dogs比较接近，never和ever比较接近，可以称之为audio auto vector。一般的auto vector它是把word变成vector，这里是把一段声音讯号变成一个vector。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172015.png" style="zoom:67%;"></p>
+<p>这个东西有什么用呢？它可以做很多的事。比如可以拿来做语音的搜寻，假设你有一个声音的data base(比如说，上课的录音，你想要找跟美国白宫有关的东西，然后你说一句话-“美国白宫”，machine不需要做语音辨识，直接比对声音讯号的相似度，machine就可以从data base里面把提到“美国白宫”的部分找出来)。它的实现过程可以是这样的：你先把一个audio data base做segmentation，切成一段一段的。然后每一个段用刚才讲的audio segment to vector这个技术，通通变成vector。然后现再输入一个spoken query，可以通过audio segment to vector技术也变成vector，接下来计算它们的相似程度，找出最相似的就是要搜寻的结果。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172019.png" style="zoom:67%;"></p>
+<p>那么如何把一个audio segment变成一个vector呢？把audio segment抽成acoustic features，然后把它输入到RNN里面去，这个RNN的角色就是Encoder，它读过acoustic features之后，最后一个时间点它存在memory里面的值就代表了input声音讯号的information。它存到memory里面的值是一个vector，这个其实就是我们要拿来表示整段声音讯号的vector。</p>
+<p>但是只要RNN Encoder没有办法去train，同时你还要train一个RNN Decoder。Decoder的作用是把Encoder得到的值存到memory里面的值，拿进来当做input，然后产生一个acoustic features sequence。然后希望这个$y_1$跟$x_1$越接近越好。然后再根据$y_1$产生$y_2$，以此类推。今天训练的target$y_1,y_2,y_3,y_4$跟$x_1,x_2,x_3,x_4$越接近越好。在训练的时候，RNN Encoder跟RNN Decoder是一起train的。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172023.png" style="zoom:67%;"></p>
+<p>我们在实验上得到一些有趣的结果，下图中的每个点其实都是一段声音讯号，你把声音讯号用刚才讲的 Sequence-to-sequence Auto-encoder技术变成平面上一个vector。发现说：fear这个位置在左上角，near的位置在右下角，他们中间这样的关系(fame在左上角，name在右下角)。发现把fear的开头f换成n，跟fame的开头f换成n，它们的word vector的变化方向是一样的。现在这个技术还没有把语义加进去。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172031.png" style="zoom:67%;"></p>
+<p>我们可以用Sequence-to-sequence Auto-encoder来做很多有意思的工作，比如训练一个chat-bot(聊天机器人)。你可以收集很多的对话，比如说电影的台词，在电影中有一个台词是“How are you”，另外一个人接“I am fine”。那就告诉machine说这个sequence to sequence learning当它input是“How are you”的时候，这个model的output就要是“I am fine”。你可以收集到这种data，然后就让machine去 train。这里我们就收集了四万句和美国总统辩论的句子，然后让machine去学这个sequence to sequence这个model。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723172035.png" style="zoom:67%;"></p>
+<h4 id="5-3-Attention-based-Model"><a href="#5-3-Attention-based-Model" class="headerlink" title="5.3. Attention - based Model"></a>5.3. Attention - based Model</h4><p>现在除了RNN以外，还有另外一种有用到memory的network，叫做<strong>Attention-based Model</strong>（基于注意力的模型），这个可以想成是RNN的进阶的版本。我们知道人的大脑有非常强的记忆力，所以你可以记得非常非常多的东西。比如说，你现在同时记得早餐吃了什么，同时记得10年前夏天发生的事，同时记得在这几门课中学到的东西。那当然有人问你说什么是deep learning的时候，那你的脑中会去提取重要的information，然后再把这些information组织起来，产生答案。但是你的脑中会自动忽略那些无关的事情，比如说，10年前夏天发生的事情等等。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723174945.png" style="zoom:67%;"></p>
+<p>其实machine也可以做到类似的事情，machine也可以有很大的记忆的容量。它可以有很大的data base，在这个data base里面，每一个vector就代表了某种information被存在machine的记忆里面。当你输入一个input的时候，这个input会被丢进一个中央处理器，这个中央处理器可能是一个DNN/RNN，那这个中央处理器会操控一个Reading Head Controller，这个Reading Head Controller会去决定这个reading head放的位置。machine再从这个reading head 的位置去读取information，然后产生最后的output。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723174950.png" style="zoom:67%;"></p>
+<p>这个model还有一个2.0的版本，它会去操控writing head controller。这个writing head controller会去决定writing head 放的位置。然后machine会去把它的information通过这个writing head写进它的data base里面。所以，它不仅有读的功能，还可以discover出来的东西写入它的memory里面去。这个就是大名鼎鼎的<strong>Neural Turing Machine（神经图灵机）</strong>。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723174954.png" style="zoom:67%;"></p>
+<p><strong>Reading Comprehension</strong></p>
+<p>Attention-based Model 常常用在<strong>Reading Comprehension（阅读理解）</strong>里面。所谓Reading Comprehension就是让machine读一堆document，然后把这些document里面的内容(每一句话)变成一个vector。每一个vector就代表了每一句话的语义。比如你现在想问machine一个问题，然后这个问题被丢进中央处理器里面，那这个中央处理器去控制一个reading head controller，去决定现在在这个data base里面哪些句子是跟中央处理器有关的。假设machine发现这个句子是跟现在的问题是有关的，就把reading head放到这个地方，把information 读到中央处理器中。读取information这个过程可以是重复数次,也就是说machine并不会从一个地方读取information，它先从这里读取information以后，它还可以换一个位置读取information。它把所有读到的information收集起来，最后给你一个最终的答案。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723174958.png" style="zoom:67%;"></p>
+<p>下图是在baby corpus上的结果，baby corpus是一个Q&amp;A的一个简单的测试。我们需要做的事就是读过这五个句子，然后说：what color is Grey?，得到正确的答案。那你可以从machine attention的位置(也就是reading head 的位置)看出machine的思路。图中蓝色代表了machine reading head 的位置，Hop1，Hop2，Hop3代表的是时间，在第一个时间点，machine先把它的reading head放在“greg is a frog”，把这个information提取出来。接下来提取“brian is a frog” information ，再提取“brian is yellow”information。最后它得到结论说：greg 的颜色是yellow。这些事情是machine自动learn出来的，machine attention在哪个位置，这些通过neural network学到该怎么做，要先看哪个句子，再看哪个句子，这些都是machine自动去决定的。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175909.png" style="zoom:67%;"></p>
+<p><strong>Visual Question Answering</strong></p>
+<p>Attention-Based model也可以做<strong>Visual Question Answering（VQA）</strong>，比如让machine看下面的那张图片，问它这是什么，要它可以正确回答说是香蕉。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175915.png" style="zoom:67%;"></p>
+<p>这个Visual Question Answering可以这样来实现：先让machine看一张图，然后通过CNN你可以把这张图的一小块region用一小块的vector来表示。接下来，输入一个query，这个query被丢到中央处理器中，这个中央处理器去操控reading head controller，这个reading head controller决定读取的位置（是跟现在输入的问题是有关系的），这个读取的process可能要好几个步骤，machine会分好几次把information读到中央处理器，最后得到答案。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175920.png" style="zoom:67%;"></p>
+<p><strong>Speech Question Answering</strong></p>
+<p>Attention-Based model也可以做Speech Question Answering 。比如说：在语音处理实验上我们让machine做TOEFL Listening Comprehension Test 。让machine听一段声音，然后问它问题，从四个选项里面，machine选择出正确的选项，那machine做的事情其实是跟人类考生做的是一样的。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175924.png" style="zoom:67%;"></p>
+<p>那用的Model Architecture跟我们上面讲到的其实大同小异，你让machine先读一个question，然后把question做语义的分析得到question的语义，声音的部分是让语音辨识先转成文字，在把这些文字做语义的分析，得到这段文字的语义。那machine了解question的语义然后就可以做attention，决定在audio story里面哪些部分是回答问题有关的。这就像画重点一样，machine画的重点就是答案，它也可以回头去修正它产生的答案。经过几个process以后，machine最后得到的答案跟其他几个选项计算相似度，然后看哪一个想项的相似度最高，它就选那一个选项。那整个test就是一个大的neural network，语音辨识，question semantic部分和audio semantic部分都是neural network，它们都是可以训练的。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175929.png" style="zoom:67%;"></p>
+<p>下图是五种naive的方法得到的结果方法，也就是完全不管文章的内容，直接看问题跟选项就猜答案。random 的正确率是25 percent，有两个方法要比25%要好的：每次都选最短的那个选项就会得到35%的正确率；如果分析四个选项的semantic，用sequence-to-sequence autoencoder，去把一个选项的semantic找出来，然后再去看某个选项和另外三个选项的相似度，每次都选择相似度最高的那个选项，这样做正确率有36%左右。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175934.png" style="zoom:67%;"></p>
+<p>另外还可以用memory network的方法，可以得到39.2 %正确率；如果用我们上面讲到的那个model的话，可以做到48.8%正确率。</p>
+<p><img src="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/QQ图片20200723175941.png" style="zoom:67%;"></p>
+<p>（后面还有一部分内容是比较RNN和Structured learning，这部分等我学习了Structured learning后再来补充。）</p>
 
     </div>
 
@@ -423,6 +566,9 @@
               <a href="/tags/RNN/" rel="tag"># RNN</a>
               <a href="/tags/Bidirectional-RNN/" rel="tag"># Bidirectional RNN</a>
               <a href="/tags/LSTM/" rel="tag"># LSTM</a>
+              <a href="/tags/BPTT/" rel="tag"># BPTT</a>
+              <a href="/tags/Sequence-to-sequence-learning/" rel="tag"># Sequence to sequence learning</a>
+              <a href="/tags/Attention-based-model/" rel="tag"># Attention-based model</a>
           </div>
 
         
@@ -494,7 +640,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Example-Application"><span class="nav-text">1. Example Application</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-RNN"><span class="nav-text">2. RNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-LSTM"><span class="nav-text">3. LSTM</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-What-is-LSTM"><span class="nav-text">3.1 What is LSTM</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-LSTM-Example"><span class="nav-text">3.2 LSTM - Example</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Replace-the-neurons-with-LSTM"><span class="nav-text">3.3 Replace the neurons with LSTM</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Example-Application"><span class="nav-text">1. Example Application</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-RNN"><span class="nav-text">2. RNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-LSTM"><span class="nav-text">3. LSTM</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-What-is-LSTM"><span class="nav-text">3.1 What is LSTM</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-LSTM-Example"><span class="nav-text">3.2 LSTM - Example</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Replace-the-neurons-with-LSTM"><span class="nav-text">3.3 Replace the neurons with LSTM</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-How-to-train-RNN"><span class="nav-text">4. How to train RNN</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-BPTT"><span class="nav-text">4.1 BPTT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-Difficulty-in-training-RNN"><span class="nav-text">4.2 Difficulty in training RNN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-Helpful-Techniques-for-RNN"><span class="nav-text">4.3 Helpful Techniques for RNN</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-More-Applications"><span class="nav-text">5. More Applications</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Many-to-one"><span class="nav-text">5.1. Many to one</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-Many-to-Many"><span class="nav-text">5.2. Many to Many</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#5-2-1-Output-is-shorter-Speech-Recognition"><span class="nav-text">5.2.1. Output is shorter - Speech Recognition</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-2-2-No-limitation-Sequence-to-sequence-learning"><span class="nav-text">5.2.2. No limitation - Sequence to sequence learning</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-Attention-based-Model"><span class="nav-text">5.3. Attention - based Model</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -523,7 +669,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -569,7 +715,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">464k</span>
+    <span title="站点总字数">480k</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
