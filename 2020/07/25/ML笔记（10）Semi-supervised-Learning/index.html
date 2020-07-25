@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文主要介绍了Semi-supervised Learning（半监督学习）的概念，在用Generative model时如何使用Semi-supervised Learning，以及做Semi-supervised Learning时常用的两种假设：Low-density Separation Assumption和Smoothness Assumption。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML笔记（10）Semi-supervised Learning">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文主要介绍了Semi-supervised Learning（半监督学习）的概念，在用Generative model时如何使用Semi-supervised Learning，以及做Semi-supervised Learning时常用的两种假设：Low-density Separation Assumption和Smoothness Assumption。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725153847.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725153856.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725161724.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725153900.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725162916.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725162923.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725162930.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725162934.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725164031.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725164034.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725164039.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725164044.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725164047.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193926.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193934.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193938.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193942.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193945.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193949.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193953.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725193957.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725194000.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725194004.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725204624.png">
+<meta property="article:published_time" content="2020-07-25T07:31:35.000Z">
+<meta property="article:modified_time" content="2020-07-25T13:00:32.959Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Semi-supervised learning">
+<meta property="article:tag" content="Low-density separation assumption">
+<meta property="article:tag" content="Self-training">
+<meta property="article:tag" content="Entropy-based regularization">
+<meta property="article:tag" content="Smoothness assumption">
+<meta property="article:tag" content="Graph-based approach">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ%E5%9B%BE%E7%89%8720200725153847.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>ML笔记（10）Semi-supervised Learning | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ML笔记（10）Semi-supervised Learning
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-07-25 15:31:35 / 修改时间：21:00:32" itemprop="dateCreated datePublished" datetime="2020-07-25T15:31:35+08:00">2020-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <div class="post-description">本文主要介绍了Semi-supervised Learning（半监督学习）的概念，在用Generative model时如何使用Semi-supervised Learning，以及做Semi-supervised Learning时常用的两种假设：Low-density Separation Assumption和Smoothness Assumption。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>我们之间讲的Learning方法基本都是Supervised Learning（监督学习），这篇文章主要介绍<strong>Semi-supervised Learning（半监督学习）</strong>。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725153847.png" style="zoom: 80%;"></p>
+<p>Supervised Learning：$(x^r,\hat y^r)$$_{r=1}^R$</p>
+<ul>
+<li>training data中，每一组data都有input $x^r$和对应的output $y^r$</li>
+</ul>
+<p>Semi-supervised Learning：$\{(x^r,\hat y^r)\}_{r=1}^R$} + $\{x^u\}_{u=R}^{R+U}$ </p>
+<ul>
+<li><p>training data中，部分data没有标签，只有input $x^u$ </p>
+</li>
+<li><p>通常遇到的场景是，无标签的数据量远大于有标签的数据量，即<strong>U&gt;&gt;R</strong></p>
+</li>
+<li><p>semi-supervised learning分为以下两种情况：</p>
+<ul>
+<li><p><strong>Transductive Learning</strong>（直推学习）: unlabeled data is the testing data</p>
+<p>即把testing data当做无标签的training data使用，适用于事先已经知道testing data的情况(一些比赛的时候)</p>
+<p>值得注意的是，这种方法使用的仅仅是testing data的feature，而不是label，因此不会出现“直接对testing data做训练而产生cheating的效果”</p>
+</li>
+<li><p><strong>Inductive Learning</strong>（归纳学习）: unlabeled data is not the testing data</p>
+<p>即不把testing data的feature拿去给机器训练，适用于事先并不知道testing data的情况(更普遍的情况)</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>半监督学习的情况，训练集为$\mathcal{D}=\{\pmb{X_{tr}},\pmb{y_{tr}}\}$，测试集为$\pmb{X_{tr}}$，此时，$\pmb{X_{un}}$与 $\pmb{X_{te}}$都是未标记的，但我们测试的$\pmb{X_{te}}$在训练时没有见过，这种情况是 inductive semi-supervised learning。</p>
+<p>如果我们不管$\pmb{X_{te}}$的效果怎么样时，由于此时在训练的时候我们已经见过$\pmb{X_{un}}$（利用了$\pmb{X_{un}}$的特征信息)，这时就叫transductive semi-supervised learning。</p>
+<p>简单来说，transductive和inductive的区别在于我们想要预测的样本，是不是我们在训练的时候已经见（用）过的。</p>
+<p>通常transductive比inductive的效果要好，因为inductive需要从训练generalize到测试。</p>
+<p>（摘自知乎回答：<a href="https://www.zhihu.com/question/68275921/answer/529156908" target="_blank" rel="noopener">如何理解 inductive learning 与 transductive learning?</a>）</p>
+</blockquote>
+<ul>
+<li><p>为什么要做semi-supervised learning？</p>
+<p>用机器学习解决实际问题时，很多情况我们是不缺data的 ，只是缺有label的data，就像你可以拍很多照片，但它们一开始都是没有标签的，而给data加label是要花费很大成本的。</p>
+</li>
+</ul>
+<h3 id="1-Why-semi-supervised-learning-help？"><a href="#1-Why-semi-supervised-learning-help？" class="headerlink" title="1. Why semi-supervised learning help？"></a>1. Why semi-supervised learning help？</h3><p>那为什么semi-supervised learning会有帮助呢？<em>The distribution of the unlabeled data tell us something.</em> unlabeled data虽然只有input，但它的<strong>分布</strong>，却可以告诉我们一些事情。</p>
+<p>假设我们现在要做分类的task，建一个猫跟狗的classifier，我们同时有一大堆猫跟狗的图片。这些图片是没有label的，并不知道哪些是猫哪些是狗。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725153856.png" style="zoom:80%;"></p>
+<p>在只有labeled data的情况下，红线是二元分类的分界线。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725161724.png" style="zoom: 50%;"></p>
+<p>但当我们加入unlabeled data的时候，由于<strong>特征分布</strong>发生了变化，分界线也随之改变。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725153900.png" style="zoom: 80%;"></p>
+<p>semi-supervised learning的使用往往伴随着假设，而该假设的合理与否，决定了结果的好坏程度；比如上图中的unlabeled data，它显然是一只狗，而特征分布却与猫被划分在了一起，很可能是由于这两张图片的背景都是绿色导致的。</p>
+<h3 id="2-Semi-supervised-Learning-for-Generative-Model"><a href="#2-Semi-supervised-Learning-for-Generative-Model" class="headerlink" title="2. Semi-supervised Learning for Generative Model"></a>2. Semi-supervised Learning for Generative Model</h3><p>在监督学习中，我们已经讨论过概率生成模型了，假设class1和class2的分布分别为$mean_1=u^1,covariance_1=\Sigma$、$mean_2=u^2,covariance_2=\Sigma$的高斯分布，计算出Prior Probability后，再根据贝叶斯公式可以推得新生成的$x$所属的类别。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725162916.png" style="zoom:80%;"></p>
+<p>如果在原先的数据基础上加了unlabeled data(下图中绿色的点)，它就会影响最终的决定，你会发现原先的$u,\Sigma$显然是不合理的，新的$u,\Sigma$需要使得样本点的分布更接近下图虚线圆所标出的范围，除此之外，右侧的Prior Probability会给人一种比左侧大的感觉(右侧样本点”变多”了)。此时，unlabeled data对$P(C_1),P(C_2),u^1,u^2,\Sigma$都产生了一定程度的影响，划分两个class的decision boundary也会随之发生变化</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725162923.png" style="zoom:80%;"></p>
+<p>上面是比较直观的解释，接下来进行具体推导(假设做二元分类)：</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725162930.png" style="zoom:80%;"></p>
+<ul>
+<li><p>先随机初始化一组参数：$\theta=\{P(C_1),P(C_2),u^1,u^2,\Sigma\}$</p>
+</li>
+<li><p>step1：利用初始model计算每一笔unlabeled data $x^u$属于class 1的概率$P_{\theta}(C_1|x^u)$</p>
+</li>
+<li><p>step2：update model</p>
+<p>如果不考虑unlabeled data，则先验概率显然为属于class1的样本点数$N_1$/总的样本点数$N$，即$P(C_1)=\frac{N_1}{N}$</p>
+<p>而考虑unlabeled data时，分子还要加上所有unlabeled data属于class 1的概率和，此时它们被看作小数，可以理解为按照概率一部分属于$C_1$，一部分属于$C_2$</p>
+<script type="math/tex; mode=display">
+P(C_1)=\frac{N_1+\sum_{x^u}P(C_1|x^u)}{N}</script><p>同理，对于均值，原先的mean $u_1=\frac{1}{N_1}\sum\limits_{x^r\in C_1} x^r$加上根据概率对$x^u$求和再归一化的结果即可</p>
+<script type="math/tex; mode=display">
+u_1=\frac{1}{N_1}\sum\limits_{x^r\in C_1} x^r+\frac{1}{\sum_{x^u}P(C_1|x^u)}\sum\limits_{x^u}P(C_1|x^u)x^u</script><p>剩余的参数同理，接下来就有了一组新的参数$\theta’$，于是回到step1-&gt;step2-&gt;step1循环</p>
+</li>
+<li><p>理论上该方法保证是可以收敛的，而一开始给$\theta$的初始值会影响收敛的结果，类似gradient descent。</p>
+</li>
+</ul>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725162934.png" style="zoom:80%;"></p>
+<p>以上的推导基于的基本思想是，把unlabeled data $x^u$看成是可以划分的，一部分属于$C_1$，一部分属于$C_2$，此时它的概率$P_{\theta}(x^u)=P_{\theta}(x^u|C_1)P(C_1)+P_{\theta}(x^u|C_2)P(C_2)$，也就是$C_1$的先验概率乘上$C_1$这个class产生$x^u$的概率+$C_2$的先验概率乘上$C_2$这个class产生$x^u$的概率。</p>
+<p>实际上我们在利用极大似然函数更新参数的时候，就利用了该拆分的结果：</p>
+<script type="math/tex; mode=display">
+logL(\theta)=\sum\limits_{x^r} logP_{\theta}(x^r)+\sum\limits_{x^u}logP_{\theta}(x^u)</script><h3 id="3-Low-density-Separation-Assumption"><a href="#3-Low-density-Separation-Assumption" class="headerlink" title="3. Low-density Separation Assumption"></a>3. Low-density Separation Assumption</h3><p>接下来介绍一种新的方法，它基于的假设是<strong>Low-density separation</strong>。通俗来讲，Low-density separation把这个世界看作是“非黑即白的”，在两个class的交界处data的密度(density)是很低的，它们之间会有一道明显的鸿沟，此时unlabeled data(下图绿色的点)就是帮助你在原本正确的基础上挑一条更好的boundary。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725164031.png" style="zoom:80%;"></p>
+<h4 id="3-1-Self-training"><a href="#3-1-Self-training" class="headerlink" title="3.1. Self-training"></a>3.1. Self-training</h4><p>low-density separation最具代表性也最简单的方法是<strong>self training</strong>，大致的流程是：</p>
+<ul>
+<li>先从labeled data去训练一个model $f^*$，训练方式没有限制；</li>
+<li>然后用该$f^<em>$去对unlabeled data打上label，$y^u=f^</em>(x^u)$，也叫作pseudo label（伪标签）；</li>
+<li>从unlabeled data中拿出一些data加到labeled data里，至于data的选取需要你自己设计算法来挑选；</li>
+<li>回头再去训练$f^*$，循环即可。</li>
+</ul>
+<p>注：<strong>low-density separation对Regression是不适用的</strong>。Regression是output一个数值，那用$f^<em>$给unlabeled data打上label后，再取一部分加到原来的data里，对model $f^</em>$是不会产生影响的，这部分新的data的Loss是0 。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725164034.png" style="zoom:80%;"></p>
+<p>实际上，该方法与之前提到的generative model还是挺像的，区别在于：</p>
+<ul>
+<li>Self Training使用的是hard label：假设一笔data就是属于某一个class；</li>
+<li>Generative Model使用的是soft label：假设一笔data可以按照概率划分，有多少几率属于class 1，有多少几率属于class 2等等。</li>
+</ul>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725164039.png" style="zoom:80%;"></p>
+<p>如果我们使用的是neural network的做法，$\theta^<em>$是从labeled data中得到的一组参数，此时丢进来一个unlabeled data $x^u$，通过$f^</em>_{\theta^*}()$后得到$\left [\begin{matrix} 0.7\\ 0.3 \end{matrix}\right ]$，即它有0.7的概率属于class 1，0.3的概率属于class 2</p>
+<ul>
+<li>如果此时使用hard label，则$x^u$的label被转化成$\left [\begin{matrix}1\\ 0 \end{matrix}\right ]$</li>
+<li>如果此时使用soft label，则$x^u$的label依旧是$\left [\begin{matrix} 0.7\\ 0.3 \end{matrix}\right ]$</li>
+</ul>
+<p>可以看到，<strong>在neural network里使用soft label是没有用的</strong>，如上面的例子中，unlabeled data $x^u$输入model得到的output是$\left [\begin{matrix} 0.7\\ 0.3 \end{matrix}\right ]$，那我们给$x^u$设的target（或者说给$x^u$新加的label）就是$\left [\begin{matrix} 0.7\\ 0.3 \end{matrix}\right ]$，那下次update model的时候，$x^u$的Loss就是0了，对参数$\theta^*$的更新毫无贡献；而如果我们用hard label，unlabeled data $x^u$输入model得到的output是$\left [\begin{matrix} 0.7\\ 0.3 \end{matrix}\right ]$，那我们给$x^u$设的target就是$\left [\begin{matrix} 1\\ 0 \end{matrix}\right ]$，那下次update model的时候，$x^u$的Loss即不为0，对参数更新是有贡献的。实际上low density separation就是通过强制分类来提升分类效果的方法。</p>
+<h4 id="3-2-Entropy-based-Regularization"><a href="#3-2-Entropy-based-Regularization" class="headerlink" title="3.2. Entropy-based Regularization"></a>3.2. Entropy-based Regularization</h4><p>Entropy-based Regularization是low-density separation的进阶版，你可能会觉得hard label这种直接强制性打标签的方式有些太武断了，你如果用neural network，得到的output是一个distribution，我们用hard label去限制这个output一定是class 1或者class 2，但是我们之前做了Low-density separation的假设，即希望得到的distribution是很集中的，比如distribution集中在class 1，而在其他class上很小。</p>
+<p>由于我们不知道unlabeled data $x^u$的label到底是什么，但如果通过entropy-based regularization得到的分布集中在某个class上的话，那这个model就是好的，而如果分布是比较分散的，那这个model就是不好的，那如何去评价我们得到的distribution是好还是坏呢，就可以用到Entropy-based regularization。                </p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725164044.png" style="zoom: 80%;"></p>
+<p>接下来的问题是，如何用数值的方法来evaluate distribution的集中(好坏)与否，要用到的方法叫entropy，一个distribution的entropy可以告诉你它的集中程度。输入unlabeled data $x^u$得到的output $y^u=f^<em>_{\theta^</em>}(x^u)$，其中$y^u$是一个<strong>概率分布(distribution)</strong>，那Entropy of $y^u$为：</p>
+<script type="math/tex; mode=display">
+E(y^u)=-\sum\limits_{m=1}^5 y_m^u ln(y_m^u)</script><p>对上图中的第1、2种情况，算出的$E(y^u)=0$，而第3种情况，算出的$E(y^u)=-ln(\frac{1}{5})=ln(5)$，可见<strong>entropy越大，distribution就越分散，entropy越小，distribution就越集中</strong>。</p>
+<p>我们的目标是在labeled data上分类要正确，在unlabeled data上，output的entropy要越小越好，此时就要修改loss function。</p>
+<ul>
+<li><p>对labeled data来说，它的output要跟正确的label越接近越好，用cross entropy表示如下：</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_{x^r} C(y^r,\hat y^r)</script></li>
+<li><p>对unlabeled data来说，要使得该distribution(也就是output)的entropy越小越好：</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_{x^u} E(y^u)</script></li>
+<li><p>两项综合起来，可以用weight来加权，以决定哪个部分更为重要一些</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_{x^r} C(y^r,\hat y^r) + \lambda \sum\limits_{x^u} E(y^u)</script></li>
+</ul>
+<p>可以发现该式长得很像之前讲过的L1/L2 Regularization，这也就是entropy-based regularization的名称由来。</p>
+<h4 id="3-3-Semi-supervised-SVM"><a href="#3-3-Semi-supervised-SVM" class="headerlink" title="3.3. Semi-supervised SVM"></a>3.3. Semi-supervised SVM</h4><p>另一个很著名的半监督学习的方法是Semi-supervised SVM。（SVM在之后的课程才会讲到，这里先做一下简单的介绍）SVM要做的是，给你两个class的data，去找一个boundary：</p>
+<ul>
+<li>要有最大的margin，让这两个class分的越开越好</li>
+<li>要有最小的分类错误</li>
+</ul>
+<p>对unlabeled data穷举所有可能的label，如下图中列举了三种可能的情况；然后对每一种可能的结果都去算SVM，再找出可以让margin最大，同时又minimize error的那种情况，如下图中用黑色方框标注的情况。</p>
+<blockquote>
+<p>SVM的基本想法是极大化划分超平面与两类样例之间的最小距离，即所谓的“Margin”，以增强算法的鲁棒性。</p>
+<p>（摘自<a href="http://blog.zheng-xie.com/2016/07/21/large-margin-distribution-learning/" target="_blank" rel="noopener">机器学习中的“Margin”</a>）</p>
+</blockquote>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725164047.png" style="zoom:80%;"></p>
+<blockquote>
+<p>SVM paper：<a href="https://www.cs.cornell.edu/people/tj/publications/joachims_99c.pdf" target="_blank" rel="noopener">Thorsten Joachims, ”<em>Transductive</em> <em>Inference for Text Classification using Support Vector Machines”,</em> ICML, 1999</a></p>
+</blockquote>
+<p>当然这么做会存在一个问题，对于n笔unlabeled data，意味着即使在二元分类里也有$2^n$种可能的情况，数据量大的时候，几乎难以穷举完毕，上面给出的paper提出了一种approximate的方法，基本精神是：一开始你先得到一些label，然后每次改一笔unlabeled data的label，看看可不可以让你的objective function变大，如果变大就去改变该label。</p>
+<h3 id="3-Smoothness-Assumption"><a href="#3-Smoothness-Assumption" class="headerlink" title="3. Smoothness Assumption"></a>3. Smoothness Assumption</h3><p>smoothness assumption的思想可以理解是：“近朱者赤，近墨者黑”，即使相似的$x$具有相同的$\hat y$，精确的定义是：</p>
+<ul>
+<li><p>x的分布是不平均的；</p>
+</li>
+<li><p>如果$x^1$和$x^2$在一个high density region上很接近的话，那么$\hat y^1$和$\hat y^2$就是相同的，也就是这两个点可以在样本点高密度集中分布的区域块中有一条可连接的路径，即 connected by a high density path。</p>
+</li>
+</ul>
+<p>假设下图是data的分布，$x^1,x^2,x^3$是其中的三笔data，如果单纯地看$x$的相似度，显然$x^2$和$x^3$更接近一些，但对于smoothness assumption来说，$x^1$和$x^2$是处于同一块区域的，它们之间可以有一条相连的路径；而$x^2$与$x^3$之间则是“断开”的，没有high density path，因此$x^1$与$x^2$更“像”。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193926.png" style="zoom: 67%;"></p>
+<p>以手写数字识别为例，对于最右侧的2和3以及最左侧的2，显然最右侧的2和3在pixel上相似度更高一些；但如果把所有连续变化的2都放进来，就会产生一种“不直接相连的相似”，根据Smoothness Assumption的理论，由于2之间有连续过渡的形态，因此第一个2和最后一个2是比较像的，而最右侧2和3之间由于没有过渡的data，因此它们是比较不像的；人脸识别的两个侧面的过渡也同理。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193934.png" style="zoom:67%;"></p>
+<p>Smoothness Assumption在<strong>file classification（文件分类）</strong>上是非常有用的，假设对天文学(astronomy)和旅行(travel)的文章进行分类，它们各自有专属的词汇，此时如果unlabeled data与label data的词汇是相同或重合(overlap)的，那么就很容易分类；但在真实的情况下，unlabeled data和labeled data之间可能没有任何重复的words，因为世界上的词汇太多了，sparse的分布很难会使overlap发生。但如果收集到的unlabeled data足够多，就会以一种相似传递的形式，比如下图中$d_1$和$d_5$像，$d_5$和$d_6$像，$d_6$和$d_7$像，会propagation起来，建立起文档之间相似的桥梁。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193938.png" style="zoom:67%;"></p>
+<p><strong>cluster and then label</strong></p>
+<p>在具体实现上，有一种简单的方法是cluster and then label，也就是先把data分成几个cluster，划分class之后再拿去训练，但这种方法不一定会得到好的结果，因为它的假设是你可以把同一个class的样本点cluster在一起，而这其实是没那么容易的。</p>
+<p>对图像分类来说，如果单纯用pixel的相似度来划分cluster，得到的结果一般都会很差，你需要设计一个很好的方法来描述image(类似Deep Autoencoder的方式来提取feature)，这样cluster才会有效果。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193942.png" style="zoom:67%;"></p>
+<p><strong>Graph-based Approach</strong></p>
+<p>之前讲的是比较直觉的做法，接下来引入Graph Structure来表达connected by a high density path这件事。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193945.png" style="zoom:67%;"></p>
+<p>我们把所有的data points都建成一个graph，有时候建立vertex（顶点）之间的关系是比较容易的，比如网页之间的链接关系、论文之间的引用关系；但有时候需要你自己去寻找vertex之间的关系。Graph的好坏，对结果起着至关重要的影响，而如何build graph却是一件heuristic（启发式的，探索的）的事情，需要凭着经验和直觉来做。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193949.png" style="zoom:67%;"></p>
+<ul>
+<li><p>首先定义两个object $x^i,x^j$之间的相似度 $s(x^i, x^j)$</p>
+<p>如果是基于pixel的相似度，performance可能会不太好；建议使用autoencoder提取出来的feature来计算相似度，得到的performance会好一些</p>
+</li>
+<li><p>算完相似度后，就可以建graph了，方式有很多种：</p>
+<ul>
+<li>k nearest neighbor：假设k=3，则每个point与相似度最接近的3个点相连</li>
+<li>e-neighborhood：每个point与相似度超过某个特定threshold $e$的点相连</li>
+</ul>
+</li>
+<li><p>除此之外，还可以给Edge特定的weight，让它与要连接起来的两个data point的相似度$s(x^i,x^j)$成正比</p>
+<ul>
+<li><p>建议用RBM function来确定相似度：$s(x^i,x^j)=\exp(-\gamma||x^i-x^j||^2 )$</p>
+<p>这里$x^i,x^j$均为vector，计算它们的Euclidean Distance(欧几里得距离)，加上参数后再取exponential</p>
+</li>
+<li><p>至于加exponential，经验上来说通常是可以帮助提升performance的，在这里只有当$x^i,x^j$非常接近的时候，singularity才会大；只要距离稍微远一点，singularity就会下降得很快，变得很小</p>
+</li>
+<li><p>使用exponential的RBM function可以做到只有非常近的两个点才能相连，稍微远一点就无法相连的效果，避免了下图中跨区域相连的情况</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>graph-based approach的基本思想是，在graph上已经有一些labeled data，那么跟它们相连的point，属于同一类的概率就会上升，每一笔data都会去影响它的邻居，而graph带来的最重要的好处是，这个影响是会随着edges<strong>传递</strong>出去的，即使有些点并没有真的跟labeled data相连，也可以被传递到相应的属性。</p>
+<p>比如下图中，如果graph建的足够好，那么从两个被分别label为蓝色和红色的点就可以传递出两张完整的图；从中我们也可以看出，如果想要让这种方法生效，收集到的data一定要足够多，否则可能传递到一半，graph就断掉了，information的传递就失效了。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193953.png" style="zoom:67%;"></p>
+<p>介绍完了如何定性使用graph，接下来介绍一下如何定量使用graph。定量的使用方式是定义label的smoothness，<strong>我们期望smooth的值越小越好</strong>。下图中，edge上的数字是weight，$x^i$表达data，$y^i$表示data的label，计算smoothness的方式为：</p>
+<script type="math/tex; mode=display">
+S=\frac{1}{2}\sum\limits_{i,j} w_{i,j}(y^i-y^j)^2</script><p>比如计算下面两个graph的smoothness：</p>
+<script type="math/tex; mode=display">
+\begin{split}
+S_1 &=\frac{1}{2}\left[w_{1,2}(y^1-y^2)^2 +w_{1,3}(y^1-y^3)^2+ w_{2,3}(y^2-y^3)^2+w_{3,4}(y^3-y^4)^2\right]\\
+&=\frac{1}{2}\left[2*(1-1)^2 +3*(1-1)^2+ 1*(1-1)^2+1*(1-0)^2\right]=0.5\\
+S_2&=\frac{1}{2}\left[2*(0-1)^2 +3*(0-1)^2+ 1*(1-1)^2+1*(1-0)^2\right]=3\\
+\end{split}</script><p>则有$S_1&lt;S_2$，那么左边的graph比右边的graph要更smooth。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725193957.png" style="zoom:67%;"></p>
+<p>当然上面的式子还可以化简，如果把labeled data和unlabeled data的y组成一个(R+U)-dim vector，即</p>
+<script type="math/tex; mode=display">
+y=\left [\begin{matrix} 
+...y^i...y^j
+\end{matrix} \right ]^T</script><p>于是smooth可以改写为：</p>
+<script type="math/tex; mode=display">
+S=\frac{1}{2}\sum\limits_{i,j} w_{i,j}(y^i-y^j)^2=y^TLy</script><p>其中L为(R+U)×(R+U) matrix，成为<strong>Graph Laplacian</strong>， 定义为$L=D-W$</p>
+<ul>
+<li>$W$：把data point两两之间weight的关系建成matrix，代表了$x^i$与$x^j$之间的weight值</li>
+<li>$D$：把$W$的每一个row上的值加起来放在该行对应的diagonal上即可，比如5=2+3,3=2+1,…</li>
+</ul>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725194000.png" style="zoom:67%;"></p>
+<p>对$S=y^TLy$来说，$y$是label，是neural network的output，取决于neural network的parameters，因此要在原来仅针对labeled data的loss function中加上这一项，得到：</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_{x^r}C(y^r,\hat y^r) + \lambda S</script><p>其中的$\lambda S$实际上也是一个regularization term。那现在我们的训练目标是：</p>
+<ul>
+<li>labeled data的cross entropy越小越好(neural network的output跟真正的label越接近越好)</li>
+<li>smooth S越小越好(neural network的output，不管是labeled还是unlabeled，都要符合Smoothness Assumption的假设)</li>
+</ul>
+<p>具体训练的时候，不一定只局限于neural network的output要smooth，可以对中间任意一个hidden layer加上smooth的限制，也可以使每一个hidden layer的output都是smooth。</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725194004.png" style="zoom:67%;"></p>
+<h3 id="4-Better-Representation"><a href="#4-Better-Representation" class="headerlink" title="4. Better Representation"></a>4. Better Representation</h3><p>Better Representation的思想可以理解是“去芜存菁，化繁为简”。（我们观察到的世界是比较复杂的，而在它的背后其实是有一些比较简单的东西，在操控着这个复杂的世界，所以只要你能够看透这个世界的假象，直指它的核心的话，就可以让training变得比较容易）举一个例子，在神雕侠侣中，杨过要在三招之内剪掉樊一翁的胡子，虽然胡子的变化是比较复杂的，但头的变化是有限的，杨过看透了这一件事情就可以把胡子剪掉。在这个例子中，樊一翁的胡子就是original representation，而他的头就是你要找的better representation。（李老师真是太博学了Σ(っ°Д°;)っ）</p>
+<p><img src="/2020/07/25/ML%E7%AC%94%E8%AE%B0%EF%BC%8810%EF%BC%89Semi-supervised-Learning/QQ图片20200725204624.png" style="zoom:67%;"></p>
+<p>算法具体思路和内容将在下一次的笔记Unsupervised Learning-Principal Component Analysis (PCA)中介绍。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Semi-supervised-learning/" rel="tag"># Semi-supervised learning</a>
+              <a href="/tags/Low-density-separation-assumption/" rel="tag"># Low-density separation assumption</a>
+              <a href="/tags/Self-training/" rel="tag"># Self-training</a>
+              <a href="/tags/Entropy-based-regularization/" rel="tag"># Entropy-based regularization</a>
+              <a href="/tags/Smoothness-assumption/" rel="tag"># Smoothness assumption</a>
+              <a href="/tags/Graph-based-approach/" rel="tag"># Graph-based approach</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/20/ML%E7%AC%94%E8%AE%B0%EF%BC%889%EF%BC%89Recurrent-Neural-Network-RNN/" rel="prev" title="ML笔记（9）Recurrent Neural Network(RNN)">
+      <i class="fa fa-chevron-left"></i> ML笔记（9）Recurrent Neural Network(RNN)
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Why-semi-supervised-learning-help？"><span class="nav-text">1. Why semi-supervised learning help？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Semi-supervised-Learning-for-Generative-Model"><span class="nav-text">2. Semi-supervised Learning for Generative Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Low-density-Separation-Assumption"><span class="nav-text">3. Low-density Separation Assumption</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Self-training"><span class="nav-text">3.1. Self-training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Entropy-based-Regularization"><span class="nav-text">3.2. Entropy-based Regularization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Semi-supervised-SVM"><span class="nav-text">3.3. Semi-supervised SVM</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Smoothness-Assumption"><span class="nav-text">3. Smoothness Assumption</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Better-Representation"><span class="nav-text">4. Better Representation</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">36</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">490k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
