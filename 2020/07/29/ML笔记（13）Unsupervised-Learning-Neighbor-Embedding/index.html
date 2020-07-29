@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文介绍了一些非线性降维算法，包括LLE(Locally Linear Embedding，局部线性嵌入)、Laplacian Eigenmaps(拉普拉斯特征映射)和t-SNE(T-distributed Stochastic Neighbor Embedding，t分布随机邻居嵌入t-SNE)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML笔记（13）Unsupervised Learning-Neighbor Embedding">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8813%EF%BC%89Unsupervised-Learning-Neighbor-Embedding/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="本文介绍了一些非线性降维算法，包括LLE(Locally Linear Embedding，局部线性嵌入)、Laplacian Eigenmaps(拉普拉斯特征映射)和t-SNE(T-distributed Stochastic Neighbor Embedding，t分布随机邻居嵌入t-SNE)。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085418.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085428.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085432.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085435.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085438.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085442.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085450.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085455.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085459.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085502.png">
+<meta property="article:published_time" content="2020-07-29T00:35:26.000Z">
+<meta property="article:modified_time" content="2020-07-29T02:24:23.405Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Manifold Learning">
+<meta property="article:tag" content="LLE(Locally Linear Embedding)">
+<meta property="article:tag" content="Laplacian Eigenmaps">
+<meta property="article:tag" content="t-SNE">
+<meta property="article:tag" content="KL Divergence">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200729085418.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8813%EF%BC%89Unsupervised-Learning-Neighbor-Embedding/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>ML笔记（13）Unsupervised Learning-Neighbor Embedding | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8813%EF%BC%89Unsupervised-Learning-Neighbor-Embedding/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ML笔记（13）Unsupervised Learning-Neighbor Embedding
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-07-29 08:35:26 / 修改时间：10:24:23" itemprop="dateCreated datePublished" datetime="2020-07-29T08:35:26+08:00">2020-07-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <div class="post-description">本文介绍了一些非线性降维算法，包括LLE(Locally Linear Embedding，局部线性嵌入)、Laplacian Eigenmaps(拉普拉斯特征映射)和t-SNE(T-distributed Stochastic Neighbor Embedding，t分布随机邻居嵌入t-SNE)。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1-Manifold-Learning"><a href="#1-Manifold-Learning" class="headerlink" title="1.Manifold Learning"></a>1.Manifold Learning</h3><p>之前的两篇笔记中介绍了PCA和Word Embedding，它们都是线性降维的方法，本文要介绍的Neighbor Embedding是非线性降维的方法，它用的是降维之前每一个data point与它的“邻居”之间的关系来做降维，这种方法也叫作<strong>Manifold Learning（流行学习）</strong>，简单地可以理解为是高维空间中的低维空间。</p>
+<p>样本点的分布可能是在高维空间里的一个流行(Manifold)，也就是说，样本点其实是分布在低维空间里面，只是被“扭曲”地塞到了一个高维空间里。比如地球的表面就是一个流行(Manifold)，它是一个二维的平面，但是被塞到了一个三维空间里。</p>
+<p>在Manifold中，只有对距离很近用欧式距离判断其相似程度才会成立，如而在下图的S型曲面中，当点的距离比较远时，用欧氏距离是无法判断两个样本点的相似程度的。而Manifold Learning要做的就是把这个S型曲面降维展开，把塞在高维空间里的低维空间摊平，此时使用欧氏距离就可以描述样本点之间的相似程度，这会对接下来要做的cluster或者supervised learning都会有帮助的。类似的方法有很多，接下来简单介绍几种方法，最后介绍一下t-SNE。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085418.png" style="zoom: 50%;"></p>
+<h3 id="2-Locally-Linear-Embedding"><a href="#2-Locally-Linear-Embedding" class="headerlink" title="2. Locally Linear Embedding"></a>2. Locally Linear Embedding</h3><p><strong>LLE（locally linear embedding，局部线性嵌入）</strong>的基本思想是：假设在原来的空间中，样本点的分布如下所示，我们关注$x^i$和它的邻居$x^j$，用$w_{ij}$来描述$x_i$和$x_j$的关系。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085428.png" style="zoom:50%;"></p>
+<p>假设每一个样本点$x^i$都是可以用它的neighbor做linear combination组合而成，那$w_{ij}$就是拿$x^j$去组合$x^i$时的权重weight，因此找点与点的关系$w_{ij}$这个问题就转换成，找一组使得所有样本点与周围点线性组合的差距能够最小的参数$w_{ij}$：</p>
+<script type="math/tex; mode=display">
+\sum\limits_i||x^i-\sum\limits_j w_{ij}x^j ||_2</script><p>接下来就要做Dimension Reduction，把$x^i$和$x^j$降维到$z^i$和$z^j$，并且保持降维前后两个点之间的关系$w_{ij}$是不变的。这就像是白居易的诗《长恨歌》中写到的“在天愿做比翼鸟，在地愿做连理枝”。</p>
+<p>LLE的具体做法如下：</p>
+<ul>
+<li><p>在原先的高维空间中找到$x^i$和$x^j$之间的关系$w_{ij}$以后就把它固定住</p>
+</li>
+<li><p>使$x^i$和$x^j$降维到新的低维空间上的$z^i$和$z^j$</p>
+</li>
+<li><p>$z^i$和$z^j$需要minimize下面的式子：</p>
+<script type="math/tex; mode=display">
+\sum\limits_i||z^i-\sum\limits_j w_{ij}z^j ||_2</script></li>
+<li><p>即在原本的空间里，$x^i$可以由周围点通过参数$w_{ij}$进行线性组合得到，则要求在降维后的空间里，$z^i$也可以用同样的线性组合得到</p>
+</li>
+</ul>
+<p>实际上，LLE并没有给出明确的降维函数，它没有明确地告诉我们怎么从$x^i$降维到$z^i$，只是给出了降维前后的约束条。<strong>在实际应用LLE的时候，对$x^i$来说，需要选择合适的邻居点数目K才会得到好的结果</strong>。用LLE或者其他类似的方法有一个好处就是，比如原来你不知道$x^i$、$x^j$，只知道$w_{i,j}$，那你也可用LLE来降维。</p>
+<p>下图给出了原始paper中的实验结果，K太小或太大得到的结果都不太好，注意到在原先的空间里，只有距离很近的点之间的关系需要被保持住，如果K选的很大，就会选中一些由于空间扭曲才导致距离接近的点，而这些点的关系我们并不希望在降维后还能被保留。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085432.png" style="zoom:50%;"></p>
+<h3 id="3-Laplacian-Eigenmaps"><a href="#3-Laplacian-Eigenmaps" class="headerlink" title="3. Laplacian Eigenmaps"></a>3. Laplacian Eigenmaps</h3><p>另一种方法叫<strong>Laplacian Eigenmaps（拉普拉斯特征映射）</strong>。之前在讲semi-supervised learning有提到smoothness assumption，即我们仅知道两点之间的欧氏距离是不够的，还需要观察两个点在high density区域下的距离。如果两个点在high density的区域里比较近，那才算是真正的接近。我们可以依据某些规则把样本点建立graph，那么smoothness的距离就可以使用graph中连接两个点路径上的edges数来近似。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085435.png" style="zoom:50%;"></p>
+<p>简单回顾一下在semi-supervised：如果两个点$x^1$和$x^2$在高密度区域上是相近的，那它们的label $y^1$和$y^2$很有可能是一样的</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_{x^r} C(y^r,\hat y^r) + \lambda S\\
+S=\frac{1}{2}\sum\limits_{i,j} w_{i,j}(y^i-y^j)^2=y^TLy</script><p>其中$C(y^r,\hat y^r)$表示labeled data项，$\lambda S$表示unlabeled data项，它就像是一个regularization term，用于判断我们当前得到的label是否是smooth的。</p>
+<p>其中如果点$x^i$与$x^j$是相连的，则$w_{i,j}$等于相似度，否则为0，$S$的表达式希望在$x^i$与$x^j$很接近的情况下，相似度$w_{i,j}$很大，而label差距$|y^i-y^j|$越小越好，同时也是对label平滑度的一个衡量</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085438.png" style="zoom: 50%;"></p>
+<p>降维的基本原则：如果$x^i$和$x^j$在high density区域上是相近的，即相似度$w_{i,j}$很大，则降维后的$z^i$和$z^j$也需要很接近，总体来说就是让下面的式子尽可能小：</p>
+<script type="math/tex; mode=display">
+S=\frac{1}{2}\sum\limits_{i,j} w_{i,j}(y^i-y^j)^2</script><p>注意，与LLE不同的是，这里的$w_{i,j}$表示$x^i$与$x^j$这两点的相似度，上式也可以写成$S=\sum\limits_{i,j} w_{i,j} ||z^i-z^j||_2$</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085442.png" style="zoom:50%;"></p>
+<p>（paper：<a href="http://web.cse.ohio-state.edu/~belkin.8/papers/LEM_NIPS_01.pdf" target="_blank" rel="noopener"><em>Belkin, M., Niyogi, P. Laplacian eigenmaps and spectral techniques for embedding and clustering. Advances in neural information processing systems . 2002</em></a>）</p>
+<p>但光有上面这个式子是不够的，假如令所有的z相等，比如令$z^i=z^j=0$，那上式就会直接停止更新。在semi-supervised中，如果所有label $z^i$都设成一样，会使得supervised部分的$\sum\limits_{x^r} C(y^r,\hat y^r)$变得很大，因此lost就会很大，但在这里少了supervised的约束，因此我们<strong>需要给$z$一些额外的约束</strong>：</p>
+<ul>
+<li>假设降维后$z$所处的空间为$M$维，则$Span \{z^1,z^2,…,z^N\}=R^M$，我们希望降维后的$z$占据整个$M$维的空间，而不希望它展开后在一个比$M$更低维的空间里</li>
+<li>最终解出来的$z$其实就是Graph Laplacian $L$比较小的特征值所对应的特征向量。</li>
+</ul>
+<p>这也是Laplacian Eigenmaps名称的由来，我们找的$z$就是Laplacian matrix的特征向量。如果通过拉普拉斯特征映射找到$z$之后再对其利用K-means做聚类，就叫做<strong>谱聚类(spectral clustering)</strong>。</p>
+<h3 id="4-t-SNE"><a href="#4-t-SNE" class="headerlink" title="4. t-SNE"></a>4. t-SNE</h3><p>t-SNE（T-distributed Stochastic Neighbor Embedding，t分布随机邻居嵌入）</p>
+<p>前面的方法有一个缺点就是，<strong>只假设了相邻的点要接近，却没有假设不相近的点要分开</strong>，所以在MNIST使用LLE会遇到下图的情形，它确实会把同一个class的点都聚集在一起，却没有办法避免不同class的点重叠在一个区域，这就会导致依旧无法区分不同class的现象。COIL-20数据集包含了同一张图片进行旋转之后的不同形态，对其使用LLE降维后得到的结果是，同一个圆圈代表同张图像旋转的不同姿态，但许多圆圈之间存在重叠</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085450.png" style="zoom:80%;"></p>
+<p>做t-SNE同样要降维，在原来$x$的分布空间上，我们需要计算所有$x^i$与$x^j$之间的相似度$S(x^i,x^j)$，然后需要将其做归一化：$P(x^j|x^i)=\frac{S(x^i,x^j)}{\sum_{k\ne i}S(x^i,x^k)}$，即$x^j$与$x^i$的相似度（similarity）占 除了$x^j$之外所有的点与$x^i$的simiarity之和的比例。将$x$降维到$z$，同样可以计算相似度$S’(z^i,z^j)$，并做归一化：$Q(z^j|z^i)=\frac{S’(z^i,z^j)}{\sum_{k\ne i}S’(z^i,z^k)}$。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085455.png" style="zoom:80%;"></p>
+<p>注意，这里的归一化是有必要的，因为我们无法判断在$x$和$z$所在的空间里，$S(x^i,x^j)$与$S’(z^i,z^j)$的scale是否是一致的，需要将其映射到一个统一的概率区间，即(0,1)。</p>
+<p>我们<strong>希望找到的投影空间$z$，可以让$P(x^j|x^i)$和$Q(z^j|z^i)$的分布越接近越好</strong>。用于<strong>衡量两个分布之间相似度的方法就是**</strong>KL散度(KL divergence)**，我们的目标就是让$L$越小越好，解法可以用Gradient Descent：</p>
+<script type="math/tex; mode=display">
+L=\sum\limits_i KL(P(*|x^i)||Q(*|z^i))\\
+=\sum\limits_i \sum\limits_jP(x^j|x^i)log \frac{P(x^j|x^i)}{Q(z^j|z^i)}</script><p>（<strong>KL Divergence</strong></p>
+<p>这里简单补充一下KL散度的基本知识。KL 散度，最早是从信息论里演化而来的，所以在介绍 KL 散度之前，我们要先介绍一下信息熵，信息熵的定义如下：</p>
+<script type="math/tex; mode=display">
+H=-\sum\limits_{i=1}^N p(x_i)\cdot log\ p(x_i)</script><p>其中$p(x_i)$表示事件$x_i$发生的概率，信息熵其实反映的就是要表示一个概率分布所需要的平均信息量</p>
+<p>在信息熵的基础上，我们定义KL散度为：</p>
+<script type="math/tex; mode=display">
+D_{KL}(p||q)=\sum\limits_{i=1}^N p(x_i)\cdot (log\ p(x_i)-log\ q(x_i))\\
+=\sum\limits_{i=1}^N p(x_i)\cdot log\frac{p(x_i)}{q(x_i)}</script><p>$D_{KL}(p||q)$表示的就是概率$q$与概率$p$之间的差异，很显然，KL散度越小，说明概率$q$与概率$p$之间越接近，那么预测的概率分布与真实的概率分布也就越接近。）</p>
+<h5 id><a href="#" class="headerlink" title=" "></a> </h5><p>t-SNE会计算所有样本点之间的相似度，运算量会比较大，当数据量大的时候跑起来效率会比较低。常见的做法是对原先的空间用类似PCA的方法先做一次降维，然后用t-SNE对这个简单降维空间再做一次更深层次的降维，以期减少运算量。</p>
+<p>值得注意的是，t-SNE的式子无法对新的样本点进行处理，一旦出现新的$x^i$，就需要重新跑一遍该算法，所以<strong>t-SNE通常不是用来训练模型的，它更适合用于做基于固定数据的可视化</strong>。t-SNE常用于将固定的高维数据可视化到二维平面上。</p>
+<p><strong>t-SNE Similarity Measure</strong></p>
+<p>t-SNE中对如何计算similarity的选择是非常的“神妙的，如果根据欧氏距离计算降维前的相似度，往往采用<strong>RBF function</strong> $S(x^i,x^j)=\exp (-||x^i-x^j||_2)$，这个表达式的好处是，只要两个样本点的欧氏距离稍微大一些，相似度就会下降得很快</p>
+<p>在t-SNE之前有一种叫做SNE的方法，它在降维后的新空间采用与上述相同的相似度算法$S’(z^i,z^j)=e^{-||z^i-z^j||_2}$。而t-SNE的“神妙”之处在于，它在降维后的新空间所采取的相似度算法是与之前不同的，它选取了<strong>t-distribution</strong>中的一种，即$S’(z^i,z^j)=\frac{1}{1+||z^i-z^j||_2}$。</p>
+<p>以下图为例，假设横轴代表了在原先$x$空间上的欧氏距离或者做降维之后在$z$空间上的欧氏距离，红线代表RBF function，是降维前的分布；蓝线代表了t-distribution，是降维后的分布</p>
+<p>你会发现，降维前后相似度从RBF function到t-distribution：</p>
+<ul>
+<li>如果原先在高维空间中两个点距离($\Delta x$)比较近，则降维转换之后，它们的相似度($\Delta y$)依旧是比较接近的</li>
+<li>如果原先在高维空间中两个点距离($\Delta x$)比较远，则降维转换之后，它们的相似度($\Delta y$)会被拉得更远</li>
+</ul>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085459.png" style="zoom:80%;"></p>
+<p>也就是说t-SNE可以聚集相似的样本点，同时还会放大不同类别之间的距离，从而使得不同类别之间的分界线非常明显，特别适用于可视化，下图则是对MNIST和COIL-20先做PCA降维，再做t-SNE降维可视化的结果：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200729085502.png" style="zoom:80%;"></p>
+<p><strong>Conclusion</strong></p>
+<p>小结一下，本文主要介绍了三种非线性降维的算法：</p>
+<ul>
+<li>LLE(Locally Linear Embedding)，局部线性嵌入算法，主要思想是降维前后，每个点与周围邻居的线性组合关系不变，$x^i=\sum\limits_j w_{ij}x^j$、$z^i=\sum\limits_j w_{ij}z^j$；</li>
+<li>Laplacian Eigenmaps，拉普拉斯特征映射，主要思想是在high density的区域，如果$x^i$、$x^j$这两个点相似度$w_{i,j}$高，则投影后的距离$||z^i-z^j||_2$要小；</li>
+<li>t-SNE(t-distribution Stochastic Neighbor Embedding)，t分布随机邻居嵌入，主要思想是，通过降维前后计算相似度由RBF function转换为t-distribution，在聚集相似点的同时，拉开不相似点的距离，比较适合用在数据固定的可视化领域。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Manifold-Learning/" rel="tag"># Manifold Learning</a>
+              <a href="/tags/LLE-Locally-Linear-Embedding/" rel="tag"># LLE(Locally Linear Embedding)</a>
+              <a href="/tags/Laplacian-Eigenmaps/" rel="tag"># Laplacian Eigenmaps</a>
+              <a href="/tags/t-SNE/" rel="tag"># t-SNE</a>
+              <a href="/tags/KL-Divergence/" rel="tag"># KL Divergence</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/26/ML%E7%AC%94%E8%AE%B0%EF%BC%8812%EF%BC%89Unsupervised-Learning-Word-Embedding/" rel="prev" title="ML笔记（12）Unsupervised Learning-Word Embedding">
+      <i class="fa fa-chevron-left"></i> ML笔记（12）Unsupervised Learning-Word Embedding
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Manifold-Learning"><span class="nav-text">1.Manifold Learning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Locally-Linear-Embedding"><span class="nav-text">2. Locally Linear Embedding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Laplacian-Eigenmaps"><span class="nav-text">3. Laplacian Eigenmaps</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-t-SNE"><span class="nav-text">4. t-SNE</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#null"><span class="nav-text"> </span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">52</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">52</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">522k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
