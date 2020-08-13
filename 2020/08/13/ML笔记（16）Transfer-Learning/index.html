@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL笔记（16）Transfer Learning">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/08/13/ML%E7%AC%94%E8%AE%B0%EF%BC%8816%EF%BC%89Transfer-Learning/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090714.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090728.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090732.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090735.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090739.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090743.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090746.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090749.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090753.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090756.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090801.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090806.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090809.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090812.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090816.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813102225.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813103134.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813103139.png">
+<meta property="article:published_time" content="2020-08-13T00:51:13.000Z">
+<meta property="article:modified_time" content="2020-08-13T02:49:46.357Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="Pixel RNN">
+<meta property="article:tag" content="VAE">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090714.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/08/13/ML%E7%AC%94%E8%AE%B0%EF%BC%8816%EF%BC%89Transfer-Learning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>DL笔记（16）Transfer Learning | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/08/13/ML%E7%AC%94%E8%AE%B0%EF%BC%8816%EF%BC%89Transfer-Learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DL笔记（16）Transfer Learning
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-13 08:51:13 / 修改时间：10:49:46" itemprop="dateCreated datePublished" datetime="2020-08-13T08:51:13+08:00">2020-08-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Deep Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.7k</span>
+            </span>
+            <div class="post-description">文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h3><p>Transfer learning（迁移学习），是属于机器学习的一种研究领域，它专注于存储已有问题的解决模型，并将其利用在其他不同但相关问题上，正如人类可以将一个领域学习到的知识和经验，应用到其他相似的领域中去一样，机器同样也能做到。</p>
+<p>传统的机器学习/数据挖掘只有在训练集数据和测试集数据都来自同一个feature space（特征空间）和统一分布的时候才运行的比较好，这意味着每一次换了数据都要重新训练模型，太麻烦了。比如：</p>
+<p>（1）从数据类型/内容上看，对于新的数据集，获取新的训练数据很贵也很难。</p>
+<p>（2）从时间维度上看，有些数据集很容易过期，即不同时期的数据分布也会不同。</p>
+<blockquote>
+<p>Transfer learning的概念参考了这篇博客<a href="https://cloud.tencent.com/developer/article/1636741" target="_blank" rel="noopener">迁移学习</a></p>
+</blockquote>
+<p><strong>not directly related</strong></p>
+<p>以猫狗识别为例，解释“不直接相关”的含义：</p>
+<ul>
+<li><p>input <strong>domain（域）</strong>是类似的，但task是无关的，比如输入都是动物的图像，但这些data是属于另一组有关大象和老虎识别的task；</p>
+</li>
+<li><p>input domain是不同的，但task是一样的，比如task同样是做猫狗识别，但输入的是卡通类型的图像。</p>
+</li>
+</ul>
+<blockquote>
+<p>domain：包括两部分：1.feature space（特征空间）；2.probability（概率）。所以当我们说domain不同的时候，就得分两种情况。可能是feature space不同，也可能是feature space一样但probability不同。这里指的是前者，即feature space不同。</p>
+</blockquote>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090714.png" style="zoom: 50%;"></p>
+<p><strong>overview</strong></p>
+<p>迁移学习是很多方法的集合，这里介绍一些概念：</p>
+<ul>
+<li>Target Data：和task直接相关的data；</li>
+<li>Source Data：和task没有直接关系的data。</li>
+</ul>
+<blockquote>
+<p>source是用于训练模型的域/任务，target是要用前者的模型对自己的数据进行预测/分类/聚类等机器学习任务的域/任务。</p>
+</blockquote>
+<p>按照labeled data和unlabeled data又可以划分为四种：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090728.png" style="zoom: 50%;"></p>
+<h3 id="2-labelled-source-data-amp-labeled-target-data"><a href="#2-labelled-source-data-amp-labeled-target-data" class="headerlink" title="2. labelled source data &amp; labeled target data"></a>2. labelled source data &amp; labeled target data</h3><p>这里target data和source data都是带有标签的：</p>
+<ul>
+<li><p>target data：$(x^t,y^t)$，作为有效数据，通常量是很少的。如果target data量非常少，则被称为one-shot learning；</p>
+</li>
+<li><p>source data：$(x^s, y^s)$，作为不直接相关数据，通常量是很多的。</p>
+</li>
+</ul>
+<h4 id="2-1-Model-Fine-tuning"><a href="#2-1-Model-Fine-tuning" class="headerlink" title="2.1. Model Fine-tuning"></a>2.1. Model Fine-tuning</h4><p>Model Fine-tuning（模型微调）的基本思想：用source data去训练一个model，再用target data对model进行fine-tune（微调）。“微调”类似于pre-training，就是把用source data训练出的model参数当做是参数的初始值，再用target data继续训练下去即可，但当直接相关的数据量非常少时，这种方法很容易会出问题。所以训练的时候要小心，有许多技巧值得注意。</p>
+<p><strong>Conservation Training</strong></p>
+<p>如果现在有大量的source data，比如在语音识别中有大量不同人的声音数据，可以拿它去训练一个语音识别的神经网络，而现在你拥有的target data，即特定某个人的语音数据，可能只有十几条左右，如果直接拿这些数据去再训练，肯定得不到好的结果</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090732.png" style="zoom:50%;"></p>
+<p>此时我们就需要在训练的时候加一些限制，让用target data训练前后的model不要相差太多：</p>
+<ul>
+<li>可以让新旧两个model在看到同一笔data的时候，output越接近越好；</li>
+<li>或者让新旧两个model的L2 norm越小越好，参数尽可能接近；</li>
+<li>总之让两个model不要相差太多，防止由于target data的训练导致过拟合。</li>
+</ul>
+<p>这里的限制就类似于做regularization。</p>
+<p><strong>Layer Transfer</strong></p>
+<p>现在我们已经有一个用source data训练好的model，此时把该model的某几个layer拿出来复制到同样大小的新model里，接下来<strong>用target data去训练余下的没有被复制到的layer</strong>。这样做的好处是target data只需要考虑model中非常少的参数，这样就可以避免过拟合。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090735.png" style="zoom:50%;"></p>
+<p>这个对部分layer进行迁移的过程，就体现了迁移学习的思想，那么哪些layer需要被复制迁移，哪些不需要呢？</p>
+<p>值得注意的是，<strong>在不同的task上，需要被复制迁移的layer往往是不一样的</strong>：</p>
+<ul>
+<li><p>在语音识别中，往往迁移的是最后几层layer，再重新训练与输入端相邻的那几层。</p>
+<p>由于人口腔结构不同，同样的发音方式得到的发音是不一样的，NN的前几层会从声音信号里提取出发音方式，再用后几层判断对应的词汇，从这个角度看，NN的后几层是跟特定的人没有关系的，因此可做迁移。</p>
+</li>
+<li><p>在图像处理中，往往迁移的是前面几层layer，再重新训练后面的layer。</p>
+<p>CNN在前几层通常是做最简单的识别，比如识别是否有直线斜线、是否有简单的几何图形等，这些layer的功能是可以被迁移到其它task上通用的。</p>
+</li>
+<li><p>主要还是具体问题具体分析。</p>
+</li>
+</ul>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090739.png" style="zoom:50%;"></p>
+<h4 id="2-2-Multitask-Learning"><a href="#2-2-Multitask-Learning" class="headerlink" title="2.2. Multitask Learning"></a>2.2. Multitask Learning</h4><p>Fine-tune仅考虑在target data上的表现，而Multitask Learning（多任务学习），则是同时考虑model在source data和target data上的表现。</p>
+<p>如果两个task的输入特征类似，则可以用同一个神经网络的前几层layer做相同的工作，到后几层再分方向到不同的task上，这样做的好处是前几层得到的data比较多，可以被训练得更充分。有时候task A和task B的输入输出都不相同，但中间可能会做一些类似的处理，则可以让两个神经网络共享中间的几层layer，也可以达到类似的效果。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090743.png" style="zoom:50%;"></p>
+<p>以上方法要求不同的task之间要有一定的“共性”，这样才有共用一部分layer的可能性。</p>
+<p><strong>Multilingual Speech Recognition</strong></p>
+<p>多任务学习可以应用在语音识别上，比如可以同时对法语、德语、西班牙语、意大利语训练一个model，它们在前几层layer上共享参数，而在后几层layer上拥有自己各自的参数。在机器翻译上也可以使用同样的思想，比如训练一个同时可以中翻英和中翻日的model。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090746.png" style="zoom:50%;"></p>
+<p>注属于同一个语系的语言翻译，比如欧洲国家的语言，几乎都是可以做迁移学习的；而语音方面则可迁移的范围更广。下图展示了只用普通话的语音数据和加了欧洲语言后的语音数后得到的错误率对比，其中横轴为使用的普通话数据量，纵轴为错误率，可以看出使用了迁移学习后，只需要原先一半的普通话语音数据就可以得到几乎一样的准确率</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090749.png" style="zoom: 50%;"></p>
+<h4 id="2-3-Progressive-Neural-Network"><a href="#2-3-Progressive-Neural-Network" class="headerlink" title="2.3. Progressive Neural Network"></a>2.3. Progressive Neural Network</h4><p>如果两个task完全不相关，硬是把它们拿来一起训练反而会起到负面效果。而在Progressive Neural Network（渐进式神经网络）中，每个task对应model的hidden layer的输出都会被接到后续model的hidden layer的输入上，这样做的好处是：</p>
+<ul>
+<li>task 2的data并不会影响到task 1的model，因此task 1一定不会比原来更差；</li>
+<li><p>task 2虽然可以借用task 1的参数，但可以将之直接设为0，最糟的情况下就等于没有这些参数，也不会对本身的表现产生影响；</p>
+</li>
+<li><p>task 3也做一样的事情，同时从task 1和task 2的hidden layer中得到信息。</p>
+</li>
+</ul>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090753.png" style="zoom:50%;"></p>
+<blockquote>
+<p>论文<a href="https://arxiv.org/pdf/1606.04671.pdf" target="_blank" rel="noopener">arxiv.org/pdf/1606.04671.pdf)</a></p>
+<p>关于Progressive Neural Network可以参考：<a href="https://www.cnblogs.com/wangxiaocvpr/p/6002214.html" target="_blank" rel="noopener">论文笔记之：Progressive Neural Network Google DeepMind</a>；<a href="https://zhuanlan.zhihu.com/p/146454996" target="_blank" rel="noopener">Progressive Neural Network</a></p>
+</blockquote>
+<h3 id="3-labelled-source-data-amp-unlabeled-target-data"><a href="#3-labelled-source-data-amp-unlabeled-target-data" class="headerlink" title="3. labelled source data &amp; unlabeled target data"></a>3. labelled source data &amp; unlabeled target data</h3><p>下面介绍target data不带标签，而source data带标签的情况：</p>
+<ul>
+<li><p>target data：$(x^t)$</p>
+</li>
+<li><p>source data：$(x^s, y^s)$</p>
+</li>
+</ul>
+<h4 id="3-1-Domain-adversarial-Training"><a href="#3-1-Domain-adversarial-Training" class="headerlink" title="3.1. Domain-adversarial Training"></a>3.1. Domain-adversarial Training</h4><p>如果source data是有label的，而target data是没有label的，该怎么处理呢？比如source data是labeled MNIST数字集，而target data则是加了颜色和背景的unlabeled数字集，虽然都是做数字识别，但两者的情况是非常不匹配的。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090756.png" style="zoom:50%;"></p>
+<p>这个时候一般会把source data当做训练集，而target data当做测试集，如果不管训练集和测试集之间的差异，直接训练一个普通的model，得到的结果准确率会相当低。实际上，神经网络的前几层可以被看作是在抽取feature，后几层则是在做classification。如果把用MNIST训练好的model所提取出的feature做t-SNSE降维后的可视化，可以发现MNIST的数据特征明显分为紫色的十团，分别代表10个数字，而作为测试集的数据却是挤成一团的红色点，因此它们的特征提取方式根本不匹配。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090801.png" style="zoom:50%;"></p>
+<p>所以我们希望前面的特征提取器(feature extractor)可以把domain的特性去除掉，不再使红点与蓝点分成两群，而是让它们都混在一起。这样我们就可以将用黑白MNIST训练好的model用在彩色MNIST数据上。</p>
+<p>这里采取的做法是，在特征提取器(feature extractor)之后接一个<strong>域分类器(domain classifier)</strong>，以便分类出这些提取到的feature是来自于MNIST的数据集还是来自于MNIST-M的数据集，这个生成+辨别的架构与GAN非常类似。</p>
+<p>只不过在这里，feature extractor可以通过把feature全部设为0，很轻易地骗过domain classifier，因此还需要给feature classifier增加任务的难度，它不只要骗过domain classifier，还要同时满足label predictor的需求。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090806.png" style="zoom: 50%;"></p>
+<p>此时通过特征提取器得到的feature不仅可以消除不同domain的特性，还要保留原先digit的特性，既可以区分不同类别的数字集，又可以正确地识别出不同的数字。</p>
+<p>通常神经网络的参数都是朝着最小化loss的目标共同前进的，但在这个神经网络里，三个组成部分的参数“各怀鬼胎”：</p>
+<ul>
+<li>对Label predictor，要把不同数字的分类准确率做的越高越好；</li>
+<li>对Domain classifier，要正确地区分某张image是属于哪个domain；</li>
+<li>对Feature extractor，要提高Label predictor的准确率，但要降低Domain classifier的准确率。</li>
+</ul>
+<p>这里可以看出，Feature extractor和Domain classifier的目标是相反的，要做到这一点，只需要在两者之间加一层梯度反转的layer即可（给domain classifier的梯度乘一个$-\lambda$），当NN做backward的时候，两者的参数更新往相反的方向走。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090809.png" style="zoom:50%;"></p>
+<p>注意到，Domain classifier只能接受到Feature extractor给到的特征信息，而无法直接看到图像的样子，因此它最后一定会鉴别失败，所以如何提高Domain classifier的能力，让它经过一番“奋力挣扎”之后才牺牲是很重要的，如果它一直很弱，就无法把Feature extractor的潜能激发到极限。</p>
+<h4 id="3-2-Zero-shot-Learning"><a href="#3-2-Zero-shot-Learning" class="headerlink" title="3.2. Zero-shot Learning"></a>3.2. Zero-shot Learning</h4><p>同样是source data有label，target data没有label的情况，但在Zero-shot Learning中的定义更严格一些，它假设source和target是两个完全不同的task，数据完全不相关。</p>
+<p>在语音识别中，经常会遇到这个问题，毕竟词汇千千万万，总有一些词汇是训练时不曾遇到过的，它的处理方法是不要直接将识别的目标定成word，而是定成phoneme(音素)，再建立文字与phoneme之间的映射表即可。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090812.png" style="zoom:50%;"></p>
+<p>在图像处理中，我们可以把每个类别都用其<strong>属性（attribute）</strong>表示，并且要具备独一无二的属性，在数据集中把每种动物按照特性划分，比如是否毛茸茸、有几只脚等，在训练的时候我们不直接去判断类别，而是去判断该图像的属性，再根据这些属性去找到最契合的类别即可。</p>
+<p>有时候属性的维数也很大，以至于我们对属性要做embedding的降维映射，同样的，还要把训练集中的每张图像都通过某种转换投影到embedding space上的某个点，并且要保证属性投影的$g(y^i)$和对应图像投影的$f(x^i)$越接近越好，这里的$f()$和$g()$可以是两个神经网络。当遇到新的图像时，只需要将其投影到相同的embedding space，即可判断它与哪个属性对应的类别更接近。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813090816.png" style="zoom:50%;"></p>
+<p>但如果我们根本就无法找出每个动物的属性$y^i$是什么，那该怎么办？可以使用word vector，比如直接从维基百科上爬取图像对应的文字描述，再用word vector降维提取特征，映射到同样的空间即可。</p>
+<p>以下这个loss function存在些问题，它会让model把所有不同的x和y都投影到同一个点上：</p>
+<script type="math/tex; mode=display">
+f^*,g^*=\arg \min\limits_{f,g} \sum\limits_n ||f(x^n)-g(y^n)||_2</script><p>类似用t-SNE的思想，我们既要考虑同一对$x^n$和$y^n$距离要接近，又要考虑不属于同一对的$x^n$与$y^m$距离要拉大(这是前面的式子没有考虑到的)，于是有：</p>
+<script type="math/tex; mode=display">
+f^*,g^*=\arg \min\limits_{f,g} \sum\limits_n \max(0, k-f(x^n)\cdot g(y^n)+\max\limits_{m\ne n} f(x^n)\cdot g(y^m))</script><p>其中$\max()$项的最小值是0，当：</p>
+<script type="math/tex; mode=display">
+k-f(x^n)\cdot g(y^n)+\max\limits_{m\ne n} f(x^n)\cdot g(y^m)<0</script><p>即：</p>
+<script type="math/tex; mode=display">
+f(x^n)\cdot g(y^n)-\max\limits_{m\ne n} f(x^n)\cdot g(y^m)>k</script><p>就表明此时$f(x^n)$和$g(y^n)$的inner product很大，即两者很接近，而$f(x^n)$和其他的$g(y^m)$即差的很远，它们的inner product很小。</p>
+<p><strong>convex combination of semantic embedding</strong></p>
+<p>还有另外一个简单的Zero-Shot learning的方法叫做convex combination of semantic embedding。假设我们现在有一个语音辨识系统，有一个word vector，这两个是从网络上下载下来的，就可以做这件事情。</p>
+<p>我把一张图丢到neural network里面去，它的output没有办法决定是哪一个class，但它觉得有0.5的几率是lion，有0.5的几率是tiger。接下来你在去找lion跟tiger的word vector，然后把lion跟tiger的word vector得到新的vector(用1:1的比例混合,0.5V(tiger)+0.5V(lion))，那你再看哪一个word的vector跟这个混合之后的结果最接近。假设是liger最接近，那这个东西就是liger(狮虎)。这样就省去了Training。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813102225.png" style="zoom: 33%;"></p>
+<p>Zero-shot Learning in Machine Translation</p>
+<p>下面是一个机器翻译的例子，Google Neural Machine Translation。在training的时候，machine看过如何把英文翻译成韩文，知道怎么把韩文翻译为英文，知道怎么把英文翻译为日文，知道怎么把日文翻译为英文。但是它从来没有看过日文翻译韩文的data，但是可以翻，但是它从来没有看过韩文翻译日文的data，但是可以翻。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813103134.png" style="zoom: 40%;"></p>
+<p>为什么zero-shot在这个task上是可行的呢？如果你今天用同一个model做了不同语言之间的translation以后，machine可以学到的事情是：对不同语言的input 句子都可以project（投影）到同一个space上面。句子在这个space上的位置只跟句子的semantic有关。</p>
+<p>比如现在根据learn好的translation，那个translation有一个encoder，它会把input的句子变成vector，decoder根据这个vector解回一个句子，就是翻译的结果。那把不同语言都丢到这个encoder里面让它变成vector的话，那这些不同语言的不同句子在这个space上面有什么不一样的关系呢？</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813103139.png" style="zoom: 40%;"></p>
+<p>它发现有日文、英文、韩文这三个句子，这三个句子讲的是同一件事情，通过encoder embedding之后，它们在space上面是差不多的位置。machine做的是发现一个sequence language，每一种不同的语言都先要先转成它知道的sequence language，在用这个sequence language转为另外一种语言。所以对某一个翻译task ，你的input语言和output语言machine没有看过，它也可以透过这种自己学出来的sequence language来做translation。</p>
+<p>最后简单介绍下Transfer Learning的另外两种情况：</p>
+<ul>
+<li><p>Target data有label，source data没有label:  <strong>Self-taught learning</strong>。它的基本思想是：</p>
+<ul>
+<li>Learning to extract better representation from the source data(unsupervised approach)</li>
+<li>Extracting better representation for target data</li>
+</ul>
+<p>Self-taught learning和semi-supervised learning有些不一样的地方，semi-supervised learning在learning的时候会有一些labelled data和unlabeled data，可以说source data是unlabeled data，target data是label data，所以Self-taught learning也是一种semi-supervised learning。但它和一般的semi-supervised learning有些不一样，一般的semi-supervised learning会假设unlabeled data至少和labelled data是有关系的，但在Self-taught learning中，source data和target data的关系是比较远的。</p>
+</li>
+<li><p>Target label没有label，source data也没有label: <strong>Self-taught clustering</strong>。</p>
+</li>
+</ul>
+<blockquote>
+<p>论文：<a href="http://ai.stanford.edu/~hllee/icml07-selftaughtlearning.pdf" target="_blank" rel="noopener">Self-taught learning</a>；<a href="https://www.cse.ust.hk/~qyang/Docs/2008/dwyakicml.pdf" target="_blank" rel="noopener">Self-taught clustering</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Pixel-RNN/" rel="tag"># Pixel RNN</a>
+              <a href="/tags/VAE/" rel="tag"># VAE</a>
+              <a href="/tags/GAN/" rel="tag"># GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8815%EF%BC%89Unsupervised-Learning-Generative-Model/" rel="prev" title="ML笔记（15）Unsupervised Learning-Generative Model">
+      <i class="fa fa-chevron-left"></i> ML笔记（15）Unsupervised Learning-Generative Model
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Introduction"><span class="nav-text">1. Introduction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-labelled-source-data-amp-labeled-target-data"><span class="nav-text">2. labelled source data &amp; labeled target data</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Model-Fine-tuning"><span class="nav-text">2.1. Model Fine-tuning</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-Multitask-Learning"><span class="nav-text">2.2. Multitask Learning</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-Progressive-Neural-Network"><span class="nav-text">2.3. Progressive Neural Network</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-labelled-source-data-amp-unlabeled-target-data"><span class="nav-text">3. labelled source data &amp; unlabeled target data</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Domain-adversarial-Training"><span class="nav-text">3.1. Domain-adversarial Training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Zero-shot-Learning"><span class="nav-text">3.2. Zero-shot Learning</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">544k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
