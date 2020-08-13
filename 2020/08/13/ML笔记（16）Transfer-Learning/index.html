@@ -46,12 +46,12 @@
   };
 </script>
 
-  <meta name="description" content="文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。">
+  <meta name="description" content="文本主要介绍了Transfer Learning（迁移学习）的两种类型：labelled source data &amp; labeled target data；labelled source data &amp; unlabeled target data。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="DL笔记（16）Transfer Learning">
 <meta property="og:url" content="http://nekomoon404.github.io/2020/08/13/ML%E7%AC%94%E8%AE%B0%EF%BC%8816%EF%BC%89Transfer-Learning/index.html">
 <meta property="og:site_name" content="nekomoon的个人小站">
-<meta property="og:description" content="文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。">
+<meta property="og:description" content="文本主要介绍了Transfer Learning（迁移学习）的两种类型：labelled source data &amp; labeled target data；labelled source data &amp; unlabeled target data。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090714.png">
 <meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090728.png">
@@ -72,11 +72,13 @@
 <meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813103134.png">
 <meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813103139.png">
 <meta property="article:published_time" content="2020-08-13T00:51:13.000Z">
-<meta property="article:modified_time" content="2020-08-13T02:49:46.357Z">
+<meta property="article:modified_time" content="2020-08-13T02:56:46.358Z">
 <meta property="article:author" content="nekomoon">
-<meta property="article:tag" content="Pixel RNN">
-<meta property="article:tag" content="VAE">
-<meta property="article:tag" content="GAN">
+<meta property="article:tag" content="Transfer Learning">
+<meta property="article:tag" content="Model Fine-tuning">
+<meta property="article:tag" content="Multitask Learning">
+<meta property="article:tag" content="Progressive Neural Network">
+<meta property="article:tag" content="Domain-adversarial Training">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720200813090714.png">
 
@@ -231,7 +233,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-08-13 08:51:13 / 修改时间：10:49:46" itemprop="dateCreated datePublished" datetime="2020-08-13T08:51:13+08:00">2020-08-13</time>
+              <time title="创建时间：2020-08-13 08:51:13 / 修改时间：10:56:46" itemprop="dateCreated datePublished" datetime="2020-08-13T08:51:13+08:00">2020-08-13</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -253,7 +255,7 @@
                 <span class="post-meta-item-text">本文字数：</span>
               <span>7.7k</span>
             </span>
-            <div class="post-description">文本介绍了三种无监督学习的Generative Model：Pixel RNN，Variational Auto-encoder(VAE)和Generative Adversarial Network(GAN)。</div>
+            <div class="post-description">文本主要介绍了Transfer Learning（迁移学习）的两种类型：labelled source data & labeled target data；labelled source data & unlabeled target data。</div>
 
         </div>
       </header>
@@ -402,6 +404,7 @@ f(x^n)\cdot g(y^n)-\max\limits_{m\ne n} f(x^n)\cdot g(y^m)>k</script><p>就表�
 <p>比如现在根据learn好的translation，那个translation有一个encoder，它会把input的句子变成vector，decoder根据这个vector解回一个句子，就是翻译的结果。那把不同语言都丢到这个encoder里面让它变成vector的话，那这些不同语言的不同句子在这个space上面有什么不一样的关系呢？</p>
 <p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20200813103139.png" style="zoom: 40%;"></p>
 <p>它发现有日文、英文、韩文这三个句子，这三个句子讲的是同一件事情，通过encoder embedding之后，它们在space上面是差不多的位置。machine做的是发现一个sequence language，每一种不同的语言都先要先转成它知道的sequence language，在用这个sequence language转为另外一种语言。所以对某一个翻译task ，你的input语言和output语言machine没有看过，它也可以透过这种自己学出来的sequence language来做translation。</p>
+<p>——————</p>
 <p>最后简单介绍下Transfer Learning的另外两种情况：</p>
 <ul>
 <li><p>Target data有label，source data没有label:  <strong>Self-taught learning</strong>。它的基本思想是：</p>
@@ -426,9 +429,11 @@ f(x^n)\cdot g(y^n)-\max\limits_{m\ne n} f(x^n)\cdot g(y^m)>k</script><p>就表�
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Pixel-RNN/" rel="tag"># Pixel RNN</a>
-              <a href="/tags/VAE/" rel="tag"># VAE</a>
-              <a href="/tags/GAN/" rel="tag"># GAN</a>
+              <a href="/tags/Transfer-Learning/" rel="tag"># Transfer Learning</a>
+              <a href="/tags/Model-Fine-tuning/" rel="tag"># Model Fine-tuning</a>
+              <a href="/tags/Multitask-Learning/" rel="tag"># Multitask Learning</a>
+              <a href="/tags/Progressive-Neural-Network/" rel="tag"># Progressive Neural Network</a>
+              <a href="/tags/Domain-adversarial-Training/" rel="tag"># Domain-adversarial Training</a>
           </div>
 
         
@@ -437,8 +442,8 @@ f(x^n)\cdot g(y^n)-\max\limits_{m\ne n} f(x^n)\cdot g(y^m)>k</script><p>就表�
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8815%EF%BC%89Unsupervised-Learning-Generative-Model/" rel="prev" title="ML笔记（15）Unsupervised Learning-Generative Model">
-      <i class="fa fa-chevron-left"></i> ML笔记（15）Unsupervised Learning-Generative Model
+    <a href="/2020/07/29/ML%E7%AC%94%E8%AE%B0%EF%BC%8815%EF%BC%89Unsupervised-Learning-Generative-Model/" rel="prev" title="DL笔记（15）Unsupervised Learning-Generative Model">
+      <i class="fa fa-chevron-left"></i> DL笔记（15）Unsupervised Learning-Generative Model
     </a></div>
       <div class="post-nav-item"></div>
     </div>
@@ -529,7 +534,7 @@ f(x^n)\cdot g(y^n)-\max\limits_{m\ne n} f(x^n)\cdot g(y^m)>k</script><p>就表�
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-count">62</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
