@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="学习了XGBoost的原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XGBoost原理简述">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/09/22/XGBoost%E5%8E%9F%E7%90%86%E7%AE%80%E8%BF%B0/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="学习了XGBoost的原理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202546.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202606.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202613.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202618.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202623.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202627.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202633.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202638.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202648.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922205540.png">
+<meta property="article:published_time" content="2020-09-22T12:18:46.000Z">
+<meta property="article:modified_time" content="2020-09-22T13:00:11.511Z">
+<meta property="article:author" content="nekomoon">
+<meta property="article:tag" content="XGBoost">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20200922202546.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/09/22/XGBoost%E5%8E%9F%E7%90%86%E7%AE%80%E8%BF%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>XGBoost原理简述 | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/09/22/XGBoost%E5%8E%9F%E7%90%86%E7%AE%80%E8%BF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          XGBoost原理简述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-22 20:18:46 / 修改时间：21:00:11" itemprop="dateCreated datePublished" datetime="2020-09-22T20:18:46+08:00">2020-09-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                    <span itemprop="name">Machine Learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <div class="post-description">学习了XGBoost的原理。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>笔记主要是参考了贪心学院在B站的公开课<a href="https://www.bilibili.com/video/BV1si4y1G7Jb" target="_blank" rel="noopener">XGBoost的技术剖析</a></p>
+<p>这篇博客也讲的十分详细：<a href="https://blog.csdn.net/wuzhongqiang/article/details/104854890" target="_blank" rel="noopener">白话机器学习算法理论+实战番外篇之Xgboost</a>，有一些上面的课程没有讲到的内容，如节点的最优切分点划分，要进行特征遍历，作者没有使用等宽或等频分桶，而是提出了等值percentiles划分算法（Weight Quantile Sketch）。</p>
+<p>集成算法，弱分类器的概念等等就先略去了。</p>
+</blockquote>
+<p>根据各个弱分类器之间有无依赖关系，集成算法可以分为Boosting和Bagging：</p>
+<ul>
+<li>Boosting流派：各分类器之间没有依赖关系，必须串行，比如Adaboost，GBDT，Xgboost；</li>
+<li>Bagging流派：各分类器之间没有依赖关系，可各自并行，比如随机森林。</li>
+</ul>
+<p>为什么XGBoost这么火？</p>
+<ul>
+<li><p>算法可以并行，训练效率高；</p>
+</li>
+<li><p>比起其他算法，世界效果好；</p>
+</li>
+<li><p>由于可控参数（超参数）多，可以灵活调整；</p>
+</li>
+</ul>
+<p>学习路径：</p>
+<ul>
+<li>如何构造目标函数？（XGBoost的目标函数不是连续型的）</li>
+<li>目标函数直接优化难，如何近似？（泰勒级数，Taylor Expansion）</li>
+<li>如何把树的结果引入到目标函数？</li>
+<li>仍然难优化，要不要使用贪心算法？</li>
+</ul>
+<h3 id="1-如何构造目标函数"><a href="#1-如何构造目标函数" class="headerlink" title="1.如何构造目标函数"></a>1.如何构造目标函数</h3><p>回顾如何使用多棵树来预测：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202546.png" style="zoom: 45%;"></p>
+<p>假设已经训练了K颗树，则对于第$i$个样本的（最终）预测值为：</p>
+<script type="math/tex; mode=display">
+\hat{y_i} = \sum^k_{k=1}f_k(x_i), \, f_k \in \mathcal{F}</script><p>目标函数为：</p>
+<script type="math/tex; mode=display">
+Obj = \sum^n_{i=1} l(y_i,\hat{y_i}) + \sum^k_{k=1} \Omega(f_k)</script><p>其中前一项为损失函数，$y_i$为真实值，$\hat{y_i}$为预测值，$l(y_i,\hat{y_i})$为针对当前问题的loss；后一项为Penalty，或者称Regulation，控制模型的复杂度，防止过拟合。</p>
+<p>现在的问题是如何给每一个树加上Penalty / Regulation。</p>
+<p>回顾在决策树中如何定义树的复杂度：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202606.png" style="zoom:50%;"></p>
+<p>$\sum^n_{i=1}l(y_i,\hat{y_i})$中计算了所有样本的loss，loss函数包含了不同树模型的loss，这时就可以使用叠加式的训练（Additive Training），当训练第$k$个模型（树）时，前面的第1到第$k-1$颗树是已知的。</p>
+<p>假设现在我们要去构建第$k$颗树，</p>
+<ul>
+<li><p>给定$x_i$；</p>
+</li>
+<li><p>$\hat{y_i}^{(0)} = 0 \gets$  Default case ;</p>
+</li>
+<li>$\hat{y_i}^{(1)} = f_1(x_i) = \hat{y_i}^{(0)} + f_1(x_i)$；</li>
+<li>$\hat{y_i}^{(2)} = f_1(x_i) + f_2(x_i) = \hat{y_i}^{(1)} + f_2(x_i)$；</li>
+<li>$\dots$</li>
+<li>$\hat{y_i}^{(k)} = f_1(x_i) + f_2(x_i) + \dots + f_k(x_i)= \sum^{k-1}_{j=1}f_j(x_i)+f_k(x_i)=\hat{y_i}^{(k-1)} + f_k(x_i)$；</li>
+</ul>
+<p>其中$\hat{y_i}^{(k-1)}$表示前$k-1$颗树的预测值之和，$f_k(x_i)$表示第$k$颗树的预测值，两者之和要和真实值$y_i$越接近越好。</p>
+<p>因为前$k-1$颗树是训练好的，则目标函数可以写成：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+Obj &= \sum^n_{i=1} l(y_i, \hat{y_i}^{(k)}) + \sum^k_{k=1}\Omega(f_k)\\
+    &= \sum^n_{i=1} l(y_i, \hat{y_i}^{(k-1)} + f_k(x_i)) + \sum^{k-1}_{j=1}\Omega(f_j)+\Omega(f_k)
+
+\end{align*}</script><p>其中$\hat{y_i}^{(k-1)}$和$\sum^{k-1}_{j=1}\Omega(f_j)$可以看作是常数，则当训练第$k$颗树时，我们要最小化：</p>
+<script type="math/tex; mode=display">
+minimize \quad \sum^n_{i=1} l(y_i, \hat{y_i}^{(k-1)} + f_k(x_i)) + \Omega(f_k)</script><p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202613.png" style="zoom:50%;"></p>
+<h3 id="2-使用泰勒级数优化目标函数"><a href="#2-使用泰勒级数优化目标函数" class="headerlink" title="2.使用泰勒级数优化目标函数"></a>2.使用泰勒级数优化目标函数</h3><p>由上一节我们可知，构建第$k$颗树时的目标函数是  ：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+Obj &= \sum^n_{i=1} l(y_i, \hat{y_i}^{(k-1)} + f_k(x_i)) + \Omega(f_k)
+
+\end{align*}</script><p>回顾泰勒级数Taylor Expansion：</p>
+<script type="math/tex; mode=display">
+f(x+\Delta x) \approx f(x) + f'(x) \cdot \Delta x + \frac{1}{2} f^{''}(x)\cdot \Delta x^2</script><p>令其中的$f(x) = l(y_i, \hat{y_i}^{(k-1)} )$，$\Delta x= f_k(x_i)$，则有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+Obj &= \sum^n_{i=1} l(y_i, \hat{y_i}^{(k-1)} + f_k(x_i)) + \Omega(f_k) \\
+    &= \sum^n_{i=1} \left[ l(y_i, \hat{y_i}^{(k-1)} ) +\partial_{\hat{y_i}^{(k-1)}} l(y_i, \hat{y_i}^{(k-1)} ) \cdot f_k(x_i) + \frac{1}{2}\partial^2_{\hat{y_i}^{(k-1)}} l(y_i, \hat{y_i}^{(k-1)} ) \cdot f^2_k(x_i) \right]+ \Omega(f_k) \\
+    &= \sum^n_{i=1} \left[ l(y_i, \hat{y_i}^{(k-1)} ) +g_i \cdot f_k(x_i) + h_i \cdot f^2_k(x_i) \right]+ \Omega(f_k)
+
+\end{align*}</script><p>第一项$ l(y_i, \hat{y_i}^{(k-1)} )$是已知的，那么最下化目标函数就等价于：</p>
+<script type="math/tex; mode=display">
+minimize \sum^n_{i=1} \left[ g_i \cdot f_k(x_i) + h_i \cdot f^2_k(x_i) \right]+ \Omega(f_k)</script><p>注：当训练第$k$颗树时，$\{h_i, g_i\}$是已知的。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202618.png" style="zoom: 50%;"></p>
+<h3 id="3-在树的形状已知的情况下，求目标函数的最小值"><a href="#3-在树的形状已知的情况下，求目标函数的最小值" class="headerlink" title="3.在树的形状已知的情况下，求目标函数的最小值"></a>3.在树的形状已知的情况下，求目标函数的最小值</h3><p>接下来我们要把$f_k(x_i)$和$\Omega(f_k)$参数化。考虑现有如下图的一个树，那我们如何把这颗树用参数化表示出来：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202623.png" style="zoom:50%;"></p>
+<p>定义一个权重变量，或者称leaf value，$w=(w_1, w_2, w_3) = (15, 12, 20)$；</p>
+<p>定义一个函数$q(x)$，表示样本$x$的位置，$q(x_1) =1, q(x_2)=3, q(x_3)= 1, q(x_4) = 2, q(x_5)=3$；</p>
+<p>则有$f_k(x_i) = w_{q(x_i)} $ ，这样就把$f_k(x_i)$参数化了，但有个问题是$w$的下标还是个函数，为此我们还需定义一个函数$I_j=\{i | q(x_i)=j\}$，表示那些样本$x_i$会落在第$j$个位置上，它按叶节点的位置把样本重新组织。$I_1=\{1,3\},I_2=\{4\}, I_3=\{2, 5\}$。</p>
+<p>这样我们原先以样本为单位累加得到$\sum^n_{i=1}  g_i \cdot f_k(x_i)=\sum^n_{i=1}  g_i \cdot w_{q(x_i)}$这一项，就可以换种思路，以叶节点为单位累加，以上图为例：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&g_1 \cdot w_{q(x_1)}+g_2 \cdot w_{q(x_2)}+g_3 \cdot w_{q(x_3)}+g_4 \cdot w_{q(x_4)}+g_5 \cdot w_{q(x_5)}\\
+=&g_1 \cdot w_{q(x_1)}+g_3 \cdot w_{q(x_3)}+ \\
+&g_2 \cdot w_{q(x_2)}+\\
+&g_4 \cdot w_{q(x_4)}+g_5 \cdot w_{q(x_5)}\\
+=& g_1 \cdot w_1+g_3 \cdot w_1+ \\
+&g_2 \cdot w_2+\\
+&g_4 \cdot w_3+g_5 \cdot w_3\\
+=&\sum^T_{j=1}(\sum_{i\in I_j } g_i) \cdot w_j
+\end{align*}</script><p>接着考虑如何定义一颗树的复杂度，可以是树的复杂度 = 叶节点个数 + leaf value，即：</p>
+<script type="math/tex; mode=display">
+\Omega(f_k) = \gamma T + \frac{1}{2} \lambda \sum^T_{j=1} w_j^2</script><p>其中$T$是叶节点的个数，$w_j$是第$j$个叶节点的leaf value；$\gamma$和$\lambda$控制两部分的权重，是超参数。</p>
+<p>最后将两部分结合起来，得到新的目标函数（<strong>假设树的形状已知</strong>）</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+& \sum^n_{i=1} \left[ g_i \cdot f_k(x_i) + h_i \cdot f^2_k(x_i) \right]+ \Omega(f_k)\\
+=& \sum^n_{i=1} \left[ g_i \cdot w_{q(x_i)} + h_i \cdot w^2_{q(x_i)} \right]+ \gamma T + \frac{1}{2} \lambda \sum^T_{j=1} w_j^2  \\
+=& \sum^T_{j=1} \left[(\sum_{i\in I_j } g_i) \cdot w_j  + \frac{1}{2}(\sum_{i\in I_j } h_i + \lambda) \cdot w^2_j\right] + \gamma T
+\end{align*}</script><p>令$G_j = \sum_{i\in I_j } g_i$，$H_j = \sum_{i\in I_j } h_i$，则使前一项最小的$w_j$值（回顾一元二次方程）为：</p>
+<script type="math/tex; mode=display">
+w_j^* = -\frac{G_j}{H_j+\lambda}</script><p>此时目标函数的最小值为：</p>
+<script type="math/tex; mode=display">
+Obj* = \frac{1}{2} \cdot \sum^T_{j=1} \frac{G_j^2}{H_j+\lambda} + \gamma T</script><p> 那么到目前我们解决了，<strong>在树的形状已知的情况下</strong>，可以求出第$k$树的最小的目标函数值。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202627.png" style="zoom:50%;"></p>
+<p>那接下来我们要做的是在所有可能的形状的树中，寻找出$Obj^*$最小的那颗树。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202633.png" style="zoom:50%;"></p>
+<p>寻找树的形状可以用暴力算法（Brute Force Search），但这样做就效率太低了，复杂度也是节点个数的指数级的。 可行的方法是使用<strong>贪心算法</strong>去寻找。</p>
+<p>回顾我们如何去构造一颗决策树。选择特征的依据是使不确定性变小，特征的score = 原（不确定性）- 分之后（不确定性），称为Information Gain（信息增益），每次分支的依据就是使信息增益最大化。那把这里的不确定性（Entropy）换成 $Obj$，就可以完成对有最小的$Obj^*$的树的寻找。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202638.png" style="zoom:50%;"></p>
+<p>通过下面的例子来看一下如何寻找最好的树的形状，即寻找最好的Split。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922202648.png" style="zoom:50%;"></p>
+<p>xgboost贪心建树的思路：遍历所有特征以及所有分割点，每次算最好的那个。但这样做代价太大了，尤其是数据量很大，分割点很多的时候，计算起来非常复杂并且也无法读入内存进行计算。作者提出了一种近似分割的方式（可以理解为分割点分桶的思路），选出一些候选的分裂点，然后再遍历这些较少的分裂点来找到最佳分裂点。</p>
+<p>进行分桶候选分裂点的一般思路是根据特征值的大小进行等宽分桶，或者进行等频分桶。这样做选择出的候选点确实少了很多，但这样划分是没什么依据的，缺乏可解释性。</p>
+<p>作者采用了一种对loss的影响权重的等值percentiles（百分比分位数）划分算法（Weight Quantile Sketch）。考虑的是想让loss在左右子树上分布的均匀一些，而不是样本数量的均匀，因为每个样本对降低loss的贡献可能不一样，按样本均分会导致分开之后左子树和右子树loss分布不均匀，</p>
+<p>其实这里这个损失函数还可以进一步化简的（和上面的化简不一样，上面的化简是把遍历样本转到了遍历叶子上得到基于决策树的目标函数，这里是从目标函数本身出发进行化简）：</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20200922205540.png" style="zoom:45%;"></p>
+<p>后面的每一个分类器都是在拟合每个样本的一个残差 $\frac{g_i}{h_i}$，$h_i$可以看做计算残差时某个样本的重要性，即每个样本对降低loss的贡献程度。第一个问题说的听清楚了吧。</p>
+<blockquote>
+<p>Xgboost引入了二阶导之后，相当于在模型降低残差的时候给各个样本根据贡献度不同加入了一个权重，这样就能更好的加速拟合和收敛。GBDT只用到了一阶导数，这样只知道梯度大的样本降低残差效果好，梯度小的样本降低残差不好，但是好与不好的程度在GBDT中无法展现。而xgboost这里就通过二阶导可以展示出来，这样模型训的时候就有数了</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/XGBoost/" rel="tag"># XGBoost</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/15/%E8%B4%B7%E6%AC%BE%E8%BF%9D%E7%BA%A6%E9%A2%84%E6%B5%8B%EF%BC%881%EF%BC%89%E8%B5%9B%E9%A2%98%E7%90%86%E8%A7%A3/" rel="prev" title="贷款违约预测（1）赛题理解">
+      <i class="fa fa-chevron-left"></i> 贷款违约预测（1）赛题理解
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-如何构造目标函数"><span class="nav-text">1.如何构造目标函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-使用泰勒级数优化目标函数"><span class="nav-text">2.使用泰勒级数优化目标函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-在树的形状已知的情况下，求目标函数的最小值"><span class="nav-text">3.在树的形状已知的情况下，求目标函数的最小值</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">554k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
