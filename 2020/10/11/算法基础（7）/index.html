@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="第三章内容：深度优先搜索、宽度优先搜索、树与图的存储、树与图的深度优先遍历，树与图的宽度优先遍历，拓扑排序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="算法基础（7）">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/10/11/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="第三章内容：深度优先搜索、宽度优先搜索、树与图的存储、树与图的深度优先遍历，树与图的宽度优先遍历，拓扑排序。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201011170111.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201012183018.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201012201101.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201012201600.png">
+<meta property="article:published_time" content="2020-10-11T08:09:19.000Z">
+<meta property="article:modified_time" content="2020-10-12T13:13:56.263Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201011170111.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/10/11/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>算法基础（7） | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/10/11/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          算法基础（7）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-11 16:09:19" itemprop="dateCreated datePublished" datetime="2020-10-11T16:09:19+08:00">2020-10-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-12 21:13:56" itemprop="dateModified" datetime="2020-10-12T21:13:56+08:00">2020-10-12</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.5k</span>
+            </span>
+            <div class="post-description">第三章内容：深度优先搜索、宽度优先搜索、树与图的存储、树与图的深度优先遍历，树与图的宽度优先遍历，拓扑排序。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>第三章  搜索与图论</p>
+<h3 id="DFS"><a href="#DFS" class="headerlink" title="DFS"></a>DFS</h3><p><strong>深度优先搜索—DFS，宽度优先搜索—BFS</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>数据结构</th>
+<th>空间</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DFS</td>
+<td>栈stack</td>
+<td>$O(h)$</td>
+<td>不具有最短性</td>
+</tr>
+<tr>
+<td>BFS</td>
+<td>队列queue</td>
+<td>$O(2^h)$</td>
+<td>“最短路”</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DFS中关键的两点是：<strong>回溯</strong>和<strong>剪枝</strong>，DFS可以从<strong>搜索树</strong>的角度来考虑。DFS解题最重要的考虑搜索的<strong>顺序</strong>。</p>
+<blockquote>
+<p>DFS例题1：排列数字（Acwing 842）</p>
+<p>给定一个整数n，将数字1~n排成一排，将会有很多种排列方法。现在，请你按照字典序将所有的排列方法输出。</p>
+<p>输入格式：共一行，包含一个整数n。</p>
+<p>输出格式：按字典序输出所有排列方案，每个方案占一行。</p>
+<p>数据范围：$1 \le n \le 7$。</p>
+</blockquote>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201011170111.png" style="zoom: 50%;"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">int</span> path[N];</span><br><span class="line"><span class="keyword">bool</span> st[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> u)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(u == n)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)  <span class="built_in">printf</span>(<span class="string">"%d "</span>, path[i]);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)   <span class="comment">//注意i从1开始，因为要枚举的数是从1到n</span></span><br><span class="line">        <span class="keyword">if</span>(!st[i])</span><br><span class="line">        &#123;</span><br><span class="line">            path[u] = i;</span><br><span class="line">            st[i] = <span class="literal">true</span>;</span><br><span class="line">            dfs(u + <span class="number">1</span>);</span><br><span class="line">            st[i] = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    </span><br><span class="line">    dfs(<span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>DFS例题2：n-皇后问题（Acwing 843）</p>
+<p>n-皇后问题是指将 n 个皇后放在 n∗n 的国际象棋棋盘上，使得皇后不能相互攻击到，即任意两个皇后都不能处于同一行、同一列或同一斜线上。现在给定整数n，请你输出所有的满足条件的棋子摆法。</p>
+<p>输入格式：共一行，包含整数n。</p>
+<p>输出格式：每个解决方案占n行，每行输出一个长度为n的字符串，用来表示完整的棋盘状态。其中”.”表示某一个位置的方格状态为空，”Q”表示某一个位置的方格上摆着皇后。每个方案输出完成后，输出一个空行。输出方案的顺序任意，只要不重复且没有遗漏即可。</p>
+<p>数据范围：$1 \le n \le 9$。</p>
+</blockquote>
+<p>思路1：搜索顺序类似于全排列，从第一行开始，枚举皇后可以放到哪。可以提前判断当前方案一定是不合法的，就不用继续向下搜索了，直接回溯即可，这一过程就是“<strong>剪枝</strong>”。（时间复杂度：$O(n \cdot n!)$）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">char</span> g[N][N];</span><br><span class="line"><span class="keyword">bool</span> col[N], dg[<span class="number">2</span> * N], udg[<span class="number">2</span> * N];  <span class="comment">//分别代表列，对角线，反对角线</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> u)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(u == n)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)  <span class="built_in">puts</span>(g[i]);  <span class="comment">//打印棋盘的每一行</span></span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)   <span class="comment">//遍历每一列</span></span><br><span class="line">        <span class="keyword">if</span>(!col[i] &amp;&amp; !dg[u + i] &amp;&amp; !udg[n - u + i])</span><br><span class="line">        &#123;</span><br><span class="line">            g[u][i] = <span class="string">'Q'</span>;</span><br><span class="line">            col[i] = dg[u + i] = udg[n - u + i] = <span class="literal">true</span>;</span><br><span class="line">            dfs(u + <span class="number">1</span>);</span><br><span class="line">            col[i] = dg[u + i] = udg[n - u + i] = <span class="literal">false</span>;</span><br><span class="line">            g[u][i] = <span class="string">'.'</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++)</span><br><span class="line">            g[i][j] = <span class="string">'.'</span>;</span><br><span class="line">    </span><br><span class="line">    dfs(<span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路2：按棋盘格子开始枚举，放下皇后是一个分支，不放是另一个分支。（时间复杂度：$O(2^{n^2})$）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">char</span> g[N][N];</span><br><span class="line"><span class="keyword">bool</span> row[N], col[N], dg[<span class="number">2</span> * N], udg[<span class="number">2</span> * N];  <span class="comment">//分别代表列，对角线，反对角线</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> s)</span>    <span class="comment">//x, y, s分别代表当前遍历的格子的行，列，已经摆好的皇后的个数</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="keyword">if</span> (y == n)  y = <span class="number">0</span>, x ++;   <span class="comment">//遍历完一行后，转向下一行</span></span><br><span class="line">    <span class="keyword">if</span> (x == n)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(s == n)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)  <span class="built_in">puts</span>(g[i]);</span><br><span class="line">            <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//下一个格子不放皇后</span></span><br><span class="line">    dfs(x, y + <span class="number">1</span>, s);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//下一个格子放皇后</span></span><br><span class="line">    <span class="keyword">if</span>(!row[x] &amp;&amp; !col[y] &amp;&amp; !dg[x + y] &amp;&amp; !udg[x - y + n])</span><br><span class="line">    &#123;</span><br><span class="line">        g[x][y] = <span class="string">'Q'</span>;</span><br><span class="line">        row[x] = col[y] = dg[x + y] = udg[x - y + n] = <span class="literal">true</span>;</span><br><span class="line">        dfs(x, y + <span class="number">1</span>, s + <span class="number">1</span>);</span><br><span class="line">        row[x] = col[y] = dg[x + y] = udg[x - y + n] = <span class="literal">false</span>;</span><br><span class="line">        g[x][y] = <span class="string">'.'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++)</span><br><span class="line">            g[i][j] = <span class="string">'.'</span>;</span><br><span class="line">    </span><br><span class="line">    dfs(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="BFS"><a href="#BFS" class="headerlink" title="BFS"></a>BFS</h3><p><strong>BFS的优势是可以搜索到最短路</strong>。（最短路问题包含DP动态规划问题，DP是没有环的最短路问题。）</p>
+<p><strong>不是所有的问题都是最短路问题，只有当所有边的权重都相同时，才可以用BFS求最短路</strong>，一般情况下都要用专门的最短路算法求。</p>
+<blockquote>
+<p>BFS例题1：走迷宫（Acwing 844）</p>
+<p>给定一个n*m的二维整数数组，用来表示一个迷宫，数组中只包含0或1，其中0表示可以走的路，1表示不可通过的墙壁。最初，有一个人位于左上角(1, 1)处，已知该人每次可以向上、下、左、右任意一个方向移动一个位置。请问，该人从左上角移动至右下角(n, m)处，至少需要移动多少次。数据保证(1, 1)处和(n, m)处的数字为0，且一定至少存在一条通路。</p>
+<p>输入格式：第一行包含两个整数n和m。接下来n行，每行包含m个整数（0或1），表示完整的二维数组迷宫。</p>
+<p>输出格式：输出一个整数，表示从左上角移动至右下角的最少移动次数。</p>
+<p>数据范围：$1 \le n,m \le 100$。</p>
+</blockquote>
+<p>从起点开始搜，第一步把所有距离为1的点搜一遍，第二步把所有距离为2的点搜一遍，……，</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201012183018.png" style="zoom:50%;"></p>
+<p>BFS解题的基本框架：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">初始状态放入队列 queue;</span><br><span class="line"><span class="keyword">while</span><span class="built_in"> queue </span>不空</span><br><span class="line">&#123;</span><br><span class="line">	t = 队头;</span><br><span class="line">	拓展 t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; PII;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">110</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> g[N][N];  <span class="comment">//存放地图</span></span><br><span class="line"><span class="keyword">int</span> d[N][N];  <span class="comment">//存放每一个点到起点的距离</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bfs</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">queue</span>&lt;PII&gt; q;  <span class="comment">//存每个点的坐标(x, y)</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(d, <span class="number">-1</span>, <span class="keyword">sizeof</span> d);  <span class="comment">//初始化d，表示没有被搜索过</span></span><br><span class="line">    d[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">0</span>;   <span class="comment">//从(0, 0) 开始</span></span><br><span class="line">    q.push(&#123;<span class="number">0</span>, <span class="number">0</span>&#125;);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> dx[<span class="number">4</span>] = &#123;<span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>&#125;, dy[<span class="number">4</span>] = &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">-1</span>&#125;;   <span class="comment">//用向量表示搜索的四个方向：上，右，下， 左</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(q.<span class="built_in">size</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> t = q.front();  <span class="comment">//取队头元素</span></span><br><span class="line">        q.pop();  <span class="comment">//将队头元素弹出，队列里保持只有一个元素</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= <span class="number">4</span>; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> x = t.first + dx[i], y = t.second + dy[i];</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span>(x &gt;= <span class="number">0</span> &amp;&amp; x &lt; n &amp;&amp; y &gt;=<span class="number">0</span> &amp;&amp; y &lt; m &amp;&amp; g[x][y] == <span class="number">0</span> &amp;&amp; d[x][y] == <span class="number">-1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                d[x][y] = d[t.first][t.second] + <span class="number">1</span>;</span><br><span class="line">                q.push(&#123;x, y&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> d[n - <span class="number">1</span>][m <span class="number">-1</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; m; j++)</span><br><span class="line">            <span class="built_in">cin</span> &gt;&gt; g[i][j];</span><br><span class="line">            </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; bfs() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>BFS例题2：八数码（Acwing 845）</p>
+</blockquote>
+<h3 id="树与图的遍历"><a href="#树与图的遍历" class="headerlink" title="树与图的遍历"></a>树与图的遍历</h3><p><strong>树是特殊的图——无环连通图</strong>。<strong>图分为有向图和无向图</strong>，而无向图又可以看作是特殊的有向图，因此我们只需考虑有向图的遍历问题即可。</p>
+<p>有向图的<strong>存储方式</strong>：</p>
+<ol>
+<li><strong>邻接矩阵</strong>：<code>g[a][b]</code>，表示$a \to b$的一条边；</li>
+<li><strong>邻接表</strong>：每个节点上开一个单链表，<strong>存这个点可以走到哪些点</strong>。若有新连接的边，一般在链表的头节点插入新的点。</li>
+</ol>
+<p>树与图的<strong>遍历方式</strong>：</p>
+<ol>
+<li><strong>深度优先遍历</strong> </li>
+<li><strong>宽度优先遍历</strong></li>
+</ol>
+<blockquote>
+<p>深度优先遍历例题：树的重心（Acwing 846）</p>
+<p>给定一颗树，树中包含n个结点（编号1~n）和n-1条无向边。请你找到树的重心，并输出将重心删除后，剩余各个连通块中点数的最大值。重心定义：重心是指树中的一个结点，如果将这个点删除后，剩余各个连通块中点数的最大值最小，那么这个节点被称为树的重心。</p>
+<p>输入格式：第一行包含整数n，表示树的结点数。接下来n-1行，每行包含两个整数a和b，表示点a和点b之间存在一条边。</p>
+<p>输出格式：输出一个整数m，表示重心的所有的子树中最大的子树的结点数目。（树的重心可能不唯一）</p>
+<p>数据范围：$1 \le n \le 10^5$。</p>
+</blockquote>
+<p>在树的深度优先遍历时，可以求出每棵子树中的点的数量。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201012201101.png" style="zoom:50%;"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">100010</span>, M = N * <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n;    </span><br><span class="line"><span class="keyword">int</span> h[N], e[M], ne[M], idx;  <span class="comment">//idx 存当前的边数</span></span><br><span class="line"><span class="keyword">bool</span> st[N];  <span class="comment">//表示当前点是否已经被搜过了；在深度优先遍历或者宽度优先遍历中每个点只会被遍历一次</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ans = N;   <span class="comment">//存最后的结果，即删除重心后，使剩余连通块点的数目的最大值最小 的那个值</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> u)</span>    <span class="comment">//深度优先遍历，返回以u为根的子树中的点的数量</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    st[u] = <span class="literal">true</span>;  <span class="comment">//标记当前点已经被搜过了</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//sum存当前子树中点的数目，res存将当前点删除后，剩余连通块中点的数目的最大值</span></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">1</span>, res = <span class="number">0</span>;   </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = h[u]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> j = e[i];</span><br><span class="line">        <span class="keyword">if</span>(!st[j]) </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> s = dfs(j);</span><br><span class="line">            res = <span class="built_in">max</span>(res, s);</span><br><span class="line">            sum += s;</span><br><span class="line">        &#125;    </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    res = <span class="built_in">max</span>(res, n - sum);</span><br><span class="line">    </span><br><span class="line">    ans = <span class="built_in">min</span>(ans, res);</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> a, b;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        add(a, b), add(b, a);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    dfs(<span class="number">1</span>);   <span class="comment">//搜索的是图中的结点编号，结点编号从1开始</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; ans &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>宽度优先遍历例题：图中点的层次（Acwing 847）</p>
+<p>给定一个n个点m条边的有向图，图中可能存在<strong>重边</strong>和<strong>自环</strong>。所有边的长度都是1，点的编号为1~n。请你求出1号点到n号点的最短距离，如果从1号点无法走到n号点，输出-1。</p>
+<p>输入格式：第一行包含两个整数n和m。接下来m行，每行包含两个整数a和b，表示存在一条从a走到b的长度为1的边。</p>
+<p>输出格式：输出一个整数，表示1号点到n号点的最短距离。</p>
+<p>数据范围：$1 \le n,m \le 105$。</p>
+</blockquote>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201012201600.png" style="zoom: 40%;"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">100010</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> h[N], e[N], ne[N], idx;</span><br><span class="line"><span class="keyword">int</span> d[N], q[N];   <span class="comment">//q[]存 用数组模拟的队列</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bfs</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> hh = <span class="number">0</span>, tt = <span class="number">0</span>;</span><br><span class="line">    q[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(d, <span class="number">-1</span>, <span class="keyword">sizeof</span> d);</span><br><span class="line">    </span><br><span class="line">    d[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(hh &lt;= tt)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> t = q[hh ++];    <span class="comment">//取出队头，并弹出队头</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = h[t]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> j = e[i];</span><br><span class="line">            <span class="keyword">if</span>(d[j] == <span class="number">-1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                d[j] = d[t] + <span class="number">1</span>;</span><br><span class="line">                q[++ tt] = j;   <span class="comment">//将下一步能走的点放入队列（其实就是队头，队列中一直只有一个元素）</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> d[n];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> a, b;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        add(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; bfs() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="拓扑排序"><a href="#拓扑排序" class="headerlink" title="拓扑排序"></a>拓扑排序</h3><p>图的宽度优先遍历的一个很经典的应用是：<strong>图的拓扑序列</strong>，拓扑序列是针对有向图的。<strong>若一个由图中所有点构成的序列A满足：对于图中的每条边(x, y)，x在A中都出现在y之前，则称A是该图的一个拓扑序列</strong>。</p>
+<p>也就是说，当把图按照拓扑序排列好后，所有的边都是从前指向后的（点在序列中的顺序）。并不是所有图都有拓扑序列，如存在环的图。<strong>一个有向无环图，一定存在拓扑序列</strong>，因此有向无环图也叫作拓扑图。</p>
+<p>点的<strong>入度</strong>与<strong>出度</strong>：</p>
+<ul>
+<li><p>入度：一个点有多少条边指向自己，就是它的入度；</p>
+</li>
+<li><p>出度：一个点有多少条边从自己出去，就是它的出度。</p>
+</li>
+</ul>
+<p>入度为0的点可以作为起点（当前最前面的位置），一个有向无环图，至少存在一个入度为0的点。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">所有入度为<span class="number">0</span>的点入队列 <span class="built_in">queue</span></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">queue</span> 不空</span><br><span class="line">&#123;</span><br><span class="line">    t = 队头;</span><br><span class="line">    枚举t的所有出边 t-j</span><br><span class="line">    &#123;   删掉t-j, j的入度减<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(j的入度为<span class="number">0</span>):</span><br><span class="line">        	队头 = j;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">100010</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> h[N], e[N], ne[N], idx;</span><br><span class="line"><span class="keyword">int</span> q[N], d[N];   <span class="comment">//d[] 表示一个点的入度</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">topsort</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> hh = <span class="number">0</span>, tt = <span class="number">-1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)</span><br><span class="line">        <span class="keyword">if</span>(!d[i])</span><br><span class="line">            q[++ tt] = i;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(hh &lt;= tt)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> t = q[hh ++];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = h[t]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> j = e[i];</span><br><span class="line">            d[j] --;</span><br><span class="line">            <span class="keyword">if</span>(d[j] == <span class="number">0</span>)  q[++ tt] = j;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> tt == n - <span class="number">1</span>;  <span class="comment">//若所有点已经入队，那队尾就是n-1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> a, b;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        add(a, b);</span><br><span class="line">        d[b] ++;    <span class="comment">//d[]表示一个点的入度，注意这里要入度++</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(topsort())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)  <span class="built_in">printf</span>(<span class="string">"%d "</span>, q[i]);  <span class="comment">//q[]中的次序恰好就是拓扑序列</span></span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">"-1"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/09/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%886%EF%BC%89/" rel="prev" title="算法基础（6）">
+      <i class="fa fa-chevron-left"></i> 算法基础（6）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#DFS"><span class="nav-text">DFS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BFS"><span class="nav-text">BFS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#树与图的遍历"><span class="nav-text">树与图的遍历</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拓扑排序"><span class="nav-text">拓扑排序</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">604k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>

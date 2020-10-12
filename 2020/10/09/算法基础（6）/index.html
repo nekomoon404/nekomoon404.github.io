@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="哈希表，STL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="算法基础（6）">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/10/09/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%886%EF%BC%89/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="哈希表，STL">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720201010165518.png">
+<meta property="article:published_time" content="2020-10-09T10:17:48.000Z">
+<meta property="article:modified_time" content="2020-10-11T07:14:08.936Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720201010165518.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/10/09/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%886%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>算法基础（6） | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/10/09/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%886%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          算法基础（6）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-09 18:17:48" itemprop="dateCreated datePublished" datetime="2020-10-09T18:17:48+08:00">2020-10-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-11 15:14:08" itemprop="dateModified" datetime="2020-10-11T15:14:08+08:00">2020-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8k</span>
+            </span>
+            <div class="post-description">哈希表，STL</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="哈希表"><a href="#哈希表" class="headerlink" title="哈希表"></a>哈希表</h3><p>主要讲两部分内容：<strong>存储结构</strong>—（开放寻址法，拉链法），<strong>字符串哈希方式</strong></p>
+<p>哈希表的主要作用是把一个比较大的空间映射到一个比较小的空间（如0-N），如$x \in (-10^9,10^9)$，哈希函数$h(x) \in (0,10^5)$。</p>
+<p>如何构造哈希函数：</p>
+<ol>
+<li>直接取模  $x \quad\% \quad 10^5 \in (0,10^5)$；（取模的这个数一般要取成质数，且要离2的几次方尽量远，这样冲突的几率是较小的）</li>
+<li>冲突：直接取模会把不同的数映射到相同的数。处理冲突的方式可以分为：开放寻址法和拉链法</li>
+</ol>
+<p>在算法题中一般不需要在哈希表中进行删除操作，一般只有添加和查找操作。</p>
+<h4 id="拉链法"><a href="#拉链法" class="headerlink" title="拉链法"></a>拉链法</h4><p>拉链法：开一个一维数组<code>h[]</code>来存储所有的哈希值。每一次当把一个$x$映射到某一个数时，假设第$1$个数插入11，,$h(11)=3$，就在3下面拉一条链（单链表），存下11，即<code>e[1]=11; ne[1]=h[3]=0; h[3]=1</code>；如果第$4$次插入另一个数23，$h(23)=3$，就将23插入到h[3]下面这条链表中，插到头节点，即让<code>e[4] = 23; ne[4] = h[3]= 1, ne[23]=4</code>。</p>
+<p>当要查找数11时，先求$h(11)=3$，循环<code>for(i = h[k]; i != -1; i = ne[i])</code>，首先<code>i = h[3] = 4</code>，而<code>e[4]=23</code>不等于11；就让<code>i=ne[4]=1</code>，<code>e[1]=11</code>，因此就找到了11。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20201010165518.png" style="zoom: 67%;"></p>
+<blockquote>
+<p>例题1：模拟散列表</p>
+<p>维护一个集合，支持如下几种操作：</p>
+<p>“I x”，插入一个数x；“Q x”，询问数x是否在集合中出现过；</p>
+<p>现在要进行N次操作，对于每个询问操作输出对应的结果。</p>
+<p>输入格式：第一行包含整数N，表示操作数量。接下来N行，每行包含一个操作指令，操作指令为”I x”，”Q x”中的一种。</p>
+<p>输出格式：对于每个询问指令“Q x”，输出一个询问结果，如果x在集合中出现过，则输出“Yes”，否则输出“No”。每个结果占一行。</p>
+<p>数据范围：$1 \le N \le 10^5$，$-10^9 \le x \le 10^9$。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">100003</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> h[N], e[N], ne[N], idx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> k = (x % N + N) % N;  <span class="comment">//让负数模N的结果也是正数</span></span><br><span class="line">    e[idx] = x;       <span class="comment">//e[]存第idx个插入的数的值</span></span><br><span class="line">    ne[idx] = h[k];   <span class="comment">//ne[]存第idx个插入的数的next节点，每次在拉链上插入都是插入到头节点</span></span><br><span class="line">    h[k] = idx ++;    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">find</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> k = (x % N + N) % N;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = h[k]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">        <span class="keyword">if</span>(e[i] == x)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(n--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">char</span> op[<span class="number">2</span>];</span><br><span class="line">        <span class="keyword">int</span> x;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%s%d"</span>, op, &amp;x);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(op[<span class="number">0</span>] == <span class="string">'I'</span>)  insert(x);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(<span class="built_in">find</span>(x))  <span class="built_in">puts</span>(<span class="string">"Yes"</span>);</span><br><span class="line">            <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">"No"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="开放寻址法"><a href="#开放寻址法" class="headerlink" title="开放寻址法"></a>开放寻址法</h4><p>开放寻址法：只开一个数组，但数组长度要开到题目给出的数据范围的2-3倍（经验值）。</p>
+<p>添加：$h(x)=k$，先找到k，从第k个坑位开始找，直到找到第一个空的坑位为止，插入。</p>
+<p>查找：从第k个坑位开始，从前往后找，每一次看当前坑位是否有数，若是x则查找成功；若不是x，就往后找；若坑位没数，则查找失败。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">200003</span>;  <span class="comment">//先找到大于200000的最小质数</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> null = <span class="number">0x3f3f3f3f</span>;   <span class="comment">//找一个数表示坑位没人，要在题目数据范围之外</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> h[N];</span><br><span class="line"></span><br><span class="line"><span class="comment">//如果x在哈希表中已经存在，就返回x的位置；若x在哈希表中不存在，就返回它应该存储的位置</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find</span><span class="params">(<span class="keyword">int</span> x)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> k = (x % N + N) % N;</span><br><span class="line">    <span class="keyword">while</span>(h[k] != null &amp;&amp; h[k] != x)</span><br><span class="line">    &#123;</span><br><span class="line">        k++;</span><br><span class="line">        <span class="keyword">if</span>(k == N)  k = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> k;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">0x3f</span>, <span class="keyword">sizeof</span> h);  <span class="comment">//按字节来初始化</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(n--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">char</span> op[<span class="number">2</span>];</span><br><span class="line">        <span class="keyword">int</span> x;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%s%d"</span>, op, &amp;x);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> k = <span class="built_in">find</span>(x);</span><br><span class="line">        <span class="keyword">if</span>(op[<span class="number">0</span>] == <span class="string">'I'</span>)  h[k] = x;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(h[k] != null)  <span class="built_in">puts</span>(<span class="string">"Yes"</span>);</span><br><span class="line">            <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">"No"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="字符串前缀哈希法"><a href="#字符串前缀哈希法" class="headerlink" title="字符串前缀哈希法"></a>字符串前缀哈希法</h4><p>字符串哈希方式——字符串前缀哈希法</p>
+<p><code>str=&quot;ABCABCDEYXCAcwing&quot;</code>，预处理出所有前缀的哈希，如<code>h[0]=0</code>；<code>h[1]=&quot;A&quot;的哈希值</code>；<code>h[2]=&quot;AB&quot;的哈希值</code>,……</p>
+<p>如何来定义某一个前缀的哈希值：把字符串看成一个P进制的数，如$”ABCD”=(1234)_P=1 \times P^3+ 2 \times P^2 + 3 \times P^2 + 4 \times P^0$，若字符串很长，那转化后的数会很大，因此可以让其模上一个较小的数$Q$，这样就能把字符串映射到$0 $~ $Q-1$之间的数。计算前<code>i</code>个字符的前缀就是：<code>h[i] = h[i-1]* p + str[i]</code></p>
+<p>要注意的是：<strong>不能把一个字母映射到0</strong>；前一小节中哈希数字时可能发生冲突，这里的字符串哈希是假定我们人品够好，<strong>不去考虑冲突的情况</strong>，当然也有经验值：$P=131或13331$，$Q=2^{64}$时，$99.99\%$不会遇到冲突。</p>
+<p>这样做的好处：<strong>可以利用前缀哈希，计算出任意一个子段的哈希值</strong>。</p>
+<p>如已知从1到R的哈希值<code>h[R]</code>，从1到L-1的哈希值<code>h[L-1]</code>，由于左边时高位，右边是低位。先将<code>h[L-1]</code>这一段往左移若干位，让它和<code>h[R]</code>这一段右端点对齐（就是让哈希值位数相等，相当于在<code>h[L]</code>后面补0啦），然后两段哈希值相减，用公式表示就是：</p>
+<script type="math/tex; mode=display">
+h[R]-h[L-1] \times P^{R-L+1}</script><p>还有一个技巧是：我们最后要模$2^{64}$，那直接可以用<code>unsinged long long</code>来存哈希值<code>h[]</code>，若溢出就等价于模$2^{64}$。</p>
+<p>字符串哈希相较于kmp的独特作用：<strong>快速判断两个区间内的字符串是否相同</strong>。</p>
+<blockquote>
+<p>字符串哈希例题（Acwing 841）</p>
+<p>给定一个长度为n的字符串，再给定m个询问，每个询问包含四个整数$l_1,r_1,l_2,r_2$，请你判断$[l_1,r_1]$和$[l_2,r_2]$这两个区间所包含的字符串子串是否完全相同。字符串中只包含大小写英文字母和数字。</p>
+<p>输入格式：第一行包含整数n和m，表示字符串长度和询问次数。第二行包含一个长度为n的字符串，字符串中只包含大小写英文字母和数字。接下来m行，每行包含四个整数$l_1,r_1,l_2,r_2$，表示一次询问所涉及的两个区间。注意，字符串的位置从1开始编号。</p>
+<p>输出格式：对于每个询问输出一个结果，如果两个字符串子串完全相同则输出“Yes”，否则输出“No”。每个结果占一行。</p>
+<p>数据范围：$1 \le n,m \le 10^5$</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> ULL;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">100010</span>, P = <span class="number">131</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">char</span> str[N];</span><br><span class="line">ULL h[N], p[N];  <span class="comment">//h[N]存字符串的哈希值，p[N]存p的几次方</span></span><br><span class="line"></span><br><span class="line"><span class="function">ULL <span class="title">get</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> r)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> h[r] - h[l <span class="number">-1</span>] * p[r - l + <span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d%d%s"</span>, &amp;n, &amp;m, str + <span class="number">1</span>);</span><br><span class="line">    </span><br><span class="line">    p[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)     <span class="comment">//预处理p[]，即p的几次方；以及h[]，即字符串的前缀哈希值</span></span><br><span class="line">    &#123;</span><br><span class="line">        p[i] = p[i - <span class="number">1</span>] * P;</span><br><span class="line">        h[i] = h[i - <span class="number">1</span>] * P + str[i];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(m--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> l1, r1, l2, r2;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d%d%d%d"</span>, &amp;l1, &amp;r1, &amp;l2, &amp;r2);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">get</span>(l1, r1) == <span class="built_in">get</span>(l2, r2))  <span class="built_in">puts</span>(<span class="string">"Yes"</span>);</span><br><span class="line">        <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">"No"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="STL"><a href="#STL" class="headerlink" title="STL"></a>STL</h3><p><strong>vector</strong>：<strong>可变数组</strong>，采用倍增的思想——在数组扩展空间使，将其原来的空间再扩大一倍，对空间为n的大小只需扩展$\log (n)$次即可，对每一次的扩展只用$O(1)$来实现。（系统为某一程序分配空间时，所需时间与空间大小无关，与请求次数有关）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个vector</span></span><br><span class="line"><span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; a;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个vector，指定长度为100，先初始化为1</span></span><br><span class="line"><span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; a(<span class="number">100</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//求变长数组a的长度，时间复杂度为O(1)；所有容器都有</span></span><br><span class="line">a.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断变长数组a是否为空，时间复杂度为O(1)；所有容器都有</span></span><br><span class="line">a.empty();</span><br><span class="line"></span><br><span class="line"><span class="comment">//清空变长数组a；.clear()并不是所有容器都有，如队列，就没有.clear( )</span></span><br><span class="line">a.<span class="built_in">clear</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//向变长数组a的末尾压入数x</span></span><br><span class="line">a.push_back(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//将变长数组a的末尾元素删除</span></span><br><span class="line">a.pop_back();</span><br><span class="line"></span><br><span class="line"><span class="comment">//取变长数组a的第一个元素和最后一个元素</span></span><br><span class="line">a.front(), a.back();</span><br><span class="line"></span><br><span class="line"><span class="comment">//取迭代器第一个元素和最后一个元素(指针)</span></span><br><span class="line">a.<span class="built_in">begin</span>(), a.<span class="built_in">end</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//三种遍历方式</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.<span class="built_in">size</span>(); ++i) <span class="built_in">cout</span> &lt;&lt; a[i];</span><br><span class="line"><span class="comment">//vector &lt;int&gt; :: iterator i;</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> i = a.<span class="built_in">begin</span>(); i != a.<span class="built_in">end</span>(); ++i) <span class="built_in">cout</span> &lt;&lt; *i;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> x : a) <span class="built_in">cout</span> &lt;&lt; x;</span><br><span class="line"></span><br><span class="line"><span class="comment">//vector是支持比较运算的，按字典序比较</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; a(<span class="number">4</span>, <span class="number">3</span>), b(<span class="number">3</span>, <span class="number">4</span>);</span><br><span class="line"><span class="keyword">if</span>(a &lt; b)  <span class="built_in">puts</span>(<span class="string">"a &lt; b"</span>);    <span class="comment">//输出 a &lt; b</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//二元组：pair &lt;int, int&gt;、pair &lt;int, string&gt;、pair &lt;int, char&gt;等</span></span><br><span class="line"><span class="comment">//在进行排序时先以first的字典序进行排列，后以second的字典序进行排列</span></span><br><span class="line"><span class="keyword">typedef</span> pair &lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; PII;</span><br><span class="line">PII a;       </span><br><span class="line"><span class="built_in">vector</span> &lt;PII&gt; a;  <span class="comment">//与vector操作类似，但push_back(&#123;x, c&#125;)，注意&#123;&#125;</span></span><br><span class="line"><span class="comment">//向a中添加一个元素</span></span><br><span class="line">a = maek_pair(x, y);</span><br><span class="line">a = &#123;x, y&#125;;</span><br><span class="line"><span class="comment">//取出a中的第一、二个元素</span></span><br><span class="line">a.first, a.second;</span><br><span class="line"></span><br><span class="line"><span class="comment">//假设某个东西有两种不同的属性，这时就可以用pair存；若要按某种属性进行排序，就把这个属性存入pair中的first。</span></span><br></pre></td></tr></table></figure>
+<p><strong>string</strong>： C++封装好的<strong>字符串</strong>，可支持多种操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s;</span><br><span class="line"></span><br><span class="line"><span class="comment">//求字符串的长度</span></span><br><span class="line">s.<span class="built_in">size</span>(), s.length();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断字符串是否为NULL</span></span><br><span class="line">s.empty();</span><br><span class="line"><span class="comment">//将字符串置为空字符串</span></span><br><span class="line">s.<span class="built_in">clear</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//可在字符串末尾添加字符或字符串</span></span><br><span class="line">s += <span class="string">'A'</span>;</span><br><span class="line">s += 'ABCD';</span><br><span class="line"></span><br><span class="line"><span class="comment">//取子串substr(下x, y)(重点)，取下标从x开始的长度为y的子串。</span></span><br><span class="line">s.substr(x, y);</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回字符串的的首地址</span></span><br><span class="line">s.C_str();</span><br></pre></td></tr></table></figure>
+<p><strong>queue：队列</strong>，先进先出，通常用于广度优先（bfs）等算法，可支持插入队尾，弹出队头等操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">queue</span> &lt;<span class="keyword">int</span>&gt; q;</span><br><span class="line"></span><br><span class="line"><span class="comment">//向队尾插入元素x</span></span><br><span class="line">q.push(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//将队头元素弹出</span></span><br><span class="line">q.pop();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断队列是否为空</span></span><br><span class="line">q.empty();</span><br><span class="line"></span><br><span class="line"><span class="comment">//取队头、队尾元素</span></span><br><span class="line">q.front(), q.back();</span><br><span class="line"></span><br><span class="line"><span class="comment">//但是不能使用clear()，若要清空，可以直接建一个新的队列</span></span><br><span class="line">q = <span class="built_in">queue</span> &lt;<span class="keyword">int</span>&gt; ();</span><br></pre></td></tr></table></figure>
+<p><strong>priority_queue：优先队列</strong>（实现原理是堆），队列中的元素按照某种顺序规则排序，<strong>默认是大根堆</strong>，A*算法等是需要用到的。</p>
+<blockquote>
+<p>堆(Heap)分为小根堆和大根堆两种，对于一个小根堆，它是具有如下特性的一棵完全二叉树：<br>    (1)若树根结点存在左孩子，则根结点的值(或某个域的值)小于等于左孩子结点的值(或某个域的值)； </p>
+<p>​     (2)若树根结点存在右孩子，则根结点的值(或某个域的值)小于等于右孩子结点的值(或某个域的值)； </p>
+<p>​     (3)以左、右孩子为根的子树又各是一个堆。 </p>
+<p>大根堆的定义与上述类似，只要把小于等于改为大于等于就得到了。 </p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义成小根堆</span></span><br><span class="line">priority_queue&lt;<span class="keyword">int</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;,  greater&lt;<span class="keyword">int</span>&gt;&gt; q;</span><br><span class="line"></span><br><span class="line"><span class="comment">//向堆中插入一个元素x</span></span><br><span class="line">q.push(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回堆顶元素</span></span><br><span class="line">q.top();</span><br><span class="line"></span><br><span class="line"><span class="comment">//弹出堆顶元素</span></span><br><span class="line">q.pop();</span><br></pre></td></tr></table></figure>
+<p><strong>stack：栈</strong>，与队列类似，区别是先进后出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">stack</span> &lt;<span class="keyword">int</span>&gt; stk;</span><br><span class="line"></span><br><span class="line"><span class="comment">//向栈顶插入一个元素</span></span><br><span class="line">stk.push(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//取出栈顶元素</span></span><br><span class="line">stk.top();</span><br><span class="line"></span><br><span class="line"><span class="comment">//弹出栈顶元素</span></span><br><span class="line">stk.pop();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断栈是否为空</span></span><br><span class="line">stk.empty();</span><br></pre></td></tr></table></figure>
+<p><strong>deque：双端队列</strong>，既可以对队头操作，与可以对队尾操作，但是时间复杂度相对较高；双端队列可支持的操作较多。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">deque</span> &lt;<span class="keyword">int</span>&gt; q;</span><br><span class="line"></span><br><span class="line"><span class="comment">//取双端队列大小</span></span><br><span class="line">q.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断双端队列是否为NULL</span></span><br><span class="line">q.empty();</span><br><span class="line"></span><br><span class="line"><span class="comment">//清空双端队列，无需按q = deque &lt;int&gt; ()重新赋值</span></span><br><span class="line">q.<span class="built_in">clear</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回第一个元素(队头)、最后一个元素(队尾)</span></span><br><span class="line">q.front(), q.back();</span><br><span class="line"></span><br><span class="line"><span class="comment">//队尾插入、弹出一个元素</span></span><br><span class="line">q.push_back(x), q.pop_back();</span><br><span class="line"></span><br><span class="line"><span class="comment">//队头插入、弹出一个元素</span></span><br><span class="line">q.push_front(x), q.pop_front();</span><br><span class="line"></span><br><span class="line"><span class="comment">//也可使用随机寻址 []</span></span><br><span class="line"><span class="comment">//也支持迭代器q.begin()、q.end()</span></span><br></pre></td></tr></table></figure>
+<p><strong>set/multiset，map/multimap，是基于平衡二叉树（红黑树），动态维护有序序列</strong>。</p>
+<p><strong>set/multiset：集合</strong>，集合中的元素是从小至大排好序的。<strong>set里面所有的元素都不可重复</strong>（集合的互异性），自动去重的功能。<strong>multiset里面所有的元素可以重复</strong>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span> &lt;<span class="keyword">int</span>&gt; s;</span><br><span class="line"></span><br><span class="line"><span class="comment">//支持迭代器，也支持--(前驱)、++(后继)操作，时间复杂度为O(logn)</span></span><br><span class="line"><span class="built_in">set</span> &lt;<span class="keyword">int</span>&gt; iterator :: it;</span><br><span class="line"></span><br><span class="line"><span class="comment">//插入元素x，时间复杂度为O(1)</span></span><br><span class="line">s.insert(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//删除元素x，若输入是一个数，就删除所有x，时间复杂度为O(k+logn)；若输入一个迭代器，就删除这个迭代器</span></span><br><span class="line">s.erase(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//清空集合</span></span><br><span class="line">s.<span class="built_in">clear</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回集合元素的个数</span></span><br><span class="line">s.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回某一个元素的个数</span></span><br><span class="line">s.count();</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断集合是否为空</span></span><br><span class="line">s.empty();</span><br><span class="line"></span><br><span class="line"><span class="comment">//查找元素x是否在集合中出现，如果不出现则返回s.end()，否则返回对应的迭代器</span></span><br><span class="line">s.<span class="built_in">find</span>(x);</span><br><span class="line"></span><br><span class="line"><span class="comment">//核心操作: 返回大于等于x的第一个元素（大于等于x的最下的数）的迭代器</span></span><br><span class="line">lower_bound(x);</span><br><span class="line"><span class="comment">//返回大于x的第一个元素的迭代器</span></span><br><span class="line">upper_bound(x);</span><br></pre></td></tr></table></figure>
+<p><strong>map/multimap</strong>： STL的一个<strong>关联容器</strong>，它<strong>提供一对一的hash</strong>。map/multimap 在插入元素时，内部按照key进行从小到大进行排序。核心为映射key - value，支持随机访问[]。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">map</span> &lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; m;</span><br><span class="line">multiimap &lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; ms;</span><br><span class="line">pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; p;</span><br><span class="line">p = make_pair(x, y);</span><br><span class="line"></span><br><span class="line"><span class="comment">//插入的数是一个pair</span></span><br><span class="line">m.insert(p);</span><br><span class="line"></span><br><span class="line"><span class="comment">//删除，输入的参数是pair或者迭代器</span></span><br><span class="line">m.erase(p);</span><br><span class="line"></span><br><span class="line"><span class="comment">//查找</span></span><br><span class="line">m.<span class="built_in">find</span>(p);</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以完全像数组一样来使用map，时间复杂度为O(logn)</span></span><br><span class="line"><span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; a;</span><br><span class="line">a[<span class="string">"yxc"</span>] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//也支持lower_bound()，upper_bound()</span></span><br></pre></td></tr></table></figure>
+<p><strong>unordered_set，unordered_map，unordered_multiset，unordered_multimap</strong>，哈希表。和上面类似，可以理解为无序版，增删改查的时间复杂度为$O(1)$。但不支持<code>lower_bound()</code>，<code>upper_bound()</code>，迭代器的<code>++</code>，<code>--</code>。</p>
+<p><strong>bitset：压位</strong></p>
+<p>C++中的<code>bool</code>数据类型是占一个字节，如要开一个1024个<code>bool</code>的数组，就要$1024 B=1KB$的空间，bitset可以在一个字节压8位，则就只要$128B$的空间。<strong>bitset</strong>使用的内存是正常的bool数组的八分之一。</p>
+<p>如要存一个10000<em>10000的<code>bool</code>矩阵，那就需要$10^8 B = 100 MB$的空间，若题目限制空间为$64MB$，则可以使用<em>*bitset</em></em>进行压位，就只需12MB的空间了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">bitset</span>&lt;10000&gt; s;</span><br><span class="line"><span class="comment">//支持各种位运算操作 </span></span><br><span class="line">~, &amp;, |, ^, </span><br><span class="line">&gt;&gt; , &lt;&lt;</span><br><span class="line">==, !=</span><br><span class="line">[]</span><br><span class="line">    </span><br><span class="line">s.count();  <span class="comment">//返回有多少个1</span></span><br><span class="line">s.any();   <span class="comment">//判断是否至少有一个1</span></span><br><span class="line">s.none();  <span class="comment">//判断是否全为0</span></span><br><span class="line"></span><br><span class="line">s.<span class="built_in">set</span>();       <span class="comment">//把所有位置成1</span></span><br><span class="line">s.<span class="built_in">set</span>(k, v);   <span class="comment">//把第k位变成v</span></span><br><span class="line">s.reset();     <span class="comment">//把所有位置变成0</span></span><br><span class="line">s.flip();      <span class="comment">//等价于~</span></span><br><span class="line">s.flip(k);     <span class="comment">//把第k位取反</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/07/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%885%EF%BC%89/" rel="prev" title="算法基础（5）">
+      <i class="fa fa-chevron-left"></i> 算法基础（5）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/10/11/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%887%EF%BC%89/" rel="next" title="算法基础（7）">
+      算法基础（7） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#哈希表"><span class="nav-text">哈希表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#拉链法"><span class="nav-text">拉链法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开放寻址法"><span class="nav-text">开放寻址法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串前缀哈希法"><span class="nav-text">字符串前缀哈希法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#STL"><span class="nav-text">STL</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">604k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
