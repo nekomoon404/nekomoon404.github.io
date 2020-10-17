@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="第四章数学知识内容：数论（质数，约数）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="算法基础（10）">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/10/15/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8810%EF%BC%89/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="第四章数学知识内容：数论（质数，约数）">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-15T13:05:35.000Z">
+<meta property="article:modified_time" content="2020-10-17T12:43:57.684Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/10/15/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8810%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>算法基础（10） | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/10/15/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8810%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          算法基础（10）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-15 21:05:35" itemprop="dateCreated datePublished" datetime="2020-10-15T21:05:35+08:00">2020-10-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-17 20:43:57" itemprop="dateModified" datetime="2020-10-17T20:43:57+08:00">2020-10-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <div class="post-description">第四章数学知识内容：数论（质数，约数）</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="质数"><a href="#质数" class="headerlink" title="质数"></a>质数</h3><p>在大于1的整数中，如果只包含1和本身这两个约数，就被称为质数，或者素数。</p>
+<h4 id="1-质数的判定——试除法"><a href="#1-质数的判定——试除法" class="headerlink" title="1.质数的判定——试除法"></a>1.质数的判定——试除法</h4><p>暴力做法，1到$n$遍历——时间复杂度$O(n)$</p>
+<p>优化：n的约数都是成对出现，因此枚举时只枚举其中较小的一个，即2到$\sqrt{n}$，时间复杂度$O(\sqrt{n})$（<strong>推荐写成<code>1 &lt;= n / i</code></strong>，若是<code>i &lt;= sqrt(n)</code>，比较费时间；若是<code>i * i &lt;= n</code>，当n接近<code>int</code>的最大值时，<code>i * i</code>有溢出风险。）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">is_prime</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(n &lt; <span class="number">2</span>)  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n / <span class="number">2</span>; i ++)</span><br><span class="line">        <span class="keyword">if</span>(n % i == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-分解质因数——试除法"><a href="#2-分解质因数——试除法" class="headerlink" title="2.分解质因数——试除法"></a>2.分解质因数——试除法</h4><p>每个合数都可以写成几个质数相乘的形式，其中每个质数都是这个合数的因数，把一个合数用质因数相乘的形式表示出来，叫做分解质因数。如30=2×3×5 。分解质因数只针对合数。</p>
+<blockquote>
+<p>给定n个正整数$a_i$，将每个数分解质因数，并按照质因数从小到大的顺序输出每个质因数的<strong>底数</strong>和<strong>指数</strong>。</p>
+</blockquote>
+<p>暴力做法：从小到大枚举所有数，$O(n)$</p>
+<p>优化：n中最多只包含一个大于$\sqrt{n}$的质因数，最坏情况$O(\sqrt{n})$，最好情况$O(\log n)$（如当$n-2^k$）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">divide</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n / i; i++)</span><br><span class="line">        <span class="keyword">if</span>(n % i == <span class="number">0</span>)  <span class="comment">// i 一定是质数</span></span><br><span class="line">        &#123;</span><br><span class="line">        	<span class="keyword">int</span> s = <span class="number">0</span>;  <span class="comment">//求底数的指数</span></span><br><span class="line">            <span class="keyword">while</span>(n % i == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">				n /= i;</span><br><span class="line">                s++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%d%d\n"</span>, i, s);</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="keyword">if</span>(n &gt; <span class="number">1</span>)  <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, n, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-筛质数"><a href="#3-筛质数" class="headerlink" title="3.筛质数"></a>3.筛质数</h4><blockquote>
+<p>给定一个正整数n，请你求出1~n中质数的个数。</p>
+</blockquote>
+<p>朴素做法：将所有数从小到大排列，依次把每个数的倍数删掉，剩下的数就是从2到n的质数。（如果p没有被删掉，说明从2到p-1中不存在任何一个p的约数，那p一定是质数。）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">get_primes</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(!st[i])</span><br><span class="line">        &#123;</span><br><span class="line">            prime[cnt ++] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = i + i; j &lt;= n; j += i)  st[j] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cnt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>时间复杂度：$O(n \log n)$</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+& \frac{n}{2}+\frac{n}{3}+\dots+\frac{n}{n}\\
+=&n(\frac{1}{2}+\frac{1}{3}+\dots+\frac{1}{n}) --调和级数\\ 
+=&n(\ln n + c)--c是欧拉常数，\approx0.5772 \\
+<&n \log n
+\end{align*}</script><p>优化：并不需要把每个数的倍数删掉，<strong>只需把每个质数的倍数删掉</strong>，代码只需很小的改动。——时间复杂度：$O(n \log \log n)$，很接近$O(n)$了。（1到n中有$n / \ln n$个质数）</p>
+<blockquote>
+<p>埃氏筛法</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">get_primes</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(!st[i])</span><br><span class="line">        &#123;</span><br><span class="line">            prime[cnt ++] = i;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = i + i; j &lt;= n; j += i)  st[j] = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cnt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>优化2：<strong>线性筛法</strong>，也称为欧拉筛法，思路是：<strong>n只会被它的最小质因子筛掉</strong>。当$n=10^7$时，线性筛法大概比埃氏筛法快一倍。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">get_primes</span><span class="params">(<span class="keyword">int</span> n)</span>   <span class="comment">//线性筛法</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(!st[i])   prime[cnt ++] = i;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; prime[j] &lt;= n / i; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            st[prime[j] * i] = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">if</span>(i % prime[j] == <span class="number">0</span>)  <span class="keyword">break</span>;   <span class="comment">//prime[j]一定是i的最小质因数</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cnt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果<code>i % prime[j] == 0</code>，<code>prime[j]</code>一定是<code>i</code>的最小质因数，<code>prime[j]</code> 一定是<code>prime[j] * i</code>的最小质因数；如果<code>i % prime[j] != 0</code>，说明<code>prime[j]</code>一定小于<code>i</code>的最小质因数，所以<code>prime[j]</code>也一定是<code>prime[j] * i</code>的最小质因数。</p>
+<p>任何一个合数一定会被筛掉，它一定存在一个最小质因数，设为<code>prime[j]</code>，当<code>i</code>枚举到<code>x / prime[j]</code>时，它就会被筛掉。因为我们是<strong>用最小质因子来筛数，而每个数只有一个最小质因子，因此时间复杂度是线性的，即$O(n)$</strong>。</p>
+<h3 id="约数"><a href="#约数" class="headerlink" title="约数"></a>约数</h3><h4 id="1-试除法求约数"><a href="#1-试除法求约数" class="headerlink" title="1.试除法求约数"></a>1.试除法求约数</h4><blockquote>
+<p>给定n个正整数$a_i$，对于每个整数$a_i$,请你按照从小到大的顺序输出它的所有约数。</p>
+</blockquote>
+<p>思路和试除法判断质数相似，从小到大枚举n的约数（只枚举一对中小的那个），时间复杂度为$O(\sqrt{n})$。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; get_divisors(<span class="keyword">int</span> n)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; res;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n / i; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(n % i == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            res.push_back(i);</span><br><span class="line">            <span class="keyword">if</span>(i != n / i)  res.push_back(n / i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sort(res.<span class="built_in">begin</span>(), res.<span class="built_in">end</span>());</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-约数个数"><a href="#2-约数个数" class="headerlink" title="2.约数个数"></a>2.约数个数</h4><p>定理：如果一个数因数分解之后可以写成：$N=p_1^{ \alpha_1} \cdot p_2^{\alpha_2} \cdot \dots p_k^{\alpha_k}$，那么它的<strong>约数个数</strong>为：$(\alpha_1+1)(\alpha_2+1)\dots (\alpha_3+1)$。</p>
+<p>（数N的约数d一定可以写成：$d=p_1^{ \beta_1} \cdot p_2^{\beta_2} \cdot \dots p_k^{\beta_k}$，其中对每一个$\beta_i$，一定有$0 \le \beta_i \le \alpha_i$；N的每一个约数就对应着一组不同的$\beta_i$的取值，因此N的约数的个数就是$\beta_i$的不同取值的组合数，即$(\alpha_1+1)(\alpha_2+1)\dots (\alpha_3+1)$。）</p>
+<blockquote>
+<p>冷知识：<code>int</code>范围内的整数，约数个数最多的数，它的约数大约有1500个</p>
+<p>给定n个正整数$a_i$，请你输出这些数的乘积的约数个数，答案对$10^9+7$取模。</p>
+</blockquote>
+<p>题目是让求数$a_1 \cdot a_2 \dots a_n$的乘积的约数的个数，我们可以分别求出每个数的约数的个数，把所有的约数和指数用一个哈希表存起来，然后套用公式即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unordered_map&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">long</span> <span class="keyword">long</span> LL;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> mod = <span class="number">1e9</span> + <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">unordered_map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; primes;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(n--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> x;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; x;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= x / i; i++)</span><br><span class="line">            <span class="keyword">while</span>(x % i == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                x /= i;</span><br><span class="line">                primes[i] ++;</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">if</span>(x &gt; <span class="number">1</span>)  primes[x] ++;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    LL res = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span> prime : primes)  res = res * (prime.second + <span class="number">1</span>) % mod;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; res &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-约数之和"><a href="#3-约数之和" class="headerlink" title="3.约数之和"></a>3.约数之和</h4><p>定理：如果一个数因数分解之后可以写成：$N=p_1^{ \alpha_1} \cdot p_2^{\alpha_2} \cdot \dots p_k^{\alpha_k}$，那么它的<strong>约数之和</strong>为：$(p_1^{ 0} + p_1^{1}+ \dots p_1^{\alpha_1})(p_2^{ 0} + p_2^{1}+ \dots p_2^{\alpha_2}) \dots (p_k^{ 0} + p_k^{1}+ \dots p_k^{\alpha_k})$。</p>
+<p>（将上式展开，一共有$(\alpha_1+1)(\alpha_2+1)\dots (\alpha_3+1)$项，每一项都是$p_1^{ \beta_1} \cdot p_2^{\beta_2} \cdot \dots p_k^{\beta_k}$，都是N的一个约数，且每个数都不同，则上式就是N的约数之和。）</p>
+<blockquote>
+<p>给定n个正整数$a_i$，请你输出这些数的乘积的约数之和，答案对$10^9+7$取模。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unordered_map&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">long</span> <span class="keyword">long</span> LL;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> mod = <span class="number">1e9</span> + <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">unordered_map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; primes;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(n--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> x;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; x;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= x / i; i++)</span><br><span class="line">            <span class="keyword">while</span>(x % i == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                x /= i;</span><br><span class="line">                primes[i] ++;</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">if</span>(x &gt; <span class="number">1</span>)  primes[x] ++;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    LL res = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span> prime : primes)   <span class="comment">//代码和上题基本一样，只需按求约数和的公式改动一下即可</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> p = prime.first, a = prime.second;</span><br><span class="line">        LL t = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span>(a--)   t = (t * p + <span class="number">1</span>) % mod;   <span class="comment">//这一步可以用分治优化到log a的复杂度，但在这个题中其实没必要</span></span><br><span class="line">        res = res * t % mod;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; res &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-求最大公约数"><a href="#4-求最大公约数" class="headerlink" title="4.求最大公约数"></a>4.求最大公约数</h4><p>欧几里得算法，也叫辗转相除法。a和b的最大公约数$=$ a模b和b的最大公约数，$(a, b)=(b, a \, mod \,b)$，这样就可以用递归写了，时间复杂度为$O(\log n)$。</p>
+<p>（设$a \,mod\, b=a-c \cdot b$，则$(a, b)=(b, a-c \cdot b)$。由d能整除a，d能整除b，则d能整数ax + by，这证上式成立。）</p>
+<blockquote>
+<p>给定n对正整数$a_i,b_i$，请你求出每对数的最大公约数。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">gcd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> b ? gcd(b, a % b) : a;   <span class="comment">//a和0的最大公约数是a</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(n--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> a, b;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d%d"</span>, &amp;a, &amp;b);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, gcd(a, b));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/14/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%889%EF%BC%89/" rel="prev" title="算法基础（9）">
+      <i class="fa fa-chevron-left"></i> 算法基础（9）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#质数"><span class="nav-text">质数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-质数的判定——试除法"><span class="nav-text">1.质数的判定——试除法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-分解质因数——试除法"><span class="nav-text">2.分解质因数——试除法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-筛质数"><span class="nav-text">3.筛质数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#约数"><span class="nav-text">约数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-试除法求约数"><span class="nav-text">1.试除法求约数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-约数个数"><span class="nav-text">2.约数个数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-约数之和"><span class="nav-text">3.约数之和</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-求最大公约数"><span class="nav-text">4.求最大公约数</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">623k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
