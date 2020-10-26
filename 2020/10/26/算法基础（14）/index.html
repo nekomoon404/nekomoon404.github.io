@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://nekomoon404.github.io').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="第五章 动态规划的内容：背包问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="算法基础（14）">
+<meta property="og:url" content="http://nekomoon404.github.io/2020/10/26/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/index.html">
+<meta property="og:site_name" content="nekomoon的个人小站">
+<meta property="og:description" content="第五章 动态规划的内容：背包问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201026194346.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201026195800.png">
+<meta property="og:image" content="http://nekomoon404.github.io/2020/10/26/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/blog/source/_posts/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201026195800.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720201026205837.png">
+<meta property="og:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ%E5%9B%BE%E7%89%8720201026221106.png">
+<meta property="article:published_time" content="2020-10-26T11:39:13.000Z">
+<meta property="article:modified_time" content="2020-10-26T14:23:33.547Z">
+<meta property="article:author" content="nekomoon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/nekomoon404/blog-img/raw/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20201026194346.png">
+
+<link rel="canonical" href="http://nekomoon404.github.io/2020/10/26/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>算法基础（14） | nekomoon的个人小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="nekomoon的个人小站" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">nekomoon的个人小站</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nekomoon404.github.io/2020/10/26/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="nekomoon">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="nekomoon的个人小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          算法基础（14）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-26 19:39:13 / 修改时间：22:23:33" itemprop="dateCreated datePublished" datetime="2020-10-26T19:39:13+08:00">2020-10-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">数据结构与算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7k</span>
+            </span>
+            <div class="post-description">第五章 动态规划的内容：背包问题</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="背包问题"><a href="#背包问题" class="headerlink" title="背包问题"></a>背包问题</h3><p>动态规划（Dynamic Programming，DP）的常见模型：背包问题，其核心在于状态的表示和状态的转移。</p>
+<p><strong>背包问题</strong>：有$N$个物品和一个容量为$V$的背包，每个物品有重量$v_i$和价值$w_i$两种属性，要求选若干物品放入背包使背包中物品的总价值最大且背包中物品的总重量不超过背包的容量。</p>
+<blockquote>
+<p>可参考：<a href="https://oi-wiki.org/dp/knapsack/" target="_blank" rel="noopener">OI Wiki-背包DP</a></p>
+</blockquote>
+<h4 id="1-01背包"><a href="#1-01背包" class="headerlink" title="1. 01背包"></a>1. 01背包</h4><p>01背包问题的特点是每件物品最多只能用一次</p>
+<blockquote>
+<p>例题：01背包问题（Acwing 2）</p>
+<p>有$N $件物品和一个容量是$V$的背包。每件物品只能使用一次。第$i$件物品的体积是$v_i$，价值是$w_i$。求解将哪些物品装入背包，可使这些物品的总体积不超过背包容量，且总价值最大。输出最大价值。</p>
+<p>数据范围：$0&lt;N,V≤1000,0&lt;v_i,w_i≤1000$。</p>
+</blockquote>
+<p>DP问题一般从两个角度来考虑：</p>
+<ul>
+<li><p><strong>状态表示</strong>：背包问题有两维，$f(i, j)$，再进一步：</p>
+<ul>
+<li>$f(i,j)$表示的集合是什么，表示所有选法，需满足两个条件：（1）只从前$i$个物品中选，（2）选出的物品的总体积$\le j$</li>
+<li>集合的属性是什么，（最大值，最小值，元素的数量），对于背包问题显然是：所有选法的价值的最大值</li>
+</ul>
+</li>
+<li><p><strong>状态计算</strong>：对应集合的划分，考虑$f(i,j)$可以怎样计算出来，把当前的集合能划分成若干个更小的子集，每个子集都可以用前面更小的子集表示出来。对于背包问题，我们把$f(i,j)$分为两个子集：</p>
+<ul>
+<li><strong>不含$i$</strong>；只从前$i-1$个物品中选，且总体积$\le j$，即$f(i-1,j)$；</li>
+<li><strong>含$i$</strong>：从前$i$个物品中选，且总体积$\le j$，且要包含物品$i$；这里需要绕个弯，每种选法中都有物品$i$，那我们可以从每种选法中减去$i$，即总体积$\le j - v_i$，且这样不会影响不同选法中的最大值是哪个，即问题转化成立从前$i-1$个物品中选，且总体积$j - v_i$，最后再加上物品$i$的价值，即$f(i-1, j -v_i)+w_i$。</li>
+</ul>
+<p>集合的划分一般遵循两个原则：（1）不重；（2）不漏</p>
+</li>
+</ul>
+<p>DP的优化一般是对DP问题的代 码或计算方程作等价变形，所以做DP问题时一定要把基本的方程形式写出来，再做优化。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">1010</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[N][N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;   <span class="comment">//n表示物品数量，m表示背包容积</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//从f[0][0]到f[0][m]都是0，因为没选任何物品；全局变量已经是0了，所以下面从1开始</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; j ++)</span><br><span class="line">        &#123;</span><br><span class="line">            f[i][j] = f[i - <span class="number">1</span>][j];    <span class="comment">//不含i的子集一定存在</span></span><br><span class="line">            <span class="keyword">if</span>(j &gt;= v[i])             <span class="comment">//当j大于v[i]时，含i的子集才存在  </span></span><br><span class="line">                f[i][j] = <span class="built_in">max</span>(f[i][j], f[i - <span class="number">1</span>][j - v[i]] + w[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[n][m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码是用二维的<code>f[i][j]</code>来表示状态的，其实那可以<strong>进一步优化</strong>，用<strong>一维数组</strong>来做。$f(i,j)$这一层的计算只用到了$f(i-1,)$，$f(,j)$只用到了$f(,j)$和$f(,j-v_i)$，都是$\le j$的。下面对代码进行等价变形即可：</p>
+<ol>
+<li><p>将二维的<code>f[N][N]</code>变为一维的<code>f[N]</code>；</p>
+</li>
+<li><p><code>f[i][j] = f[i - 1][j];</code> 等价为<code>f[j] = f[j];</code>  可以直接删掉；</p>
+</li>
+<li><p><code>if(j &gt;= v[i])</code>  等价于让<code>j</code>直接从<code>j = v[i]</code> 开始循环；</p>
+</li>
+<li><p>如果直接把<code>f[i][j] = max(f[i][j], f[i - 1][j - v[i]] + w[i]);</code>改成<code>f[j] = max([j], f[j - v[i]] + w[i]);</code>，是不对的；因为<code>j-v[i]</code>是小于<code>j</code>的，在第<code>i</code>层中，计算到这里时它已经在层内被更新过了，<code>f[j-v[i]]</code>存的其实是第<code>i</code>层的<code>f[j-v[i]]</code>。而我们实际需要的是第<code>i-1</code>层的<code>f[j-v[i]]</code>，因此要在第<code>i</code>层计算到它时在层内还没有被更新过。为此我们只需要把<code>j</code>从大到小遍历，即<code>for(int j = m; j &gt;= v[i]; j --)</code>。（太妙了）</p>
+</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">1010</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;   <span class="comment">//n表示物品数量，m表示背包容积</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= v[i]; j --)</span><br><span class="line">			f[j] = <span class="built_in">max</span>(f[j], f[j - v[i]] + w[i]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-完全背包"><a href="#2-完全背包" class="headerlink" title="2. 完全背包"></a>2. 完全背包</h4><p>完全背包问题的特点是每件物品有无限个，即可以在背包中放多个相同物品。</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201026194346.png" style="zoom:70%;"></p>
+<blockquote>
+<p>例题：完全背包问题（ACwing 3）</p>
+<p>有$ N $种物品和一个容量是$ V $的背包，每种物品都有无限件可用。第$ i $种物品的体积是$ v_i$，价值是$ w_i$。求解将哪些物品装入背包，可使这些物品的总体积不超过背包容量，且总价值最大。输出最大价值。</p>
+<p>数据范围：$0&lt;N,V≤1000,0&lt;v_i,w_i≤1000$</p>
+</blockquote>
+<p><strong>朴素做法</strong>的代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span>  N = <span class="number">1010</span>;</span><br><span class="line"><span class="keyword">int</span> n,m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[N][N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; j ++)</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> k = <span class="number">0</span>; k * v[i] &lt;= j; k ++)</span><br><span class="line">                f[i][j] = <span class="built_in">max</span>(f[i][j], f[i - <span class="number">1</span>][j - k * v[i]] + k * w[i]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[n][m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>优化：</strong>比较计算<code>f[i,j]</code>和<code>f[i,j-v]</code>的状态方程，<code>f[i,j-v]</code>的每一项与<code>f[i,j]</code>的对应项很相似，只是少了一个<code>w</code>，则橙色框中的最大值就等于<code>f[i,j-v]+w</code>，因此有<code>f[i,j]=max(f[i-1,j], f[i,j-v]+w)</code>，这样在计算<code>f[i,j]</code>时就只需枚举两个状态，而不是<code>k</code>个状态</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/微信图片_20201026195800.png" style="zoom:67%;"></p>
+<blockquote>
+<p>比较01背包问题的方程：<code>f[i,j]=max(f[i-1][j], f[i-1, j-v]+w[i])</code>，只有一点不同。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span>  N = <span class="number">1010</span>;</span><br><span class="line"><span class="keyword">int</span> n,m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[N][N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; j ++)</span><br><span class="line">        &#123;</span><br><span class="line">            f[i][j] = f[i - <span class="number">1</span>][j];</span><br><span class="line">            <span class="keyword">if</span>(j &gt;= v[i])  f[i][j] = <span class="built_in">max</span>(f[i][j], f[i][j - v[i]] + w[i]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[n][m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>再优化：</strong>同样地，完全背包问题也可以优化到用一维数组做，用01背包问题相同的思路即可，而且完全背包的方程：<code>f[i,j]=max(f[i-1,j], f[i,j-v]+w)</code>，是用第<code>i</code>层的数据更新，因此遍历<code>j</code>时从小到大遍历即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span>  N = <span class="number">1010</span>;</span><br><span class="line"><span class="keyword">int</span> n,m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = v[i]; j &lt;= m; j ++)</span><br><span class="line">            f[j] = <span class="built_in">max</span>(f[j], f[j - v[i]] + w[i]);</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-多重背包"><a href="#3-多重背包" class="headerlink" title="3.多重背包"></a>3.多重背包</h4><p>多重背包问题的特点是每件物品有有限个数，既不是1件也不是无限件，它有个确定的数值。</p>
+<p><img src="/2020/10/26/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8814%EF%BC%89/blog/source/_posts/算法基础（14）/微信图片_20201026195800.png" style="zoom:870%;"></p>
+<p>状态转移方程：<code>f[i][j]=max(f[i][j], f[i - 1][j - v[i] * k] + w[i] * k);  k = 0,1,2,...,s[i]</code></p>
+<blockquote>
+<p>例题：多重背包问题I（Acwing 4）</p>
+<p>有$N$种物品和一个容量是$V$的背包。第$i$种物品最多有$s_i$件，每件体积是$ v_i$，价值是$ w_i$。求解将哪些物品装入背包，可使物品体积总和不超过背包容量，且价值总和最大。输出最大价值。</p>
+<p>数据范围：$0&lt;N,V≤100,0&lt;v_i,w_i,s_i≤100$</p>
+</blockquote>
+<p><strong>朴素做法：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">110</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N], s[N];</span><br><span class="line"><span class="keyword">int</span> f[N][N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; v[i] &gt;&gt; w[i] &gt;&gt; s[i];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; j ++)</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> k = <span class="number">0</span>; k &lt;= s[i] &amp;&amp; k * v[i] &lt;= j; k ++)</span><br><span class="line">                f[i][j] = <span class="built_in">max</span>(f[i][j], f[i - <span class="number">1</span>][j - k * v[i]] + k * w[i]);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[n][m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这道题的数据范围比较小，所以暴力做法也不会超时。若是将数据范围改为：</p>
+<p>$0&lt;N≤1000,0&lt;V≤2000,0&lt;v_i,w_i,s_i≤2000$，（Awcing 5 多重背包问题2）</p>
+<p>大约要算$1000<em>2000</em>2000=40$亿次，暴力做法一定会超时（c++一秒大约能算一亿次，即$10^9$次）</p>
+</blockquote>
+<p><strong>优化：</strong>同样从<code>f[i,j]</code>和<code>f[i,j-v]</code>的状态转移方程入手</p>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20201026205837.png" style="zoom:80%;"></p>
+<p>发现两式的中间一部分是相似的，但<code>f[i,j-v]</code>中最后有一项<code>f[i-1, (s+1)v]+sw</code>，因此无法直接使用完全背包的优化思路来解决。比如我们已知了1到n个数的最大值和第n个数的值，要求前1到n-1个数的最大值，是无法求出来的，即<code>max()</code>函数无法做“减法”，所以我们不能直接用完全背包的优化问题来优化这个多重背包的问题（？不太懂）。</p>
+<p>那要如何优化呢，这里用到了一种“二进制”的方法。假设第<code>i</code>个物品有$s=1023$个，我们想去求它放入背包后的最大值，那真的需要去从0枚举到1023嘛，其实是没必要的。我们可以<strong>把这个物品“打包”成若干组</strong>，每组分别有$1,2,4,8,\dots,512$，<strong>每一组最多只能选一次</strong>，我们可以用这10组来拼凑出$1 \sim 1023$中的任何一个数；这样每组背包有选或不选两种状态，就可以<strong>转化为01背包问题</strong>中的一个物品（只能选一次），我们枚举新的物品选或不选，就可以拼凑出第<code>i</code>个物品的所有方案了。原来需要枚举1024次，现在只需枚举10次，这样就把朴素代码中第18行中，$O(n)$的复杂度优化为了$O(\log n)$。</p>
+<p>对于一个一般的$s$，可以这样分组：$1, 2, 4, 8, \dots, 2^k, c$，其中$2^k \le s, c &lt; 2^{k+1}$，从$1$到$2^k$可以凑出$0 \sim 2^{k+1} -1$中任意的数，加上$c$后可以凑出$c \sim 2^{k+1}-1+c$中任意的数，则$2^{k+1}-1+c=s$。而区间$[0,2^{k+1}-1]$和$[c,s]$一定有交集，即合并起来没有“空隙”，因为$c$是严格小于$2^{k+1}$的。</p>
+<p>理一下思路：对于第$i$个物品有$s_i$个，我们把它分为$\log s_i$组（上取整），转化为01背包问题，这样就把朴素做法的时间复杂度从$O(n\cdot v \cdot s)$优化到了$O(n \cdot v \cdot \log s_i)$。对于本题的数据范围：$1000 <em> 2000 </em>\log 2000=2*10^7$，是满足要求的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">12010</span>, M = <span class="number">2010</span>;   <span class="comment">// 1000 * log 2000 = 12000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> v[N], w[N];</span><br><span class="line"><span class="keyword">int</span> f[M];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> cnt = <span class="number">0</span>;   <span class="comment">//记录分组后的新的“物品”的序号</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> a, b, s;    <span class="comment">//物品i的体积，价值，个数</span></span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b &gt;&gt; s;</span><br><span class="line">        <span class="keyword">int</span> k = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span>(k &lt;= s)</span><br><span class="line">        &#123;</span><br><span class="line">            cnt ++;</span><br><span class="line">            v[cnt] = a * k;</span><br><span class="line">            w[cnt] = b * k;</span><br><span class="line">            s -= k;</span><br><span class="line">            k *= <span class="number">2</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(s &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            cnt ++;</span><br><span class="line">            v[cnt] = a * s;</span><br><span class="line">            w[cnt] = b * s;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    n = cnt;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//套用01背包问题代码即可</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= v[i]; j --)</span><br><span class="line">            f[j] = <span class="built_in">max</span>(f[j], f[j - v[i]] + w[i]);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">            </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-分组背包"><a href="#4-分组背包" class="headerlink" title="4.分组背包"></a>4.分组背包</h4><p>分组背包问题的特点是由若干组物品，每一组中最多只能选一个物品。</p>
+<blockquote>
+<p>例题：分组背包问题（Acwing 9）</p>
+<p>有 $N $组物品和一个容量是 $V$ 的背包。每组物品有若干个，同一组内的物品最多只能选一个。每件物品的体积是$ v_{ij}$，价值是$ w_{ij}$，其中$ i $是组号，$j$ 是组内编号。求解将哪些物品装入背包，可使物品总体积不超过背包容量，且总价值最大。输出最大价值。</p>
+<p>数据范围：数据范围：$0&lt;N,V≤100,0&lt;S_i≤100,0&lt;v_{ij},w_{ij}≤100$</p>
+</blockquote>
+<p>分析的思路和前面的类似，也是从状态表示和状态计算两个角度来分析。完全背包问题枚举的是第$i$个物品选几个，分组背包问题是枚举第$i$组物品选哪个。</p>
+<blockquote>
+<p>背包问题的小Tip：若在状态转移时，用的上一层的状态就从大到小枚举体积；若是用的本层的状态就从小到大枚举体积。</p>
+</blockquote>
+<p><img src="https://gitee.com/nekomoon404/blog-img/raw/master/img/QQ图片20201026221106.png" style="zoom:75%;"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> N = <span class="number">110</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="keyword">int</span> v[N][N], w[N][N], s[N];   <span class="comment">//s[]存每一组的个数</span></span><br><span class="line"><span class="keyword">int</span> f[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; s[i];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; s[i]; j ++)</span><br><span class="line">            <span class="built_in">cin</span> &gt;&gt; v[i][j] &gt;&gt; w[i][j];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= <span class="number">0</span>; j --)</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; s[i]; k ++)   <span class="comment">//枚举第i组物品中所有的选择</span></span><br><span class="line">                <span class="keyword">if</span>(v[i][k] &lt;= j)</span><br><span class="line">                    f[j] = <span class="built_in">max</span>(f[j], f[j - v[i][k]] + w[i][k]);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; f[m] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/22/%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%EF%BC%8813%EF%BC%89/" rel="prev" title="算法基础（13）">
+      <i class="fa fa-chevron-left"></i> 算法基础（13）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背包问题"><span class="nav-text">背包问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-01背包"><span class="nav-text">1. 01背包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-完全背包"><span class="nav-text">2. 完全背包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-多重背包"><span class="nav-text">3.多重背包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-分组背包"><span class="nav-text">4.分组背包</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="nekomoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">nekomoon</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nekomoon404" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nekomoon404" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:nekomoon404@163.com" title="E-Mail → mailto:nekomoon404@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2020.1.12 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nekomoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">646k</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+
+   
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-precise-range-plugin@1.3.0/moment-precise-range.min.js"></script>
+<script>
+  function timer() {
+    var ages = moment.preciseDiff(moment(),moment(20200112,"YYYYMMDD"));
+    ages = ages.replace(/years?/, "年");
+    ages = ages.replace(/months?/, "月");
+    ages = ages.replace(/days?/, "天");
+    ages = ages.replace(/hours?/, "小时");
+    ages = ages.replace(/minutes?/, "分");
+    ages = ages.replace(/seconds?/, "秒");
+    ages = ages.replace(/\d+/g, '<span style="color:#1890ff">$&</span>');
+    div.innerHTML = `我已在此等候你 ${ages}`;
+  }
+  var div = document.createElement("div");
+  //插入到copyright之后
+  var copyright = document.querySelector(".copyright");
+  document.querySelector(".footer-inner").insertBefore(div, copyright.nextSibling);
+  timer();
+  setInterval("timer()",1000)
+</script>
+
+
+ 
+<script>
+  var OriginTitile = document.title;
+  var titleTime;
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      document.title = "(つェ⊂)我藏好了哦~" + OriginTitile;
+      clearTimeout(titleTime);
+    } else {
+      document.title = "(*´∇｀*) 被你发现啦~" + OriginTitile;
+      titleTime = setTimeout(function() {
+        document.title = OriginTitile;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
